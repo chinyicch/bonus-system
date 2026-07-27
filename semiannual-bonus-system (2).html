@@ -1,0 +1,6280 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>半年工程獎金核算表</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root{
+    --paper:#EEF1EA; --ink:#1F2A44; --line:#CBCFC2;
+    --stamp:#A63D2E; --gold:#8E7126; --pine:#3F6D4E; --muted:#5B6358;
+    --serif:'Noto Serif TC', serif; --sans:'Noto Sans TC', sans-serif; --mono:'IBM Plex Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:#DDE1D6; font-family:var(--sans); color:var(--ink);}
+  #app{max-width:1040px; margin:24px auto; background:var(--paper); border-radius:8px; overflow:hidden; box-shadow:0 2px 14px rgba(0,0,0,.12);}
+
+  header{background:var(--ink); color:#F1EFE6; padding:18px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  header h1{font-family:var(--serif); font-size:20px; font-weight:700; letter-spacing:1px; margin:0;}
+  header p{font-size:12px; color:#B9C0AE; margin:2px 0 0;}
+  header .actions{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  #saveState{font-family:var(--mono); font-size:11px; color:#9AA28C;}
+  .hbtn{background:transparent; border:1px solid #4A5A78; color:#C7CDBB; border-radius:6px; padding:6px 10px; font-family:var(--sans); font-size:12px; cursor:pointer;}
+  .hbtn:hover{background:#2A3A5C;}
+  .hbtn.danger{border-color:#6A3A34; color:#E0AFA6;}
+
+  #periodWrap{position:relative;}
+  #periodBtn{display:flex; align-items:center; gap:6px; background:#2A3A5C; border:1px solid #4A5A78; color:#F1EFE6; border-radius:6px; padding:7px 12px; font-family:var(--serif); font-size:13px; font-weight:700; cursor:pointer;}
+  #periodMenu{display:none; position:absolute; top:110%; right:0; background:#fff; border:1px solid var(--line); border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,.18); min-width:240px; z-index:20; overflow:hidden;}
+  #periodMenu.open{display:block;}
+  #periodMenu .qitem{padding:9px 14px; font-family:var(--sans); font-size:13px; cursor:pointer; color:var(--ink);}
+  #periodMenu .qitem:hover{background:#f3f5ef;}
+  #periodMenu .qitem.current{background:var(--paper); font-weight:600;}
+  #backupMenu{display:none; position:absolute; top:110%; right:0; background:#fff; border:1px solid var(--line); border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,.18); min-width:280px; z-index:20; overflow:hidden;}
+  #backupMenu.open{display:block;}
+  #backupMenu .bitem{padding:9px 14px; font-family:var(--sans); font-size:12px; color:var(--muted); border-bottom:1px solid var(--line);}
+  #backupMenu .bitem:last-child{border-bottom:none;}
+  #backupMenu .bitem.clickable{cursor:pointer; color:var(--ink);}
+  #backupMenu .bitem.clickable:hover{background:#f3f5ef;}
+  #backupMenu .bsave{padding:10px 14px; font-family:var(--sans); font-size:13px; font-weight:600; cursor:pointer; color:var(--ink); border-bottom:1px solid var(--line); background:var(--paper);}
+  #backupMenu .bsave:hover{background:#e4e7dc;}
+
+  .layout{display:flex;}
+  #tabs{width:150px; flex-shrink:0; background:#E4E7DC; border-right:1px solid var(--line); padding-top:10px;}
+  .tab{cursor:pointer; position:relative; margin:4px 0 4px -1px; padding:10px 12px 10px 14px; border-radius:6px 0 0 6px; border:1px solid transparent;}
+  .tab .bar{position:absolute; left:0; top:8px; bottom:8px; width:4px; border-radius:2px;}
+  .tab .name{font-size:13px; font-weight:500; color:var(--muted); margin-left:6px;}
+  .tab.active{background:var(--paper); border-color:var(--line);}
+  .tab.active .name{color:var(--ink); font-weight:600;}
+
+  main{flex:1; padding:24px; min-width:0;}
+
+  .card{background:#fff; border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:16px;}
+  .card h2{font-family:var(--serif); font-size:14px; font-weight:700; margin:0 0 10px; border-bottom:1px solid var(--line); padding-bottom:8px;}
+
+  table{width:100%; border-collapse:collapse;}
+  th{font-size:12px; color:var(--muted); text-align:left; padding:4px 6px; font-weight:500;}
+  td{padding:6px; border-top:1px solid var(--line); font-size:13px;}
+
+  select, input[type=number], input[type=text], input[type=date]{
+    font-family:var(--mono); font-size:13px; font-weight:600; color:var(--ink);
+    background:#fff; border:1px solid var(--line); border-radius:4px; padding:4px 6px;
+  }
+  input[type=text].plain{font-family:var(--sans); font-weight:400;}
+
+  .stat{display:flex; justify-content:space-between; align-items:baseline; padding:6px 0;}
+  .stat .label{font-size:13px; color:var(--muted);}
+  .stat .value{font-family:var(--mono); font-size:15px; font-weight:600;}
+  .stat.big .label{font-size:15px;}
+  .stat.big .value{font-size:22px;}
+
+  .addBtn{display:inline-flex; align-items:center; gap:4px; margin-top:8px; background:none; border:1px dashed var(--line); border-radius:6px; padding:6px 10px; font-family:var(--sans); font-size:12px; color:var(--muted); cursor:pointer;}
+  .addBtn:hover{background:#f3f5ef;}
+  .delBtn{background:none; border:none; cursor:pointer; color:var(--muted); font-size:14px;}
+  .delBtn:hover{color:var(--stamp);}
+
+  .rosterChip{display:inline-flex; align-items:center; gap:6px; background:var(--paper); border:1px solid var(--line); border-radius:20px; padding:5px 6px 5px 12px; margin:0 8px 8px 0;}
+  .rosterChip button{background:none; border:none; cursor:pointer; color:var(--muted); display:flex;}
+  .rosterChip button:hover{color:var(--stamp);}
+
+  .personChip{font-family:var(--sans); font-size:13px; padding:6px 14px; border-radius:20px; cursor:pointer; border:1px solid var(--line); background:#fff; color:var(--muted); margin:0 8px 8px 0;}
+  .personChip.active{color:#fff;}
+
+  #summaryTable thead tr, .sumTable thead tr{background:var(--ink); color:#F1EFE6; font-size:12px; text-align:right;}
+  .sumTable thead th{color:#F1EFE6; padding:8px 10px;}
+  .sumTable thead th:first-child{text-align:left;}
+  .sumTable td{text-align:right; font-family:var(--mono); font-size:13px;}
+  .sumTable td:first-child{text-align:left; font-family:var(--sans); font-weight:600;}
+  .sumFooter{border-top:2px solid var(--ink); text-align:right; font-family:var(--mono); font-size:15px; font-weight:700; padding:10px;}
+
+  .statCardsRow{display:flex; gap:12px; flex-wrap:wrap;}
+  .statCardsRow .box{flex:1; min-width:180px; background:#fff; border:1px solid var(--line); border-radius:8px; padding:14px;}
+
+  .projectCard{background:#fff; border:1px solid var(--line); border-radius:8px; margin-bottom:14px; overflow:hidden;}
+  .projectCardHead{background:var(--paper); border-bottom:1px solid var(--line); padding:10px 16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .projectCardHead .idx{font-family:var(--mono); font-size:12px; color:var(--muted); min-width:20px;}
+  .projectCardHead input.pname{font-family:var(--serif); font-size:15px; font-weight:700; color:var(--ink); border:none; background:transparent; flex:1; min-width:200px;}
+  .projectCardBody{padding:16px;}
+  .fieldRow{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px;}
+  .fieldRow .fcol .flabel{font-family:var(--sans); font-size:11px; color:var(--muted); margin-bottom:3px;}
+  .rolesBlock{border-top:1px solid var(--line); padding-top:12px;}
+  .rolesBlock .rtitle{font-family:var(--sans); font-size:12px; color:var(--muted); margin-bottom:8px; font-weight:600;}
+  .roleNameInput{font-family:var(--sans); font-size:13px; border:none; background:transparent; width:100%; color:var(--muted);}
+
+  @media (max-width:640px){
+    .layout{flex-direction:column;}
+    #tabs{width:100%; display:flex; overflow-x:auto; padding:8px;}
+    .tab{white-space:nowrap;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <h1>半年工程獎金核算表</h1>
+      <p>業績分紅・依日期自動歸屬半年期與年度</p>
+    </div>
+    <div class="actions">
+      <div id="periodWrap">
+        <button id="periodBtn"></button>
+        <div id="periodMenu"></div>
+      </div>
+      <button class="hbtn" id="addPeriodBtn">＋ 新增下一期</button>
+      <button class="hbtn danger" id="deletePeriodBtn" style="display:none;">✕ 刪除此期</button>
+      <span id="saveState"></span>
+      <div id="backupWrap" style="position:relative;">
+        <button class="hbtn" id="backupBtn">💾 手動存檔 ▾</button>
+        <div id="backupMenu"></div>
+      </div>
+      <button class="hbtn" id="resetBtn">清空本期</button>
+    </div>
+  </header>
+  <div class="layout">
+    <div id="tabs"></div>
+    <main id="main"></main>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "semiannual-bonus-data-v1";
+
+// ====== 雲端同步設定 ======
+// 把你部署 Google Apps Script 後拿到的網址（.../exec 結尾）貼在這裡，
+// 貼上之後大家打開「同一個網址／同一份檔案」就能共用同一份資料。
+// 如果先不填（維持空字串），系統會照舊只存在這台電腦的瀏覽器裡。
+const API_URL = "https://script.google.com/macros/s/AKfycbwRxYqILs6CHQELCZDxy-cfJiDdZP1iKnNCsUpn7HvH1MbAWt4thKI27LWQGWomCWKcFQ/exec";
+const PALETTE = ["#A63D2E","#A9862F","#3F6D4E","#3C5A78","#7A5C3E","#5B5573","#8B5E3C","#4F6B52"];
+const DEFAULT_ROLES = ["工程負責人","外機系統負責人","內機系統負責人","排水負責人","線型負責人","風管負責人"];
+
+function periodFromDate(d){
+  const m = d.getMonth()+1; const y = d.getFullYear();
+  if(m>=4 && m<=9) return `AS-${y}`;
+  if(m>=10) return `OS-${y}`;
+  return `OS-${y-1}`;
+}
+function periodLabel(id){
+  const [type,yStr] = id.split("-"); const y = Number(yStr);
+  if(type==="AS") return `${y} 年 4月～9月（${y+1} 年 1月結算）`;
+  return `${y} 年 10月～${y+1} 年 3月（${y+1} 年 7月結算）`;
+}
+function periodShort(id){
+  const [type,yStr] = id.split("-"); const y = Number(yStr);
+  return type==="AS" ? `${y}年上半期(4-9月)` : `${y}年下半期(10-3月)`;
+}
+function nextPeriodId(id){
+  const [type,yStr] = id.split("-"); const y = Number(yStr);
+  return type==="AS" ? `OS-${y}` : `AS-${y+1}`;
+}
+function fyYearOf(id){ const [,yStr] = id.split("-"); return Number(yStr); }
+function fyLabel(y){ return `${y} 年度（${y} 年4月 ～ ${y+1} 年3月）`; }
+
+// Seeded from the user's 工程紀錄.xlsx (113 real projects, roles auto-filled;
+// 業務人員／工程業績／分紅%／簽核人員 left blank for the user to fill in).
+// This is only used the FIRST time the tool runs on a browser with no saved data yet —
+// once anything is saved, that saved data always takes priority and this is never touched.
+const IMPORTED_SEED_DATA = {
+  "order": [
+    "OS-2025",
+    "AS-2026",
+    "OS-2026"
+  ],
+  "current": "AS-2026",
+  "roster": [],
+  "approvers": [],
+  "periods": {
+    "OS-2025": {
+      "slips": [
+        {
+          "id": "imported-113",
+          "date": "2026-01-08",
+          "projectName": "中和區安平路48號6樓-線配裝",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘-4台"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "小巫-75-兩台"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "2MXM56YVLT",
+              "qty": 1
+            },
+            {
+              "model": "FTXM28YVLT",
+              "qty": 1
+            },
+            {
+              "model": "FTXM22YVLT (1噸",
+              "qty": 1
+            },
+            {
+              "model": "0.8噸 房間 採用壁掛式)\n2MXM75YVLT",
+              "qty": 1
+            },
+            {
+              "model": "FTXM50YVLT",
+              "qty": 1
+            },
+            {
+              "model": "FTXM22YVLT (1.8噸",
+              "qty": 1
+            },
+            {
+              "model": "0.8噸 房間 採用壁掛式)",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-109",
+          "date": "2026-01-13",
+          "projectName": "新北市三重區重陽路一段113巷1弄6號",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程1台"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大林一台"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "RAC-40NP",
+              "qty": 1
+            },
+            {
+              "model": "RAS-40NTB",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-110",
+          "date": "2026-01-13",
+          "projectName": "三重區力行路一段217號7樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘1台"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘2台"
+            },
+            {
+              "role": "排水負責人",
+              "name": "小白"
+            },
+            {
+              "role": "線型負責人",
+              "name": "大林"
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "華菱FVO-141IH",
+              "qty": 1
+            },
+            {
+              "model": "FHI-36IH",
+              "qty": 1
+            },
+            {
+              "model": "FHI-112IH",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-108",
+          "date": "2026-01-21",
+          "projectName": "新北市三重區進安街86號6樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘3台"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘5台"
+            },
+            {
+              "role": "排水負責人",
+              "name": "吊隱子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": "排水器子程"
+            },
+            {
+              "role": "風管負責人",
+              "name": "麥可"
+            }
+          ],
+          "models": [
+            {
+              "model": "RXYCQ6AVET",
+              "qty": 1
+            },
+            {
+              "model": "CDXS60DVMT",
+              "qty": 1
+            },
+            {
+              "model": "FXDQ32PDNVT",
+              "qty": 1
+            },
+            {
+              "model": "FTXS25KVLT",
+              "qty": 2
+            },
+            {
+              "model": "BPMKS967A3",
+              "qty": 1
+            },
+            {
+              "model": "2MXM75YVLT",
+              "qty": 1
+            },
+            {
+              "model": "FTXM50YVLT",
+              "qty": 1
+            },
+            {
+              "model": "FTXM22TVLT",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-104",
+          "date": "2026-01-24",
+          "projectName": "萬華 茶室",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程3台"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘3台"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "中古機",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-103",
+          "date": "2026-02-07",
+          "projectName": "蘆洲區光明路10號2樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大林"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "RXV41ZVLT",
+              "qty": 1
+            },
+            {
+              "model": "FTXV41ZVLT",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-102",
+          "date": "2026-02-09",
+          "projectName": "中和區宜安路52巷13號2樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程3台"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大林3台"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "三菱一對三",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-101",
+          "date": "2026-02-10",
+          "projectName": "龍安街2樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘大台.子程小台"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘小台.子程大台"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-100",
+          "date": "2026-02-11",
+          "projectName": "永安北路",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程3台"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大林3台"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "華陵41",
+              "qty": 1
+            },
+            {
+              "model": "華陵52",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-98",
+          "date": "2026-03-02",
+          "projectName": "新美琪社區",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大林3台"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程3台"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "RAM-93NP",
+              "qty": 1
+            },
+            {
+              "model": "RAS-50NTB",
+              "qty": 1
+            },
+            {
+              "model": "RAS-28NTB",
+              "qty": 1
+            },
+            {
+              "model": "RAS-22NTB+除溼70一台",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-97",
+          "date": "2026-03-05",
+          "projectName": "甘丹廚房",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大林"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "海爾72",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-96",
+          "date": "2026-03-06",
+          "projectName": "新莊區民本街11巷12號6樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大林"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "華陵29",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-95",
+          "date": "2026-03-08",
+          "projectName": "三重區重陽路四段4號1樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子閎"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子閎"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "華陵90",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-92",
+          "date": "2026-03-23",
+          "projectName": "南京西路107巷9號",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大林"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "HAC-P48HB",
+              "qty": 1
+            },
+            {
+              "model": "HAS-P48HB",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-90",
+          "date": "2026-03-27",
+          "projectName": "都會通63號13樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": "子弘"
+            }
+          ],
+          "models": [
+            {
+              "model": "DTR3-85KIGSH",
+              "qty": 1
+            },
+            {
+              "model": "HSBF63`29KIGH",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-91",
+          "date": "2026-03-30",
+          "projectName": "蘇澳新榮路62號2樓4樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "50NPx2 40NPx2",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-89",
+          "date": "2026-03-31",
+          "projectName": "民族路255巷8號4F",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "P38兩組",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    "AS-2026": {
+      "slips": [
+        {
+          "id": "imported-88",
+          "date": "2026-04-01",
+          "projectName": "永和中山路一段100號",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": "客廳小白房間子程"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-105",
+          "date": "2026-04-01",
+          "projectName": "永和區永和路一段72巷19號23樓D3",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": "子程"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "2MXM56YVLT",
+              "qty": 1
+            },
+            {
+              "model": "FTXM28YVLT",
+              "qty": 1
+            },
+            {
+              "model": "FTXM22YVLT",
+              "qty": 1
+            },
+            {
+              "model": "4MXM110YVLT",
+              "qty": 1
+            },
+            {
+              "model": "FDXV71RVLT",
+              "qty": 1
+            },
+            {
+              "model": "FDXV22RVLT",
+              "qty": 1
+            },
+            {
+              "model": "米多力70除濕機",
+              "qty": 1
+            },
+            {
+              "model": "台達電250全熱",
+              "qty": 1
+            },
+            {
+              "model": "阿拉斯加前置過濾箱",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-87",
+          "date": "2026-04-06",
+          "projectName": "民族路436巷11弄1號9樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "保養X2",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-94",
+          "date": "2026-04-06",
+          "projectName": "F棟199號16樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "RAC-81NP",
+              "qty": 1
+            },
+            {
+              "model": "RAD-81NJP1.RAM-50NP",
+              "qty": 1
+            },
+            {
+              "model": "RAS-22NTB",
+              "qty": 1
+            },
+            {
+              "model": "RAS-28NTB.除溼70",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-86",
+          "date": "2026-04-08",
+          "projectName": "捷士達15號27樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "排水負責人",
+              "name": "子程"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "50VP",
+              "qty": 1
+            },
+            {
+              "model": "86YP",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-84",
+          "date": "2026-04-14",
+          "projectName": "永和仁愛路306巷18弄15號13樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "國際中古機",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-85",
+          "date": "2026-04-14",
+          "projectName": "新店安祥路110巷16號12樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "華陵24",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-31",
+          "date": "2026-04-15",
+          "projectName": "羽球一館-復興路",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-80",
+          "date": "2026-04-18",
+          "projectName": "中正路377巷24號4樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-81",
+          "date": "2026-04-18",
+          "projectName": "民安西路75巷6號4樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-78",
+          "date": "2026-04-20",
+          "projectName": "大園區文城路151號17樓-2",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-76",
+          "date": "2026-04-23",
+          "projectName": "長安東路二段43號2樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-74",
+          "date": "2026-04-24",
+          "projectName": "忠孝東路五段423巷6弄9號3樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "華陵29",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-75",
+          "date": "2026-04-24",
+          "projectName": "公司隔壁",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "華陵63",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-71",
+          "date": "2026-05-04",
+          "projectName": "中和區自立路99巷73號13樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "rac63np ram50np",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-70",
+          "date": "2026-05-05",
+          "projectName": "公司對面1樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "71vp",
+              "qty": 1
+            },
+            {
+              "model": "36vp 4台",
+              "qty": 1
+            },
+            {
+              "model": "28vp",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-69",
+          "date": "2026-05-06",
+          "projectName": "新店中正路523號",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": "小林 林董"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "華陵140",
+              "qty": 1
+            },
+            {
+              "model": "110x4",
+              "qty": 1
+            },
+            {
+              "model": "36",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-64",
+          "date": "2026-05-08",
+          "projectName": "水南街9號1樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大林"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-68",
+          "date": "2026-05-08",
+          "projectName": "永恆之星12樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "93np",
+              "qty": 1
+            },
+            {
+              "model": "50njp",
+              "qty": 1
+            },
+            {
+              "model": "22njpx2",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-66",
+          "date": "2026-05-09",
+          "projectName": "四季平安6樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-67",
+          "date": "2026-05-09",
+          "projectName": "樹林區保安街一段289巷32號",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "海爾24",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-63",
+          "date": "2026-05-12",
+          "projectName": "永和環河西路二段187號4樓-1",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "92NP 50NP",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-55",
+          "date": "2026-05-15",
+          "projectName": "萬華醫院",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "傑哥"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "傑哥"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-60",
+          "date": "2026-05-15",
+          "projectName": "內湖區康寧路三段245巷22號5樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "麥可"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大林"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-61",
+          "date": "2026-05-15",
+          "projectName": "三重溪尾街185號6樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "90ZVLT",
+              "qty": 1
+            },
+            {
+              "model": "36YVLT",
+              "qty": 1
+            },
+            {
+              "model": "2MXM56YVLT",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-65",
+          "date": "2026-05-15",
+          "projectName": "士林區通河街11-1號4樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-59",
+          "date": "2026-05-16",
+          "projectName": "台北港",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘\\"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-58",
+          "date": "2026-05-17",
+          "projectName": "內湖康寧路三段265巷1號2樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "28NP",
+              "qty": 1
+            },
+            {
+              "model": "28NTB",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-56",
+          "date": "2026-05-18",
+          "projectName": "新竹縣湖口鄉明德街151巷8號6樓-5",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "傑哥"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "傑哥"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-57",
+          "date": "2026-05-19",
+          "projectName": "復興北路430巷26號3樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "傑哥"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "傑哥"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-62",
+          "date": "2026-05-19",
+          "projectName": "新店安祥路109巷3弄32號 別墅",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "71ZVLT",
+              "qty": 1
+            },
+            {
+              "model": "60ZVLT",
+              "qty": 1
+            },
+            {
+              "model": "30ZVLTx2",
+              "qty": 1
+            },
+            {
+              "model": "71ZVLT",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-83",
+          "date": "2026-05-19",
+          "projectName": "淡水義山路一段401巷99號11樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "米多利除溼",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-52",
+          "date": "2026-05-20",
+          "projectName": "三重區新北大道一段35巷6號4樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "房間大霖客廳子程"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "40VP",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-53",
+          "date": "2026-05-20",
+          "projectName": "蘆洲區中興街130巷16號3樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "28NJP",
+              "qty": 1
+            },
+            {
+              "model": "28NP",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-51",
+          "date": "2026-05-21",
+          "projectName": "桃園市大園區高鐵南路一段62號18樓-2",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "全熱",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-50",
+          "date": "2026-05-22",
+          "projectName": "民族路384巷5號5樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "DTP2-52KIGSH",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-54",
+          "date": "2026-05-22",
+          "projectName": "台北市忠孝東路270號8樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "傑哥"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "傑哥"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-49",
+          "date": "2026-05-24",
+          "projectName": "學聖家 楊梅青山六街18號",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "麥可"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "舊機 華陵50",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-48",
+          "date": "2026-05-25",
+          "projectName": "五股民義路一段220巷24-21號",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "舊機",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-47",
+          "date": "2026-05-26",
+          "projectName": "蘆洲中興街143號1樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "華陵 72 36 36 28 28",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-46",
+          "date": "2026-05-27",
+          "projectName": "蘆洲中山一路166號4樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "22njp x2",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-45",
+          "date": "2026-05-28",
+          "projectName": "都會通\\邱主委家",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "50ntb",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-77",
+          "date": "2026-05-28",
+          "projectName": "板橋文化路2段410巷1弄21號2樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "50vp",
+              "qty": 1
+            },
+            {
+              "model": "28vp",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-112",
+          "date": "2026-05-28",
+          "projectName": "新北市三重區仁義街130號6樓（元利樂樺）",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程吊隱1台"
+            },
+            {
+              "role": "排水負責人",
+              "name": "小白/子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "RAM-83NP",
+              "qty": 1
+            },
+            {
+              "model": "RAD-63NJP1",
+              "qty": 1
+            },
+            {
+              "model": "RAS-22NJP1\nRAM-50NP",
+              "qty": 1
+            },
+            {
+              "model": "RAS-36NJP1",
+              "qty": 1
+            },
+            {
+              "model": "RAS-22NJP1",
+              "qty": 1
+            },
+            {
+              "model": "除溼70一台",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-33",
+          "date": "2026-05-29",
+          "projectName": "饗賓集團",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "上子程.下大林"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "RAM-86NP",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "id": "imported-34",
+          "date": "2026-05-29",
+          "projectName": "A2-20樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "大金VRV",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-44",
+          "date": "2026-05-30",
+          "projectName": "三重仁愛街361號",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "麥可"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "中古機",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-43",
+          "date": "2026-05-31",
+          "projectName": "永和環河東路三段42號3樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "麥可"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "華陵29",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-41",
+          "date": "2026-06-03",
+          "projectName": "中和區中原街46號5樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "71vp",
+              "qty": 1
+            },
+            {
+              "model": "36ysp",
+              "qty": 1
+            },
+            {
+              "model": "22ysp",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-42",
+          "date": "2026-06-03",
+          "projectName": "中壢區莊敬路206號",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "100bvlt",
+              "qty": 1
+            },
+            {
+              "model": "50yvlt",
+              "qty": 1
+            },
+            {
+              "model": "除濕機2",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-32",
+          "date": "2026-06-04",
+          "projectName": "吉星辦公室",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "傑哥"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "傑哥"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-39",
+          "date": "2026-06-04",
+          "projectName": "南昌路一段59巷10號4樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "華陵29",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-40",
+          "date": "2026-06-04",
+          "projectName": "朝陽大河院v2 7樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "三菱71",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-37",
+          "date": "2026-06-06",
+          "projectName": "三民路128巷30號3號",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "麥可"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "22VP",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-38",
+          "date": "2026-06-06",
+          "projectName": "龍濱路202號5樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "麥可"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "28VP",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-35",
+          "date": "2026-06-08",
+          "projectName": "洪堯順",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "RO-72ICU",
+              "qty": 1
+            },
+            {
+              "model": "RO-63ICU",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-29",
+          "date": "2026-06-09",
+          "projectName": "民族路255巷29號3樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "28VP",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-30",
+          "date": "2026-06-09",
+          "projectName": "羽球二館-中山一路",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-36",
+          "date": "2026-06-09",
+          "projectName": "皇普園首之道",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "麥可"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-73",
+          "date": "2026-06-09",
+          "projectName": "五股新城八路337號5樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘56 大霖75"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "2mxm75yvlt",
+              "qty": 1
+            },
+            {
+              "model": "2mxm56yvlt",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-27",
+          "date": "2026-06-10",
+          "projectName": "中山一路196號2樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "36np",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-28",
+          "date": "2026-06-10",
+          "projectName": "萬華區西昌街132號6樓-2",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": "小白"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-26",
+          "date": "2026-06-11",
+          "projectName": "內湖區文湖街60巷2號4樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "60zvlt x2",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-24",
+          "date": "2026-06-12",
+          "projectName": "台北市吳興街600巷72弄12號5樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大林"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": "大林"
+            }
+          ],
+          "models": [
+            {
+              "model": "海爾",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-25",
+          "date": "2026-06-12",
+          "projectName": "建築師事務所",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "保養",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-23",
+          "date": "2026-06-13",
+          "projectName": "八德區興豐路836巷4弄19號2.3樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "麥可"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-21",
+          "date": "2026-06-17",
+          "projectName": "松山區三民路166巷19號1樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "舊機",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-22",
+          "date": "2026-06-17",
+          "projectName": "板橋區漢生東路270號24樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "小屋"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "小屋"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-17",
+          "date": "2026-06-18",
+          "projectName": "民族路422巷148弄18號5樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "阿慶"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": "小白"
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-20",
+          "date": "2026-06-18",
+          "projectName": "內湖康樂街136巷15弄24號3樓a房",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "排水負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "ro-28ihu",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-72",
+          "date": "2026-06-18",
+          "projectName": "五股區新五路二段590號6樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "排水負責人",
+              "name": "小白"
+            },
+            {
+              "role": "線型負責人",
+              "name": "麥可"
+            },
+            {
+              "role": "風管負責人",
+              "name": "傑哥"
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-19",
+          "date": "2026-06-22",
+          "projectName": "桃園區水岸二街108號3樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "63hp",
+              "qty": 1
+            },
+            {
+              "model": "40hp",
+              "qty": 1
+            },
+            {
+              "model": "22hp",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-18",
+          "date": "2026-06-23",
+          "projectName": "龜山區文化五路239號2樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "108NP",
+              "qty": 1
+            },
+            {
+              "model": "28NP",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-106",
+          "date": "2026-06-25",
+          "projectName": "永和區永和路一段72巷17號23樓D2",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "吊隱子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "2MXM56YVLT",
+              "qty": 1
+            },
+            {
+              "model": "FDXV60RVLT",
+              "qty": 1
+            },
+            {
+              "model": "FTXM22YVLT",
+              "qty": 1
+            },
+            {
+              "model": "RXM71ZVLT",
+              "qty": 1
+            },
+            {
+              "model": "FDXV71RVLT",
+              "qty": 1
+            },
+            {
+              "model": "米多力70除濕機",
+              "qty": 1
+            },
+            {
+              "model": "改110外機",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-107",
+          "date": "2026-06-25",
+          "projectName": "永和區永和路一段72巷15號23樓D1",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "4MXM110YVLT",
+              "qty": 1
+            },
+            {
+              "model": "FDXV60RVLT",
+              "qty": 1
+            },
+            {
+              "model": "FTXM28YVLT",
+              "qty": 1
+            },
+            {
+              "model": "FTXM22YVLT",
+              "qty": 1
+            },
+            {
+              "model": "台達電250全熱",
+              "qty": 1
+            },
+            {
+              "model": "米多力70除濕機",
+              "qty": 1
+            },
+            {
+              "model": "阿拉斯加前置過濾箱",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-16",
+          "date": "2026-06-26",
+          "projectName": "昌吉街5號3.4樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "5樓麥可4台"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "5樓子程4台"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": "4樓小屋3台"
+            }
+          ],
+          "models": [
+            {
+              "model": "28VP*5.22VP",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "id": "imported-14",
+          "date": "2026-06-27",
+          "projectName": "汐止區新興路3號7樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "麥可"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "71HP",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "id": "imported-15",
+          "date": "2026-06-27",
+          "projectName": "大安區新生南路一段111號",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "1對2日立",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-13",
+          "date": "2026-06-29",
+          "projectName": "台北市民樂街62號",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-12",
+          "date": "2026-06-30",
+          "projectName": "羅斯福路五段225號9樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": "子程"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "81NP",
+              "qty": 1
+            },
+            {
+              "model": "40NP",
+              "qty": 1
+            },
+            {
+              "model": "50NP",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-10",
+          "date": "2026-07-01",
+          "projectName": "民義街101巷5號4樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大林"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "大林"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": "小白"
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-93",
+          "date": "2026-07-01",
+          "projectName": "竹林路122號-3 3樓 密碼555666#",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": "子程"
+            },
+            {
+              "role": "線型負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "風管負責人",
+              "name": "大霖"
+            }
+          ],
+          "models": [
+            {
+              "model": "HAC-p72HB",
+              "qty": 1
+            },
+            {
+              "model": "HAF-P70HA\nHAC-3P74HA",
+              "qty": 1
+            },
+            {
+              "model": "HAS-Q28HBU",
+              "qty": 3
+            }
+          ]
+        },
+        {
+          "id": "imported-79",
+          "date": "2026-07-02",
+          "projectName": "園學路239號13樓-3",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "63VP",
+              "qty": 1
+            },
+            {
+              "model": "28VP",
+              "qty": 1
+            },
+            {
+              "model": "29KIGSH",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-9",
+          "date": "2026-07-03",
+          "projectName": "林口忠孝一路31號6樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "40VP",
+              "qty": 1
+            },
+            {
+              "model": "22VP",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-11",
+          "date": "2026-07-03",
+          "projectName": "新店區文記街60號19樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-8",
+          "date": "2026-07-04",
+          "projectName": "民族路227巷22弄17號3樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "RO-23IHU",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-7",
+          "date": "2026-07-07",
+          "projectName": "新泰路417號-15號6樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-82",
+          "date": "2026-07-07",
+          "projectName": "捷士達a2-17",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "客廳.1對2-大林"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "客廳-子程"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-5",
+          "date": "2026-07-08",
+          "projectName": "永和區永和路一段72巷27號6樓C3",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "大霖"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "50VP",
+              "qty": 1
+            },
+            {
+              "model": "50YP",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-6",
+          "date": "2026-07-08",
+          "projectName": "蘆洲區中興街139號2樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": "小白"
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "麥可"
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "海爾28.36",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-3",
+          "date": "2026-07-14",
+          "projectName": "南港區重陽路39巷100號3樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "71vp",
+              "qty": 1
+            },
+            {
+              "model": "28vp",
+              "qty": 1
+            },
+            {
+              "model": "22vp",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "id": "imported-4",
+          "date": "2026-07-14",
+          "projectName": "台北市文山區和平東路4段45號13樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-1",
+          "date": "2026-07-15",
+          "projectName": "竹北區中華路785號2樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": "子程"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "華陵36.28三台",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-2",
+          "date": "2026-07-15",
+          "projectName": "三峽區學勤路362號24樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "子弘"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "56yvlt",
+              "qty": 1
+            },
+            {
+              "model": "75yvlt",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "imported-99",
+          "date": "2026-07-17",
+          "projectName": "天京大樓",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "排水負責人",
+              "name": ""
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "RAC-90NP\nRAC-50NP",
+              "qty": 1
+            },
+            {
+              "model": "RAS-50NTB\nCU-2J63BHA2",
+              "qty": 1
+            },
+            {
+              "model": "CS-UX28BA2",
+              "qty": 1
+            },
+            {
+              "model": "兩台舊機",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    "OS-2026": {
+      "slips": [
+        {
+          "id": "imported-111",
+          "date": "2026-12-31",
+          "projectName": "淡水區八勢一路123巷12號",
+          "person": "",
+          "revenue": 0,
+          "sharePercent": 0,
+          "approver": "",
+          "note": "",
+          "roles": [
+            {
+              "role": "工程負責人",
+              "name": "小白"
+            },
+            {
+              "role": "外機系統負責人",
+              "name": ""
+            },
+            {
+              "role": "內機系統負責人",
+              "name": "峰哥/傑哥"
+            },
+            {
+              "role": "排水負責人",
+              "name": "峰哥/傑哥"
+            },
+            {
+              "role": "線型負責人",
+              "name": ""
+            },
+            {
+              "role": "風管負責人",
+              "name": ""
+            }
+          ],
+          "models": [
+            {
+              "model": "VRV三套+",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    }
+  }
+};
+
+function defaultData(){
+  return JSON.parse(JSON.stringify(IMPORTED_SEED_DATA));
+}
+function newSlip(defaultPerson){
+  const today = new Date();
+  const iso = today.toISOString().slice(0,10);
+  return { id:`${Date.now()}-${Math.random().toString(36).slice(2,7)}`, date: iso, projectName:"", person: defaultPerson || "", revenue:0, sharePercent:0, approver:"", note:"", roles: DEFAULT_ROLES.map(r=>({role:r, name:""})), models: [{model:"", qty:1}] };
+}
+function backfillSlip(s){
+  return {
+    ...s,
+    projectName: s.projectName != null ? s.projectName : "",
+    note: s.note != null ? s.note : "",
+    roles: s.roles || DEFAULT_ROLES.map(r=>({role:r, name:""})),
+    models: (s.models && s.models.length) ? s.models : [{model:"", qty:1}],
+  };
+}
+function backfillData(d){
+  const periods = {};
+  Object.keys(d.periods).forEach(pid=>{
+    periods[pid] = { slips: d.periods[pid].slips.map(backfillSlip) };
+  });
+  return { ...d, periods, approvers: d.approvers || [] };
+}
+function fmt(n){ return Math.round(n||0).toLocaleString("zh-TW"); }
+function slipBonus(s){ return ((Number(s.revenue)||0) * (Number(s.sharePercent)||0)) / 100; }
+function summarize(slips){
+  const totalRevenue = slips.reduce((a,s)=>a+(Number(s.revenue)||0),0);
+  const totalBonus = slips.reduce((a,s)=>a+slipBonus(s),0);
+  const byPerson = {};
+  slips.forEach(s=>{
+    const key = s.person || "（未指定）";
+    if(!byPerson[key]) byPerson[key] = {revenue:0, bonus:0, count:0};
+    byPerson[key].revenue += Number(s.revenue)||0;
+    byPerson[key].bonus += slipBonus(s);
+    byPerson[key].count += 1;
+  });
+  return { totalRevenue, totalBonus, byPerson, count: slips.length };
+}
+function personColor(name, roster){
+  const idx = roster.indexOf(name);
+  return PALETTE[(idx>=0?idx:name.length) % PALETTE.length];
+}
+function escapeHtml(s){
+  const d = document.createElement("div");
+  d.innerText = s;
+  return d.innerHTML;
+}
+
+// ====== 雲端 API 呼叫（跟進出貨系統同樣的 JSONP + text/plain POST 手法）======
+let jsonpCounter = 0;
+function jsonpRequest(params){
+  return new Promise((resolve, reject) => {
+    const cbName = "__bonusJsonpCb" + (jsonpCounter++);
+    const script = document.createElement("script");
+    const qs = Object.keys(params).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`).join("&");
+    window[cbName] = (data) => {
+      resolve(data);
+      delete window[cbName];
+      script.remove();
+    };
+    script.onerror = () => {
+      reject(new Error("script load failed"));
+      delete window[cbName];
+      script.remove();
+    };
+    script.src = `${API_URL}?${qs}&callback=${cbName}`;
+    document.body.appendChild(script);
+  });
+}
+
+// Writing via fetch() gets blocked by CORS when this file is opened directly
+// (file://) or from some hosts. A classic, reliable workaround: submit a real
+// HTML <form> into a hidden <iframe> — that's a normal page submission, not an
+// XHR/fetch call, so the browser's CORS rules don't apply to it at all.
+let syncIframe = null;
+function ensureSyncIframe(){
+  if(syncIframe) return syncIframe;
+  syncIframe = document.createElement("iframe");
+  syncIframe.name = "bonusSyncFrame";
+  syncIframe.style.display = "none";
+  document.body.appendChild(syncIframe);
+  return syncIframe;
+}
+
+function postToAPI(payload){
+  return new Promise((resolve) => {
+    const iframe = ensureSyncIframe();
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = API_URL;
+    form.target = iframe.name;
+    form.style.display = "none";
+
+    Object.keys(payload).forEach((key) => {
+      const input = document.createElement("input");
+      input.name = key;
+      input.value = typeof payload[key] === "string" ? payload[key] : JSON.stringify(payload[key]);
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+
+    const cleanupAndResolve = () => {
+      iframe.removeEventListener("load", onLoad);
+      form.remove();
+      resolve({ success: true });
+    };
+    const onLoad = () => cleanupAndResolve();
+    iframe.addEventListener("load", onLoad);
+    // Safety net in case the iframe's load event doesn't fire for some reason.
+    setTimeout(cleanupAndResolve, 4000);
+
+    form.submit();
+  });
+}
+
+async function fetchCloudState(){
+  if(!API_URL) return { ok:false, reason:"no-url" };
+  try{
+    const result = await jsonpRequest({ action: "getState" });
+    if(result && result.error) return { ok:false, reason: result.error };
+    return { ok:true, state: result };
+  }catch(err){
+    return { ok:false, reason: err.message };
+  }
+}
+
+async function pushCloudState(state){
+  if(!API_URL) return { ok:false, reason:"no-url" };
+  try{
+    await postToAPI({ action: "saveState", state: JSON.stringify(state) });
+    return { ok:true };
+  }catch(err){
+    return { ok:false, reason: err.message };
+  }
+}
+
+function loadLocalFallback(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return backfillData(JSON.parse(raw));
+  }catch(err){ /* fall through */ }
+  return defaultData();
+}
+
+let data = null;
+let cloudMode = false; // true once we've confirmed a working API_URL
+let tab = 0; // 0 entry, 1 period summary, 2 annual, 3 person statement
+let statementPerson = "";
+let annualYear = null;
+let periodMenuOpen = false;
+let backupMenuOpen = false;
+let backups = [];
+
+async function initApp(){
+  document.getElementById("main").innerHTML = `<div style="font-family:var(--sans); font-size:13px; color:var(--muted); padding:20px;">載入資料中…</div>`;
+  backups = loadBackups();
+
+  if(API_URL){
+    const result = await fetchCloudState();
+    if(result.ok){
+      cloudMode = true;
+      if(result.state){
+        data = backfillData(result.state);
+      } else {
+        // Empty sheet (first time) — seed it with the local default/import data.
+        data = defaultData();
+        await pushCloudState(data);
+      }
+    } else {
+      // Cloud configured but unreachable right now — fall back to local copy so the
+      // person can keep working; it will try the cloud again on next page load.
+      cloudMode = false;
+      data = loadLocalFallback();
+    }
+  } else {
+    data = loadLocalFallback();
+  }
+
+  render();
+
+  const saveEl = document.getElementById("saveState");
+  if(saveEl){
+    if(cloudMode) saveEl.textContent = "已連上雲端";
+    else if(API_URL) saveEl.textContent = "⚠ 雲端連線失敗（暫時僅本機）";
+    else saveEl.textContent = "僅本機模式";
+  }
+}
+
+function backupKey(i){ return `${STORAGE_KEY}-backup-${i}`; }
+function loadBackups(){
+  const arr = [];
+  for(let i=1;i<=3;i++){
+    try{
+      const raw = localStorage.getItem(backupKey(i));
+      arr.push(raw ? JSON.parse(raw) : null);
+    }catch(err){ arr.push(null); }
+  }
+  return arr;
+}
+function saveBackup(){
+  const snapshot = { timestamp: Date.now(), data: JSON.parse(JSON.stringify(data)) };
+  backups = [snapshot, backups[0], backups[1]];
+  for(let i=0;i<3;i++){
+    try{
+      if(backups[i]) localStorage.setItem(backupKey(i+1), JSON.stringify(backups[i]));
+      else localStorage.removeItem(backupKey(i+1));
+    }catch(err){ /* ignore individual slot failures */ }
+  }
+  backupMenuOpen = false;
+  renderHeader();
+}
+function restoreBackup(idx){
+  const b = backups[idx];
+  if(!b) return;
+  const when = new Date(b.timestamp).toLocaleString("zh-TW");
+  if(!confirm(`確定要還原到「${when}」的備份嗎？目前畫面上的資料會被這份備份取代。`)) return;
+  data = b.data;
+  persist();
+  backupMenuOpen = false;
+  render();
+}
+
+let saveTimer = null;
+function persist(){
+  const el = document.getElementById("saveState");
+  el.textContent = "儲存中…";
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    // Always keep a local cache as an offline safety net.
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(err){ /* ignore */ }
+
+    if(cloudMode){
+      const result = await pushCloudState(data);
+      el.textContent = result.ok ? "已同步雲端" : "⚠ 雲端同步失敗（已存本機）";
+    } else if(API_URL) {
+      el.textContent = "⚠ 尚未連上雲端（僅存本機）";
+    } else {
+      el.textContent = "已自動儲存（僅本機）";
+    }
+  }, 300);
+}
+
+function currentSlips(){ return data.periods[data.current].slips; }
+
+function render(){
+  renderHeader();
+  renderTabs();
+  renderMain();
+}
+
+function renderHeader(){
+  document.getElementById("periodBtn").textContent = periodShort(data.current) + " ▾";
+  const menu = document.getElementById("periodMenu");
+  menu.className = periodMenuOpen ? "open" : "";
+  menu.innerHTML = [...data.order].reverse().map(id=>`
+    <div class="qitem${id===data.current?" current":""}" data-period="${id}">${periodLabel(id)}</div>
+  `).join("");
+  menu.querySelectorAll("[data-period]").forEach(el=>{
+    el.onclick = ()=>{ data.current = el.getAttribute("data-period"); periodMenuOpen=false; persist(); render(); };
+  });
+  document.getElementById("deletePeriodBtn").style.display = data.order.length > 1 ? "inline-flex" : "none";
+
+  const backupMenu = document.getElementById("backupMenu");
+  backupMenu.className = backupMenuOpen ? "open" : "";
+  backupMenu.innerHTML = `
+    <div class="bsave" id="doSaveBackupBtn">＋ 存一份新備份（存到第 1 格，其餘往後推）</div>
+    ${[0,1,2].map(i=>{
+      const b = backups[i];
+      const label = b ? `第 ${i+1} 格：${new Date(b.timestamp).toLocaleString("zh-TW")}（點擊還原）` : `第 ${i+1} 格：（空）`;
+      return `<div class="bitem${b?" clickable":""}" data-restore-backup="${i}">${label}</div>`;
+    }).join("")}
+  `;
+  document.getElementById("doSaveBackupBtn").onclick = saveBackup;
+  backupMenu.querySelectorAll("[data-restore-backup]").forEach(el=>{
+    el.onclick = ()=>{ restoreBackup(Number(el.getAttribute("data-restore-backup"))); };
+  });
+}
+
+function renderTabs(){
+  const tabsEl = document.getElementById("tabs");
+  const items = [
+    { label:"獎金單登錄", color: PALETTE[0] },
+    { label:"本期總表", color: PALETTE[1] },
+    { label:"年度總表", color: PALETTE[2] },
+    { label:"業務人員總表單", color: PALETTE[3] },
+  ];
+  tabsEl.innerHTML = "";
+  items.forEach((t,i)=>{
+    const div = document.createElement("div");
+    div.className = "tab" + (tab===i ? " active" : "");
+    div.innerHTML = `<div class="bar" style="background:${t.color}"></div><div class="name">${t.label}</div>`;
+    div.onclick = ()=>{ tab=i; render(); };
+    tabsEl.appendChild(div);
+  });
+}
+
+function renderMain(){
+  const main = document.getElementById("main");
+  if(tab===0) main.innerHTML = entryHtml();
+  else if(tab===1) main.innerHTML = periodSummaryHtml();
+  else if(tab===2) main.innerHTML = annualSummaryHtml();
+  else main.innerHTML = personStatementHtml();
+  bindMainEvents();
+}
+
+function projectCardHtml(s, idx, roster, approvers){
+  return `
+  <div class="projectCard" data-slip-row="${s.id}">
+    <div class="projectCardHead">
+      <span class="idx">#${idx+1}</span>
+      <input class="pname" data-field="projectName" data-id="${s.id}" value="${escapeHtml(s.projectName)}" placeholder="工程名稱（例：竹北區中華路785號2樓）">
+      <input type="date" data-field="date" data-id="${s.id}" value="${s.date}" style="width:130px; font-size:12px;">
+      <button class="delBtn" data-remove-slip="${s.id}" style="font-size:15px;">✕</button>
+    </div>
+    <div class="projectCardBody">
+      <div class="fieldRow">
+        <div class="fcol">
+          <div class="flabel">業務人員（分紅對象）</div>
+          <select data-field="person" data-id="${s.id}" style="width:120px; font-weight:400; font-family:var(--sans); font-size:13px;">
+            <option value="">（選擇）</option>
+            ${roster.map(n=>`<option value="${escapeHtml(n)}" ${n===s.person?"selected":""}>${escapeHtml(n)}</option>`).join("")}
+          </select>
+        </div>
+        <div class="fcol">
+          <div class="flabel">工程業績</div>
+          <input type="number" min="0" data-field="revenue" data-id="${s.id}" value="${s.revenue}" style="width:120px; text-align:right;">
+        </div>
+        <div class="fcol">
+          <div class="flabel">分紅%（0～10）</div>
+          <input type="number" min="0" max="10" step="0.5" data-field="sharePercent" data-id="${s.id}" value="${s.sharePercent}" style="width:80px; text-align:right;">
+        </div>
+        <div class="fcol">
+          <div class="flabel">工程獎金</div>
+          <div id="bonusCell-${s.id}" style="font-family:var(--mono); font-size:15px; font-weight:700; color:var(--gold); padding:5px 0;">$ ${fmt(slipBonus(s))}</div>
+        </div>
+        <div class="fcol">
+          <div class="flabel">簽核人員</div>
+          <select data-field="approver" data-id="${s.id}" style="width:110px; font-weight:400; font-family:var(--sans); font-size:13px;">
+            <option value="">（選擇）</option>
+            ${approvers.map(n=>`<option value="${escapeHtml(n)}" ${n===s.approver?"selected":""}>${escapeHtml(n)}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+
+      <div class="fcol" style="margin-bottom:14px;">
+        <div class="flabel">備註（原因說明）</div>
+        <input type="text" class="plain" data-field="note" data-id="${s.id}" value="${escapeHtml(s.note)}" placeholder="例如：延遲驗收原因、特殊狀況說明…" style="width:100%;">
+      </div>
+
+      <div class="rolesBlock" style="margin-bottom:12px;">
+        <div class="rtitle">機器型號（可多台）</div>
+        <table>
+          <thead><tr><th style="font-size:11px; padding:2px 6px;">型號</th><th style="font-size:11px; padding:2px 6px; width:90px;">台數</th><th style="width:28px;"></th></tr></thead>
+          <tbody id="modelsBody-${s.id}">
+            ${s.models.map((m,mi)=>`
+            <tr>
+              <td><input data-model-field="model" data-slip-id="${s.id}" data-model-idx="${mi}" value="${escapeHtml(m.model)}" placeholder="例如：56YVLT" style="width:100%; font-family:var(--mono); font-size:13px;"></td>
+              <td><input type="number" min="1" data-model-field="qty" data-slip-id="${s.id}" data-model-idx="${mi}" value="${m.qty}" style="width:100%; text-align:right; font-size:13px;"></td>
+              <td style="text-align:center;"><button class="delBtn" data-remove-model="${mi}" data-slip-id="${s.id}">✕</button></td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+        <button class="addBtn" data-add-model="${s.id}" style="margin-top:8px; padding:5px 10px;">＋ 新增型號</button>
+      </div>
+
+      <div class="rolesBlock">
+        <div class="rtitle">管理人員紀錄</div>
+        <table>
+          <tbody id="rolesBody-${s.id}">
+            ${s.roles.map((r,ri)=>`
+            <tr>
+              <td style="width:40%"><input class="roleNameInput" data-role-field="role" data-slip-id="${s.id}" data-role-idx="${ri}" value="${escapeHtml(r.role)}"></td>
+              <td><input data-role-field="name" data-slip-id="${s.id}" data-role-idx="${ri}" value="${escapeHtml(r.name)}" placeholder="姓名" style="width:100%; font-size:13px;"></td>
+              <td style="width:28px; text-align:center;"><button class="delBtn" data-remove-role="${ri}" data-slip-id="${s.id}">✕</button></td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+        <button class="addBtn" data-add-role="${s.id}" style="margin-top:8px; padding:5px 10px;">＋ 新增管理人</button>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+function entryHtml(){
+  const slips = currentSlips();
+  const summary = summarize(slips);
+  return `
+  <div style="font-family:var(--serif); font-size:18px; font-weight:700; margin-bottom:4px;">獎金單登錄</div>
+  <div style="font-family:var(--sans); font-size:12px; color:var(--muted); margin-bottom:14px;">${periodLabel(data.current)}</div>
+
+  <div class="card">
+    <h2>業務人員名單</h2>
+    <div id="rosterChips">
+      ${data.roster.map(name=>`
+        <div class="rosterChip"><span style="font-family:var(--sans); font-size:13px;">${escapeHtml(name)}</span><button data-remove-person="${escapeHtml(name)}">✕</button></div>
+      `).join("")}
+    </div>
+    <div style="display:flex; gap:8px;">
+      <input class="plain" id="newPersonInput" type="text" placeholder="輸入姓名後按新增" style="flex:1; max-width:220px;">
+      <button class="hbtn" id="addPersonBtn" style="background:var(--ink); color:#F1EFE6; border-color:var(--ink);">＋ 新增業務人員</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>簽核人員名單</h2>
+    <div id="approverChips">
+      ${(data.approvers||[]).map(name=>`
+        <div class="rosterChip"><span style="font-family:var(--sans); font-size:13px;">${escapeHtml(name)}</span><button data-remove-approver="${escapeHtml(name)}">✕</button></div>
+      `).join("")}
+      ${(data.approvers||[]).length===0 ? `<span style="font-family:var(--sans); font-size:12px; color:var(--muted);">目前還沒有簽核人員，先新增自己吧</span>` : ""}
+    </div>
+    <div style="display:flex; gap:8px;">
+      <input class="plain" id="newApproverInput" type="text" placeholder="輸入姓名後按新增" style="flex:1; max-width:220px;">
+      <button class="hbtn" id="addApproverBtn" style="background:var(--ink); color:#F1EFE6; border-color:var(--ink);">＋ 新增簽核人員</button>
+    </div>
+  </div>
+
+  <div id="slipCards">
+    ${slips.map((s,idx)=>projectCardHtml(s, idx, data.roster, data.approvers||[])).join("")}
+  </div>
+  <button class="addBtn" id="addSlipBtn" style="margin-bottom:16px;">＋ 新增工程獎金單</button>
+
+  <div style="background:var(--ink); border-radius:8px; padding:16px 20px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+    <div>
+      <div style="font-family:var(--sans); font-size:12px; color:#B9C0AE;">本期工程業績合計</div>
+      <div id="totalRevenueVal" style="font-family:var(--mono); font-size:22px; font-weight:700; color:#F1EFE6;">$ ${fmt(summary.totalRevenue)}</div>
+    </div>
+    <div>
+      <div style="font-family:var(--sans); font-size:12px; color:#B9C0AE;">本期工程獎金合計</div>
+      <div id="totalBonusVal" style="font-family:var(--mono); font-size:22px; font-weight:700; color:#E8C468;">$ ${fmt(summary.totalBonus)}</div>
+    </div>
+    <div>
+      <div style="font-family:var(--sans); font-size:12px; color:#B9C0AE;">獎金單張數</div>
+      <div id="slipCountVal" style="font-family:var(--mono); font-size:22px; font-weight:700; color:#F1EFE6;">${summary.count}</div>
+    </div>
+  </div>
+  `;
+}
+
+function personRowsHtml(byPerson, roster){
+  const names = Object.keys(byPerson);
+  if(names.length === 0){
+    return `<table class="sumTable"><thead><tr><th>業務人員</th><th>張數</th><th>工程業績</th><th>工程獎金</th></tr></thead>
+      <tbody><tr><td colspan="4" style="text-align:center; font-family:var(--sans); color:var(--muted); padding:14px 10px;">目前尚無資料</td></tr></tbody></table>`;
+  }
+  return `
+  <table class="sumTable">
+    <thead><tr><th>業務人員</th><th>張數</th><th>工程業績</th><th>工程獎金</th></tr></thead>
+    <tbody>
+      ${names.map(name=>`
+      <tr>
+        <td style="color:${personColor(name, roster)}">${escapeHtml(name)}</td>
+        <td>${byPerson[name].count}</td>
+        <td>${fmt(byPerson[name].revenue)}</td>
+        <td style="color:var(--gold); font-weight:700;">${fmt(byPerson[name].bonus)}</td>
+      </tr>`).join("")}
+    </tbody>
+  </table>`;
+}
+
+function periodSummaryHtml(){
+  const summary = summarize(currentSlips());
+  return `
+  <div style="font-family:var(--serif); font-size:18px; font-weight:700; margin-bottom:4px;">本期工程獎金計算總表</div>
+  <div style="font-family:var(--sans); font-size:12px; color:var(--muted); margin-bottom:14px;">${periodLabel(data.current)} ・ 給公司看的發放總表</div>
+  <div style="background:#fff; border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-bottom:16px;">
+    ${personRowsHtml(summary.byPerson, data.roster)}
+    <div class="sumFooter">合計應發放獎金　$ ${fmt(summary.totalBonus)}</div>
+  </div>
+  <div class="statCardsRow">
+    <div class="box"><div class="stat"><span class="label">本期工程業績合計</span><span class="value">$ ${fmt(summary.totalRevenue)}</span></div></div>
+    <div class="box"><div class="stat big"><span class="label">本期工程獎金合計</span><span class="value" style="color:var(--gold)">$ ${fmt(summary.totalBonus)}</span></div></div>
+  </div>
+  `;
+}
+
+function annualSummaryHtml(){
+  const fyYears = Array.from(new Set(data.order.map(fyYearOf))).sort((a,b)=>b-a);
+  const activeFY = annualYear != null ? annualYear : fyYearOf(data.current);
+  const fyPeriodIds = data.order.filter(id=>fyYearOf(id)===activeFY);
+  const fySlips = fyPeriodIds.flatMap(id=>data.periods[id].slips);
+  const fySummary = summarize(fySlips);
+
+  return `
+  <div style="font-family:var(--serif); font-size:18px; font-weight:700; margin-bottom:4px;">年度工程獎金統計</div>
+  <div style="font-family:var(--sans); font-size:12px; color:var(--muted); margin-bottom:14px;">每個年度＝上半期（4-9月）＋下半期（10-3月），跨兩個半年期合計</div>
+
+  <div style="margin-bottom:10px;">
+    ${fyYears.map(y=>`
+      <button data-fy="${y}" class="personChip${activeFY===y?" active":""}" style="${activeFY===y?`background:var(--ink); border-color:var(--ink);`:""}">${fyLabel(y)}</button>
+    `).join("")}
+  </div>
+
+  <div style="font-family:var(--sans); font-size:12px; color:var(--muted); margin-bottom:10px;">
+    已建立的半年期：${fyPeriodIds.length>0 ? fyPeriodIds.map(id=>periodShort(id)).join("、") : "（尚未建立）"}
+  </div>
+
+  <div style="background:#fff; border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-bottom:16px;">
+    ${personRowsHtml(fySummary.byPerson, [])}
+    <div class="sumFooter">年度合計應發放獎金　$ ${fmt(fySummary.totalBonus)}</div>
+  </div>
+  <div class="statCardsRow">
+    <div class="box"><div class="stat"><span class="label">年度工程業績合計</span><span class="value">$ ${fmt(fySummary.totalRevenue)}</span></div></div>
+    <div class="box"><div class="stat big"><span class="label">年度工程獎金合計</span><span class="value" style="color:var(--gold)">$ ${fmt(fySummary.totalBonus)}</span></div></div>
+  </div>
+  `;
+}
+
+function personStatementHtml(){
+  const slips = currentSlips();
+  const allPeople = Array.from(new Set([...data.roster, ...slips.map(s=>s.person).filter(Boolean)]));
+  const activePerson = statementPerson || allPeople[0] || "";
+  const activeFY = annualYear != null ? annualYear : fyYearOf(data.current);
+  const fyPeriodIds = data.order.filter(id=>fyYearOf(id)===activeFY);
+  const fySlips = fyPeriodIds.flatMap(id=>data.periods[id].slips);
+
+  const personPeriodSlips = slips.filter(s=>s.person===activePerson);
+  const personFYSlips = fySlips.filter(s=>s.person===activePerson);
+  const personPeriodSummary = summarize(personPeriodSlips);
+  const personFYSummary = summarize(personFYSlips);
+
+  return `
+  <div style="font-family:var(--serif); font-size:18px; font-weight:700; margin-bottom:6px;">業務人員總表單</div>
+  <div style="font-family:var(--sans); font-size:12px; color:var(--muted); margin-bottom:14px;">給各業務人員查看自己本期與本年度的工程獎金明細（唯讀）</div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
+    <div>
+      ${allPeople.map(name=>`
+        <button data-person="${escapeHtml(name)}" class="personChip${activePerson===name?" active":""}" style="${activePerson===name?`background:${personColor(name,data.roster)}; border-color:${personColor(name,data.roster)};`:""}">${escapeHtml(name)}</button>
+      `).join("")}
+      ${allPeople.length===0 ? `<span style="font-family:var(--sans); font-size:13px; color:var(--muted);">尚無業務人員資料</span>` : ""}
+    </div>
+    ${allPeople.length>0 ? `
+    <div style="display:flex; gap:8px;">
+      <button class="hbtn" id="exportOnePersonBtn" style="background:var(--ink); color:#F1EFE6; border-color:var(--ink);">⬇ 下載此人明細（PNG）</button>
+      <button class="hbtn" id="exportAllPersonBtn" style="background:#fff; color:var(--ink); border-color:var(--line);">⬇ 下載全部業務人員</button>
+    </div>` : ""}
+  </div>
+
+  ${activePerson ? `
+  <div style="background:#fff; border:1px solid var(--line); border-radius:8px; overflow:hidden;">
+    <div style="background:var(--ink); color:#F1EFE6; padding:14px 20px;">
+      <div style="font-family:var(--serif); font-size:16px; font-weight:700;">${escapeHtml(activePerson)} ・ 工程獎金總表單</div>
+    </div>
+    <div style="padding:20px;">
+      <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-bottom:20px;">
+        <div style="border:1px solid var(--line); border-radius:8px; padding:14px;">
+          <div style="font-family:var(--sans); font-size:12px; color:var(--muted); margin-bottom:6px;">本期（${periodLabel(data.current)}）</div>
+          <div style="font-family:var(--mono); font-size:22px; font-weight:700; color:var(--gold);">$ ${fmt(personPeriodSummary.totalBonus)}</div>
+          <div style="font-family:var(--sans); font-size:11px; color:var(--muted); margin-top:4px;">業績 $ ${fmt(personPeriodSummary.totalRevenue)} ・ ${personPeriodSummary.count} 張獎金單</div>
+        </div>
+        <div style="border:1px solid var(--line); border-radius:8px; padding:14px;">
+          <div style="font-family:var(--sans); font-size:12px; color:var(--muted); margin-bottom:6px;">${fyLabel(activeFY)}</div>
+          <div style="font-family:var(--mono); font-size:22px; font-weight:700; color:var(--pine);">$ ${fmt(personFYSummary.totalBonus)}</div>
+          <div style="font-family:var(--sans); font-size:11px; color:var(--muted); margin-top:4px;">業績 $ ${fmt(personFYSummary.totalRevenue)} ・ ${personFYSummary.count} 張獎金單</div>
+        </div>
+      </div>
+
+      <div style="font-family:var(--serif); font-size:14px; font-weight:700; margin-bottom:8px; border-bottom:1px solid var(--line); padding-bottom:6px;">本期獎金單明細</div>
+      ${personPeriodSlips.length === 0 ? `
+        <div style="font-family:var(--sans); font-size:13px; color:var(--muted); padding:10px 0;">本期無資料。</div>
+      ` : `
+        <table>
+          <thead><tr><th>工程名稱</th><th>日期</th><th style="text-align:right">工程業績</th><th style="text-align:right">分紅%</th><th style="text-align:right">工程獎金</th><th>簽核人員</th><th>備註</th></tr></thead>
+          <tbody>
+            ${personPeriodSlips.map(s=>`
+            <tr>
+              <td>${escapeHtml(s.projectName) || "-"}</td>
+              <td style="font-family:var(--mono);">${s.date}</td>
+              <td style="text-align:right; font-family:var(--mono);">${fmt(s.revenue)}</td>
+              <td style="text-align:right; font-family:var(--mono);">${s.sharePercent}%</td>
+              <td style="text-align:right; font-family:var(--mono); color:var(--gold); font-weight:600;">${fmt(slipBonus(s))}</td>
+              <td>${escapeHtml(s.approver) || "-"}</td>
+              <td style="color:var(--muted);">${escapeHtml(s.note) || "-"}</td>
+            </tr>`).join("")}
+          </tbody>
+          <tfoot>
+            <tr style="border-top:2px solid var(--ink);">
+              <td colspan="4" style="font-weight:700;">合計</td>
+              <td style="text-align:right; font-family:var(--mono); font-weight:700; color:var(--gold);">${fmt(personPeriodSummary.totalBonus)}</td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      `}
+    </div>
+  </div>` : ""}
+  `;
+}
+
+function bindMainEvents(){
+  document.getElementById("periodBtn").onclick = ()=>{ periodMenuOpen = !periodMenuOpen; renderHeader(); };
+
+  if(tab === 0){
+    document.querySelectorAll("[data-remove-person]").forEach(btn=>{
+      btn.onclick = ()=>{
+        const name = btn.getAttribute("data-remove-person");
+        data.roster = data.roster.filter(n=>n!==name);
+        persist(); renderMain();
+      };
+    });
+    document.getElementById("addPersonBtn").onclick = ()=>{
+      const input = document.getElementById("newPersonInput");
+      const name = input.value.trim();
+      if(!name || data.roster.includes(name)) return;
+      data.roster.push(name);
+      persist(); renderMain();
+    };
+    document.getElementById("newPersonInput").onkeydown = (ev)=>{
+      if(ev.key === "Enter") document.getElementById("addPersonBtn").click();
+    };
+    document.querySelectorAll("[data-remove-slip]").forEach(btn=>{
+      btn.onclick = ()=>{
+        const id = btn.getAttribute("data-remove-slip");
+        const slips = currentSlips().filter(s=>s.id!==id);
+        data.periods[data.current] = { slips };
+        persist(); renderMain();
+      };
+    });
+    document.getElementById("addSlipBtn").onclick = ()=>{
+      currentSlips().push(newSlip(data.roster[0] || ""));
+      persist(); renderMain();
+    };
+    document.querySelectorAll("[data-field]").forEach(inp=>{
+      const field = inp.getAttribute("data-field");
+      const structural = field === "person" || field === "approver";
+      inp.oninput = (ev)=>{
+        const id = ev.target.getAttribute("data-id");
+        const f = ev.target.getAttribute("data-field");
+        const slip = currentSlips().find(s=>s.id===id);
+        if(!slip) return;
+        slip[f] = (f==="revenue"||f==="sharePercent") ? Number(ev.target.value) : ev.target.value;
+        persist();
+        patchEntryTotals(id);
+      };
+      if(structural){
+        inp.onchange = (ev)=>{
+          const id = ev.target.getAttribute("data-id");
+          const f = ev.target.getAttribute("data-field");
+          const slip = currentSlips().find(s=>s.id===id);
+          if(!slip) return;
+          slip[f] = ev.target.value;
+          persist();
+        };
+      }
+    });
+
+    document.querySelectorAll("[data-model-field]").forEach(inp=>{
+      inp.oninput = (ev)=>{
+        const slipId = ev.target.getAttribute("data-slip-id");
+        const modelIdx = Number(ev.target.getAttribute("data-model-idx"));
+        const field = ev.target.getAttribute("data-model-field");
+        const slip = currentSlips().find(s=>s.id===slipId);
+        if(!slip) return;
+        slip.models[modelIdx][field] = field === "qty" ? Number(ev.target.value) : ev.target.value;
+        persist();
+      };
+    });
+    document.querySelectorAll("[data-remove-model]").forEach(btn=>{
+      btn.onclick = ()=>{
+        const slipId = btn.getAttribute("data-slip-id");
+        const modelIdx = Number(btn.getAttribute("data-remove-model"));
+        const slip = currentSlips().find(s=>s.id===slipId);
+        if(!slip) return;
+        slip.models.splice(modelIdx, 1);
+        if(slip.models.length === 0) slip.models.push({model:"", qty:1});
+        persist(); renderMain();
+      };
+    });
+    document.querySelectorAll("[data-add-model]").forEach(btn=>{
+      btn.onclick = ()=>{
+        const slipId = btn.getAttribute("data-add-model");
+        const slip = currentSlips().find(s=>s.id===slipId);
+        if(!slip) return;
+        slip.models.push({model:"", qty:1});
+        persist(); renderMain();
+      };
+    });
+
+    document.querySelectorAll("[data-remove-approver]").forEach(btn=>{
+      btn.onclick = ()=>{
+        const name = btn.getAttribute("data-remove-approver");
+        data.approvers = (data.approvers||[]).filter(n=>n!==name);
+        persist(); renderMain();
+      };
+    });
+    document.getElementById("addApproverBtn").onclick = ()=>{
+      const input = document.getElementById("newApproverInput");
+      const name = input.value.trim();
+      if(!name || (data.approvers||[]).includes(name)) return;
+      data.approvers = data.approvers || [];
+      data.approvers.push(name);
+      persist(); renderMain();
+    };
+    document.getElementById("newApproverInput").onkeydown = (ev)=>{
+      if(ev.key === "Enter") document.getElementById("addApproverBtn").click();
+    };
+
+    document.querySelectorAll("[data-role-field]").forEach(inp=>{
+      inp.oninput = (ev)=>{
+        const slipId = ev.target.getAttribute("data-slip-id");
+        const roleIdx = Number(ev.target.getAttribute("data-role-idx"));
+        const field = ev.target.getAttribute("data-role-field");
+        const slip = currentSlips().find(s=>s.id===slipId);
+        if(!slip) return;
+        slip.roles[roleIdx][field] = ev.target.value;
+        persist();
+      };
+    });
+    document.querySelectorAll("[data-remove-role]").forEach(btn=>{
+      btn.onclick = ()=>{
+        const slipId = btn.getAttribute("data-slip-id");
+        const roleIdx = Number(btn.getAttribute("data-remove-role"));
+        const slip = currentSlips().find(s=>s.id===slipId);
+        if(!slip) return;
+        slip.roles.splice(roleIdx, 1);
+        persist(); renderMain();
+      };
+    });
+    document.querySelectorAll("[data-add-role]").forEach(btn=>{
+      btn.onclick = ()=>{
+        const slipId = btn.getAttribute("data-add-role");
+        const slip = currentSlips().find(s=>s.id===slipId);
+        if(!slip) return;
+        slip.roles.push({role:"新增管理人", name:""});
+        persist(); renderMain();
+      };
+    });
+  } else if(tab === 2){
+    document.querySelectorAll("[data-fy]").forEach(btn=>{
+      btn.onclick = ()=>{ annualYear = Number(btn.getAttribute("data-fy")); renderMain(); };
+    });
+  } else if(tab === 3){
+    document.querySelectorAll("[data-person]").forEach(btn=>{
+      btn.onclick = ()=>{ statementPerson = btn.getAttribute("data-person"); renderMain(); };
+    });
+
+    const activeFY = annualYear != null ? annualYear : fyYearOf(data.current);
+    const fyPeriodIds = data.order.filter(id=>fyYearOf(id)===activeFY);
+    const fySlips = fyPeriodIds.flatMap(id=>data.periods[id].slips);
+    const allPeople = Array.from(new Set([...data.roster, ...currentSlips().map(s=>s.person).filter(Boolean)]));
+
+    const exportOnePerson = async (name)=>{
+      const pSlips = currentSlips().filter(s=>s.person===name);
+      const pFYSlips = fySlips.filter(s=>s.person===name);
+      const pSummary = summarize(pSlips);
+      const pFYSummary = summarize(pFYSlips);
+      const canvas = await drawPersonStatementCanvas(name, periodLabel(data.current), fyLabel(activeFY), pSummary, pFYSummary, pSlips);
+      downloadCanvasAsPNG(canvas, `${name}-${periodLabel(data.current).replace(/[\s（）:：]/g,"")}-工程獎金總表單.png`);
+    };
+
+    const oneBtn = document.getElementById("exportOnePersonBtn");
+    const allBtn = document.getElementById("exportAllPersonBtn");
+    if(oneBtn){
+      const setBusy = (busy)=>{
+        oneBtn.disabled = busy; allBtn.disabled = busy;
+        oneBtn.style.opacity = busy ? 0.6 : 1;
+        allBtn.style.opacity = busy ? 0.6 : 1;
+        allBtn.textContent = busy ? "匯出中…" : "⬇ 下載全部業務人員";
+      };
+      oneBtn.onclick = async ()=>{
+        const activePerson = statementPerson || allPeople[0] || "";
+        if(!activePerson) return;
+        setBusy(true);
+        try{ await exportOnePerson(activePerson); } finally { setBusy(false); }
+      };
+      allBtn.onclick = async ()=>{
+        setBusy(true);
+        try{
+          for(const name of allPeople){
+            await exportOnePerson(name);
+            await new Promise(r=>setTimeout(r,250));
+          }
+        } finally { setBusy(false); }
+      };
+    }
+  }
+}
+
+function roundRectPath(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function truncateText(str, n){
+  const s = str || "-";
+  return s.length > n ? s.slice(0, n-1) + "…" : s;
+}
+
+async function drawPersonStatementCanvas(personName, periodLabelStr, fyLabelStr, periodSummary, fySummary, periodSlips){
+  try{ await document.fonts.ready; }catch(err){ /* ignore */ }
+
+  const ink="#1F2A44", line="#CBCFC2", stampRed="#A63D2E", gold="#8E7126", pine="#3F6D4E", muted="#5B6358";
+  const W = 760;
+  const pad = 24;
+  const headerH = 76;
+  const statsH = 90;
+  const sectionTitleH = 32;
+  const tableHeaderH = 26;
+  const rowH = 26;
+  const tableFooterH = 30;
+  const tableBodyH = periodSlips.length > 0 ? tableHeaderH + periodSlips.length*rowH + tableFooterH : 40;
+  const H = headerH + pad + statsH + 20 + sectionTitleH + tableBodyH + pad;
+
+  const dpr = 2;
+  const canvas = document.createElement("canvas");
+  canvas.width = W*dpr; canvas.height = H*dpr;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr,dpr);
+
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0,0,W,H);
+
+  ctx.fillStyle = ink;
+  ctx.fillRect(0,0,W,headerH);
+  ctx.fillStyle = "#F1EFE6";
+  ctx.font = "700 20px 'Noto Serif TC', serif";
+  ctx.textBaseline = "middle";
+  ctx.fillText(`${personName} ・ 工程獎金總表單`, pad, headerH/2 - 6);
+  ctx.font = "500 12px 'Noto Sans TC', sans-serif";
+  ctx.fillStyle = "#B9C0AE";
+  ctx.fillText(periodLabelStr, pad, headerH/2 + 16);
+
+  let y = headerH + pad;
+  const gap = 14;
+  const boxW = (W - pad*2 - gap) / 2;
+  const stats = [
+    { k:`本期（${periodLabelStr}）`, v:`$ ${fmt(periodSummary.totalBonus)}`, sub:`業績 $ ${fmt(periodSummary.totalRevenue)} ・ ${periodSummary.count} 張獎金單`, color:gold },
+    { k:fyLabelStr, v:`$ ${fmt(fySummary.totalBonus)}`, sub:`業績 $ ${fmt(fySummary.totalRevenue)} ・ ${fySummary.count} 張獎金單`, color:pine },
+  ];
+  stats.forEach((s,i)=>{
+    const x = pad + i*(boxW+gap);
+    ctx.strokeStyle = line; ctx.lineWidth = 1;
+    roundRectPath(ctx, x, y, boxW, statsH, 8); ctx.stroke();
+    ctx.fillStyle = muted; ctx.font = "500 12px 'Noto Sans TC', sans-serif";
+    ctx.fillText(s.k, x+14, y+22);
+    ctx.fillStyle = s.color; ctx.font = "600 22px 'IBM Plex Mono', monospace";
+    ctx.fillText(s.v, x+14, y+50);
+    ctx.fillStyle = muted; ctx.font = "400 11px 'Noto Sans TC', sans-serif";
+    ctx.fillText(s.sub, x+14, y+72);
+  });
+  y += statsH + 20;
+
+  ctx.strokeStyle = line;
+  ctx.beginPath(); ctx.moveTo(pad, y+sectionTitleH-8); ctx.lineTo(W-pad, y+sectionTitleH-8); ctx.stroke();
+  ctx.fillStyle = ink; ctx.font = "700 14px 'Noto Serif TC', serif";
+  ctx.fillText("本期獎金單明細", pad, y+10);
+  y += sectionTitleH;
+
+  const cols = { name: pad, date: 190, revenue: 270, pct: 360, bonus: 420, approver: 500, note: 570 };
+
+  if(periodSlips.length === 0){
+    ctx.fillStyle = muted; ctx.font = "400 13px 'Noto Sans TC', sans-serif";
+    ctx.fillText("本期無資料。", pad, y+20);
+  } else {
+    ctx.fillStyle = muted; ctx.font = "500 11px 'Noto Sans TC', sans-serif";
+    ctx.fillText("工程名稱", cols.name, y+13);
+    ctx.fillText("日期", cols.date, y+13);
+    ctx.fillText("業績", cols.revenue, y+13);
+    ctx.fillText("分紅%", cols.pct, y+13);
+    ctx.fillText("獎金", cols.bonus, y+13);
+    ctx.fillText("簽核", cols.approver, y+13);
+    ctx.fillText("備註", cols.note, y+13);
+    y += tableHeaderH;
+
+    periodSlips.forEach(s=>{
+      ctx.strokeStyle = line;
+      ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
+      ctx.fillStyle = ink; ctx.font = "400 12px 'Noto Sans TC', sans-serif";
+      ctx.fillText(truncateText(s.projectName, 14), cols.name, y+16);
+      ctx.font = "400 11px 'IBM Plex Mono', monospace";
+      ctx.fillText(s.date, cols.date, y+16);
+      ctx.fillText(fmt(s.revenue), cols.revenue, y+16);
+      ctx.fillText(`${s.sharePercent}%`, cols.pct, y+16);
+      ctx.fillStyle = gold; ctx.font = "500 11px 'IBM Plex Mono', monospace";
+      ctx.fillText(fmt(slipBonus(s)), cols.bonus, y+16);
+      ctx.fillStyle = ink; ctx.font = "400 11px 'Noto Sans TC', sans-serif";
+      ctx.fillText(truncateText(s.approver, 8), cols.approver, y+16);
+      ctx.fillText(truncateText(s.note, 12), cols.note, y+16);
+      y += rowH;
+    });
+
+    ctx.strokeStyle = ink; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
+    ctx.lineWidth = 1;
+    ctx.fillStyle = ink; ctx.font = "700 12px 'Noto Sans TC', sans-serif";
+    ctx.fillText("合計", pad, y+18);
+    ctx.fillStyle = gold; ctx.font = "700 12px 'IBM Plex Mono', monospace";
+    ctx.fillText(fmt(periodSummary.totalBonus), cols.bonus, y+18);
+  }
+
+  return canvas;
+}
+
+function downloadCanvasAsPNG(canvas, filename){
+  canvas.toBlob((blob)=>{
+    if(!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  }, "image/png");
+}
+
+// Lightweight patch: update only this row's bonus cell + the period totals, without
+// rebuilding the whole table (keeps focus in the input the person is typing in).
+function patchEntryTotals(id){
+  const slip = currentSlips().find(s=>s.id===id);
+  if(slip){
+    const cell = document.getElementById(`bonusCell-${id}`);
+    if(cell) cell.textContent = `$ ${fmt(slipBonus(slip))}`;
+  }
+  const summary = summarize(currentSlips());
+  const setText = (elId, text)=>{ const el = document.getElementById(elId); if(el) el.textContent = text; };
+  setText("totalRevenueVal", `$ ${fmt(summary.totalRevenue)}`);
+  setText("totalBonusVal", `$ ${fmt(summary.totalBonus)}`);
+  setText("slipCountVal", String(summary.count));
+}
+
+document.getElementById("addPeriodBtn").onclick = ()=>{
+  let newId = nextPeriodId(data.order[data.order.length-1]);
+  while(data.periods[newId]) newId = nextPeriodId(newId);
+  data.order.push(newId);
+  data.periods[newId] = { slips: [] };
+  data.current = newId;
+  periodMenuOpen = false;
+  persist(); render();
+};
+
+document.getElementById("deletePeriodBtn").onclick = ()=>{
+  if(data.order.length <= 1) return;
+  if(!confirm(`確定要刪除「${periodLabel(data.current)}」這個半年期的全部資料嗎？此動作無法復原。`)) return;
+  data.order = data.order.filter(id => id !== data.current);
+  delete data.periods[data.current];
+  data.current = data.order[data.order.length-1];
+  persist(); render();
+};
+
+document.getElementById("resetBtn").onclick = ()=>{
+  if(confirm("確定要清空目前這個半年期的全部獎金單資料嗎？此動作無法復原。")){
+    data.periods[data.current] = { slips: [] };
+    persist(); render();
+  }
+};
+
+document.getElementById("backupBtn").onclick = ()=>{ backupMenuOpen = !backupMenuOpen; renderHeader(); };
+
+document.addEventListener("click", (ev)=>{
+  const periodWrap = document.getElementById("periodWrap");
+  if(periodMenuOpen && periodWrap && !periodWrap.contains(ev.target)){
+    periodMenuOpen = false;
+    renderHeader();
+  }
+  const backupWrap = document.getElementById("backupWrap");
+  if(backupMenuOpen && backupWrap && !backupWrap.contains(ev.target)){
+    backupMenuOpen = false;
+    renderHeader();
+  }
+});
+
+initApp();
+</script>
+</body>
+</html>
