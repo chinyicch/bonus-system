@@ -4,15 +4,84 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>半年工程獎金核算系統</title>
-<style>body{font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;margin:0;background:#eef1ea;color:#1f2a44;display:grid;place-items:center;min-height:100vh}.box{max-width:560px;padding:32px;text-align:center}.small{font-size:13px;color:#5b6358}</style>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;margin:0;background:#eef1ea;color:#1f2a44;min-height:100vh;display:grid;place-items:center}
+  .login{width:min(420px,calc(100% - 32px));background:#fff;border:1px solid #cbd0c3;border-radius:12px;padding:28px;box-shadow:0 8px 28px rgba(0,0,0,.10)}
+  h1{font-size:22px;margin:0 0 6px}.sub{font-size:13px;color:#687064;margin-bottom:22px}
+  label{display:block;font-size:13px;margin:12px 0 6px}input{width:100%;padding:11px 12px;border:1px solid #cbd0c3;border-radius:7px;font-size:15px}
+  button{width:100%;margin-top:18px;padding:11px;border:0;border-radius:7px;background:#1f2a44;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+  button:disabled{opacity:.55;cursor:wait}.msg{min-height:20px;margin-top:12px;font-size:13px;color:#a63d2e}.ok{color:#3f6d4e}.small{font-size:12px;color:#7a8176;margin-top:16px;line-height:1.6}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 </head>
 <body>
-<div class="box"><h2>系統載入中…</h2><div class="small">半年工程獎金核算系統</div></div>
+<div class="login" id="loginBox">
+  <h1>半年工程獎金核算系統</h1>
+  <div class="sub">海壹有限公司｜公司內部系統</div>
+  <form id="loginForm">
+    <label for="email">電子郵件</label>
+    <input id="email" type="email" autocomplete="username" required>
+    <label for="password">密碼</label>
+    <input id="password" type="password" autocomplete="current-password" required>
+    <button id="loginBtn" type="submit">登入系統</button>
+  </form>
+  <div class="msg" id="msg"></div>
+  <div class="small">只有 Firebase 已建立的帳號可以登入。資料存放於 Firebase Realtime Database。</div>
+</div>
 <script>
-fetch('./parts/part01.txt',{cache:'no-store'})
-  .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
-  .then(html=>{document.open();document.write(html);document.close();})
-  .catch(err=>{document.body.innerHTML='<div class="box"><h2>系統載入失敗</h2><p class="small">'+String(err)+'</p></div>';});
+const firebaseConfig={
+  apiKey:"AIzaSyC5CpDPF4yvVdz-yDU6tivh7zRE9S2dq4c",
+  authDomain:"haiyi-bonus-system.firebaseapp.com",
+  databaseURL:"https://haiyi-bonus-system-default-rtdb.firebaseio.com",
+  projectId:"haiyi-bonus-system",
+  storageBucket:"haiyi-bonus-system.firebasestorage.app",
+  messagingSenderId:"884434392278",
+  appId:"1:884434392278:web:b38b3e383f77d570206577"
+};
+const DB_URL=firebaseConfig.databaseURL;
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const form=document.getElementById('loginForm');
+const btn=document.getElementById('loginBtn');
+const msg=document.getElementById('msg');
+let appLoading=false;
+
+function humanAuthError(code){
+  const map={
+    'auth/invalid-credential':'電子郵件或密碼錯誤',
+    'auth/invalid-login-credentials':'電子郵件或密碼錯誤',
+    'auth/user-disabled':'此帳號已停用',
+    'auth/too-many-requests':'嘗試次數過多，請稍後再試',
+    'auth/network-request-failed':'網路連線失敗，請稍後再試'
+  };
+  return map[code]||'登入失敗，請確認帳號與密碼';
+}
+
+async function loadBonusSystem(user){
+  if(appLoading)return; appLoading=true;
+  btn.disabled=true; msg.className='msg ok'; msg.textContent='登入成功，系統載入中…';
+  try{
+    let html=await fetch('./parts/part01.txt',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.text()});
+    html=html.replace('const FIREBASE_URL = "";','const FIREBASE_URL = "'+DB_URL+'";');
+    const bridge=`<script>\n(function(){\n  const DB_URL=${JSON.stringify(DB_URL)};\n  const nativeFetch=window.fetch.bind(window);\n  window.fetch=async function(input,init){\n    let url=typeof input==='string'?input:(input&&input.url)||'';\n    if(url.indexOf(DB_URL)===0){\n      const u=firebase.auth().currentUser;\n      if(!u) throw new Error('尚未登入');\n      const token=await u.getIdToken();\n      const sep=url.indexOf('?')>=0?'&':'?';\n      url=url+sep+'auth='+encodeURIComponent(token);\n      if(typeof input==='string') input=url; else input=new Request(url,input);\n    }\n    return nativeFetch(input,init);\n  };\n})();\n<\/script>\n`;
+    html=html.replace('<script>\nconst STORAGE_KEY',bridge+'<script>\nconst STORAGE_KEY');
+    const logout=`<script>\nsetTimeout(function(){\n  const a=document.querySelector('header .actions');\n  if(a){\n    const b=document.createElement('button');\n    b.className='hbtn'; b.textContent='登出';\n    b.onclick=function(){firebase.auth().signOut().then(function(){location.reload()})};\n    a.appendChild(b);\n  }\n},300);\n<\/script>\n`;
+    html=html.replace('</body>',logout+'</body>');
+    document.open(); document.write(html); document.close();
+  }catch(err){
+    appLoading=false; btn.disabled=false; msg.className='msg'; msg.textContent='系統載入失敗：'+String(err);
+  }
+}
+
+form.addEventListener('submit',async e=>{
+  e.preventDefault(); btn.disabled=true; msg.className='msg'; msg.textContent='登入中…';
+  try{await auth.signInWithEmailAndPassword(document.getElementById('email').value.trim(),document.getElementById('password').value)}
+  catch(err){btn.disabled=false;msg.textContent=humanAuthError(err.code)}
+});
+
+auth.onAuthStateChanged(user=>{if(user)loadBonusSystem(user)});
 </script>
 </body>
 </html>
