@@ -1,0 +1,17 @@
+@media (max-width:640px){
+  html,body{overflow-x:hidden;}
+  #app{margin:0;max-width:none;border-radius:0;overflow:visible;}
+  header{padding:14px 12px;align-items:flex-start;overflow:visible;}
+  header>div:first-child{width:100%;}
+  header .actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch;}
+  header .actions>*{min-width:0;}
+  #periodWrap,#backupWrap{position:relative!important;width:100%;}
+  #periodBtn,#backupBtn,#addPeriodBtn,#deletePeriodBtn,#resetBtn,header .actions>.hbtn{width:100%;min-height:40px;justify-content:center;text-align:center;white-space:normal;}
+  #saveState,#cloudSafetyStatus{grid-column:1/-1;display:block;width:100%;text-align:center;margin:0!important;line-height:1.5;}
+  #periodMenu,#backupMenu{position:fixed!important;left:12px!important;right:12px!important;top:auto!important;bottom:12px!important;width:auto!important;min-width:0!important;max-height:65vh;overflow:auto;z-index:99999!important;border-radius:10px;}
+  #tabs{position:sticky;top:0;z-index:30;}
+  main{padding:14px 10px;}
+  .projectCardHead{padding:10px;}
+  .projectCardBody{padding:12px 10px;overflow-x:auto;}
+  table{min-width:700px;}
+}
