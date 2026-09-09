@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>半年工程獎金核算系統</title>
+<style>body{font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;margin:0;background:#eef1ea;color:#1f2a44;display:grid;place-items:center;min-height:100vh}.box{max-width:560px;padding:32px;text-align:center}.small{font-size:13px;color:#5b6358}</style>
+</head>
+<body>
+<div class="box"><h2>系統載入中…</h2><div class="small">半年工程獎金核算系統</div></div>
+<script>
+fetch('./parts/part01.txt',{cache:'no-store'})
+  .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
+  .then(html=>{document.open();document.write(html);document.close();})
+  .catch(err=>{document.body.innerHTML='<div class="box"><h2>系統載入失敗</h2><p class="small">'+String(err)+'</p></div>';});
+</script>
+</body>
+</html>

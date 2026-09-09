@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>半年工程獎金核算系統</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root{
+    --paper:#EEF1EA; --ink:#1F2A44; --line:#CBCFC2;
+    --stamp:#A63D2E; --gold:#8E7126; --pine:#3F6D4E; --muted:#5B6358;
+    --serif:'Noto Serif TC', serif; --sans:'Noto Sans TC', sans-serif; --mono:'IBM Plex Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:#DDE1D6; font-family:var(--sans); color:var(--ink);}
+  #app{max-width:1040px; margin:24px auto; background:var(--paper); border-radius:8px; overflow:hidden; box-shadow:0 2px 14px rgba(0,0,0,.12);}
+
+  header{background:var(--ink); color:#F1EFE6; padding:18px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  header h1{font-family:var(--serif); font-size:20px; font-weight:700; letter-spacing:1px; margin:0;}
+  header p{font-size:12px; color:#B9C0AE; margin:2px 0 0;}
+  header .actions{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  #saveState{font-family:var(--mono); font-size:11px; color:#9AA28C;}
+  .hbtn{background:transparent; border:1px solid #4A5A78; color:#C7CDBB; border-radius:6px; padding:6px 10px; font-family:var(--sans); font-size:12px; cursor:pointer;}
+  .hbtn:hover{background:#2A3A5C;}
+  .hbtn.danger{border-color:#6A3A34; color:#E0AFA6;}
+
+  #periodWrap{position:relative;}
+  #periodBtn{display:flex; align-items:center; gap:6px; background:#2A3A5C; border:1px solid #4A5A78; color:#F1EFE6; border-radius:6px; padding:7px 12px; font-family:var(--serif); font-size:13px; font-weight:700; cursor:pointer;}
+  #periodMenu{display:none; position:absolute; top:110%; right:0; background:#fff; border:1px solid var(--line); border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,.18); min-width:240px; z-index:20; overflow:hidden;}
+  #periodMenu.open{display:block;}
+  #periodMenu .qitem{padding:9px 14px; font-family:var(--sans); font-size:13px; cursor:pointer; color:var(--ink);}
+  #periodMenu .qitem:hover{background:#f3f5ef;}
+  #periodMenu .qitem.current{background:var(--paper); font-weight:600;}
+  #backupMenu{display:none; position:absolute; top:110%; right:0; background:#fff; border:1px solid var(--line); border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,.18); min-width:280px; z-index:20; overflow:hidden;}
+  #backupMenu.open{display:block;}
+  #backupMenu .bitem{padding:9px 14px; font-family:var(--sans); font-size:12px; color:var(--muted); border-bottom:1px solid var(--line);}
+  #backupMenu .bitem:last-child{border-bottom:none;}
+  #backupMenu .bitem.clickable{cursor:pointer; color:var(--ink);}
+  #backupMenu .bitem.clickable:hover{background:#f3f5ef;}
+  #backupMenu .bsave{padding:10px 14px; font-family:var(--sans); font-size:13px; font-weight:600; cursor:pointer; color:var(--ink); border-bottom:1px solid var(--line); background:var(--paper);}
+  #backupMenu .bsave:hover{background:#e4e7dc;}
+
+  .layout{display:flex;}
+  #tabs{width:150px; flex-shrink:0; background:#E4E7DC; border-right:1px solid var(--line); padding-top:10px;}
+  .tab{cursor:pointer; position:relative; margin:4px 0 4px -1px; padding:10px 12px 10px 14px; border-radius:6px 0 0 6px; border:1px solid transparent;}
+  .tab .bar{position:absolute; left:0; top:8px; bottom:8px; width:4px; border-radius:2px;}
+  .tab .name{font-size:13px; font-weight:500; color:var(--muted); margin-left:6px;}
+  .tab.active{background:var(--paper); border-color:var(--line);}
+  .tab.active .name{color:var(--ink); font-weight:600;}
+
+  main{flex:1; padding:24px; min-width:0;}
+
+  .card{background:#fff; border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:16px;}
+  .card h2{font-family:var(--serif); font-size:14px; font-weight:700; margin:0 0 10px; border-bottom:1px solid var(--line); padding-bottom:8px;}
+
+  table{width:100%; border-collapse:collapse;}
+  th{font-size:12px; color:var(--muted); text-align:left; padding:4px 6px; font-weight:500;}
+  td{padding:6px; border-top:1px solid var(--line); font-size:13px;}
+
+  select, input[type=number], input[type=text], input[type=date]{
+    font-family:var(--mono); font-size:13px; font-weight:600; color:var(--ink);
+    background:#fff; border:1px solid var(--line); border-radius:4px; padding:4px 6px;
+  }
+  input[type=text].plain{font-family:var(--sans); font-weight:400;}
+
+  .stat{display:flex; justify-content:space-between; align-items:baseline; padding:6px 0;}
+  .stat .label{font-size:13px; color:var(--muted);}
+  .stat .value{font-family:var(--mono); font-size:15px; font-weight:600;}
+  .stat.big .label{font-size:15px;}
+  .stat.big .value{font-size:22px;}
+
+  .addBtn{display:inline-flex; align-items:center; gap:4px; margin-top:8px; background:none; border:1px dashed var(--line); border-radius:6px; padding:6px 10px; font-family:var(--sans); font-size:12px; color:var(--muted); cursor:pointer;}
+  .addBtn:hover{background:#f3f5ef;}
+  .delBtn{background:none; border:none; cursor:pointer; color:var(--muted); font-size:14px;}
+  .delBtn:hover{color:var(--stamp);}
+
+  .rosterChip{display:inline-flex; align-items:center; gap:6px; background:var(--paper); border:1px solid var(--line); border-radius:20px; padding:5px 6px 5px 12px; margin:0 8px 8px 0;}
+  .rosterChip button{background:none; border:none; cursor:pointer; color:var(--muted); display:flex;}
+  .rosterChip button:hover{color:var(--stamp);}
+
+  .personChip{font-family:var(--sans); font-size:13px; padding:6px 14px; border-radius:20px; cursor:pointer; border:1px solid var(--line); background:#fff; color:var(--muted); margin:0 8px 8px 0;}
+  .personChip.active{color:#fff;}
+
+  #summaryTable thead tr, .sumTable thead tr{background:var(--ink); color:#F1EFE6; font-size:12px; text-align:right;}
+  .sumTable thead th{color:#F1EFE6; padding:8px 10px;}
+  .sumTable thead th:first-child{text-align:left;}
+  .sumTable td{text-align:right; font-family:var(--mono); font-size:13px;}
+  .sumTable td:first-child{text-align:left; font-family:var(--sans); font-weight:600;}
+  .sumFooter{border-top:2px solid var(--ink); text-align:right; font-family:var(--mono); font-size:15px; font-weight:700; padding:10px;}
+
+  .statCardsRow{display:flex; gap:12px; flex-wrap:wrap;}
+  .statCardsRow .box{flex:1; min-width:180px; background:#fff; border:1px solid var(--line); border-radius:8px; padding:14px;}
+
+  .projectCard{background:#fff; border:1px solid var(--line); border-radius:8px; margin-bottom:14px; overflow:hidden;}
+  .projectCardHead{background:var(--paper); border-bottom:1px solid var(--line); padding:10px 16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .projectCardHead .idx{font-family:var(--mono); font-size:12px; color:var(--muted); min-width:20px;}
+  .projectCardHead input.pname{font-family:var(--serif); font-size:15px; font-weight:700; color:var(--ink); border:none; background:transparent; flex:1; min-width:200px;}
+  .projectCardBody{padding:16px;}
+  .fieldRow{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px;}
+  .fieldRow .fcol .flabel{font-family:var(--sans); font-size:11px; color:var(--muted); margin-bottom:3px;}
+  .rolesBlock{border-top:1px solid var(--line); padding-top:12px;}
+  .rolesBlock .rtitle{font-family:var(--sans); font-size:12px; color:var(--muted); margin-bottom:8px; font-weight:600;}
+  .roleNameInput{font-family:var(--sans); font-size:13px; border:none; background:transparent; width:100%; color:var(--muted);}
+
+  @media (max-width:640px){
+    .layout{flex-direction:column;}
+    #tabs{width:100%; display:flex; overflow-x:auto; padding:8px;}
+    .tab{white-space:nowrap;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <h1>半年工程獎金核算表</h1>
+      <p>業績分紅・依日期自動歸屬半年期與年度</p>
+    </div>
+    <div class="actions">
+      <div id="periodWrap">
+        <button id="periodBtn"></button>
+        <div id="periodMenu"></div>
+      </div>
+      <button class="hbtn" id="addPeriodBtn">＋ 新增下一期</button>
+      <button class="hbtn danger" id="deletePeriodBtn" style="display:none;">✕ 刪除此期</button>
+      <span id="saveState"></span>
+      <div id="backupWrap" style="position:relative;">
+        <button class="hbtn" id="backupBtn">💾 手動存檔 ▾</button>
+        <div id="backupMenu"></div>
+      </div>
+      <button class="hbtn" id="resetBtn">清空本期</button>
+    </div>
+  </header>
+  <div class="layout">
+    <div id="tabs"></div>
+    <main id="main"></main>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "semiannual-bonus-data-v1";
+
+// ====== 雲端同步設定（Firebase Realtime Database）======
+// 把你 Firebase 專案的 Database URL 貼在這裡（結尾是 firebaseio.com/ 或 .firebasedatabase.app/），
+// 貼上之後大家打開「同一個網址／同一份檔案」就能共用同一份資料。
+// 如果先不填（維持空字串），系統會照舊只存在這台電腦的瀏覽器裡。
+const FIREBASE_URL = "";
+const PALETTE = ["#A63D2E","#A9862F","#3F6D4E","#3C5A78","#7A5C3E","#5B5573","#8B5E3C","#4F6B52"];
+const DEFAULT_ROLES = ["工程負責人","外機系統負責人","內機系統負責人","排水負責人","線型負責人","風管負責人"];
+
+function periodFromDate(d){
+  const m = d.getMonth()+1; const y = d.getFullYear();
+  if(m>=4 && m<=9) return `AS-${y}`;
+  if(m>=10) return `OS-${y}`;
+  return `OS-${y-1}`;
+}
+function periodLabel(id){
+  const [type,yStr] = id.split("-"); const y = Number(yStr);
+  if(type==="AS") return `${y} 年 4月～9月（${y+1} 年 1月結算）`;
+  return `${y} 年 10月～${y+1} 年 3月（${y+1} 年 7月結算）`;
+}
+function periodShort(id){
+  const [type,yStr] = id.split("-"); const y = Number(yStr);
+  return type==="AS" ? `${y}年上半期(4-9月)` : `${y}年下半期(10-3月)`;
+}
+function nextPeriodId(id){
+  const [type,yStr] = id.split("-"); const y = Number(yStr);
+  return type==="AS" ? `OS-${y}` : `AS-${y+1}`;
+}
+function fyYearOf(id){ const [,yStr] = id.split("-"); return Number(yStr); }
+function fyLabel(y){ return `${y} 年度（${y} 年4月 ～ ${y+1} 年3月）`; }
+
+// Seeded from the user's 工程紀錄.xlsx (113 real projects, roles auto-filled;
+// 業務人員／工程業績／分紅%／簽核人員 left blank for the user to fill in).
+// This is only used the FIRST time the tool runs on a browser with no saved data yet —
+// once anything is saved, that saved data always takes priority and this is never touched.
+const IMPORTED_SEED_DATA = {
+  "order": ["AS-2026"],
+  "current": "AS-2026",
+  "roster": [],
+  "approvers": [],
+  "periods": {
+    "AS-2026": { "slips": [] }
+  }
+};
+
+function freshImportedData(){
+  return JSON.parse(JSON.stringify(IMPORTED_SEED_DATA));
+}
+
+function ensureShape(obj){
+  const out = obj && typeof obj === "object" ? obj : freshImportedData();
+  if(!Array.isArray(out.order)) out.order = [];
+  if(!out.periods || typeof out.periods !== "object") out.periods = {};
+  if(!Array.isArray(out.roster)) out.roster = [];
+  if(!Array.isArray(out.approvers)) out.approvers = [];
+  if(!out.current || !out.periods[out.current]) out.current = out.order[0] || periodFromDate(new Date());
+  if(!out.periods[out.current]){
+    out.order.push(out.current);
+    out.periods[out.current] = { slips: [] };
+  }
+  Object.keys(out.periods).forEach(id=>{
+    if(!Array.isArray(out.periods[id].slips)) out.periods[id].slips = [];
+    out.periods[id].slips.forEach((s,i)=>{
+      if(!s.id) s.id = `${id}-${Date.now()}-${i}`;
+      if(!Array.isArray(s.models)) s.models = [];
+      if(!Array.isArray(s.roles)) s.roles = DEFAULT_ROLES.map(role=>({role,name:""}));
+      if(s.approver == null) s.approver = "";
+      if(s.note == null) s.note = "";
+    });
+  });
+  return out;
+}
+
+function loadLocalData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return freshImportedData();
+    return ensureShape(JSON.parse(raw));
+  }catch(err){
+    console.warn("local load failed", err);
+    return freshImportedData();
+  }
+}
+
+function saveLocalData(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+  catch(err){ console.warn("local save failed", err); }
+}
+
+async function fetchCloudState(){
+  if(!FIREBASE_URL) return { ok:false, reason:"no-url" };
+  const url = FIREBASE_URL.replace(/\/$/, "") + "/state.json";
+  try{
+    const res = await fetch(url, { method:"GET", cache:"no-store" });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const payload = await res.json();
+    return { ok:true, data: payload ? ensureShape(payload) : null };
+  }catch(err){
+    console.warn("cloud load failed", err);
+    return { ok:false, reason:String(err) };
+  }
+}
+
+async function pushCloudState(){
+  if(!FIREBASE_URL) return { ok:false, reason:"no-url" };
+  const url = FIREBASE_URL.replace(/\/$/, "") + "/state.json";
+  try{
+    const res = await fetch(url, {
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(data)
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    return { ok:true };
+  }catch(err){
+    console.warn("cloud save failed", err);
+    return { ok:false, reason:String(err) };
+  }
+}
+
+let data = loadLocalData();
+let activeTab = 0;
+let annualYear = null;
+let statementPerson = null;
+let periodMenuOpen = false;
+let backupMenuOpen = false;
+let cloudMode = false; // true once we've confirmed a working FIREBASE_URL
+let cloudSaveTimer = null;
+let cloudSaving = false;
+
+async function initApp(){
+  render();
+  if(FIREBASE_URL){
+    const cloud = await fetchCloudState();
+    if(cloud.ok){
+      cloudMode = true;
+      if(cloud.data){
+        data = cloud.data;
+        saveLocalData();
+      }else{
+        await pushCloudState();
+      }
+      render();
+    }else{
+      renderHeader();
+    }
+  }
+}
+
+function persist(){
+  saveLocalData();
+  renderHeader();
+  if(!cloudMode) return;
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = setTimeout(async ()=>{
+    cloudSaving = true;
+    renderHeader();
+    const result = await pushCloudState();
+    cloudSaving = false;
+    if(!result.ok) cloudMode = false;
+    renderHeader();
+  }, 350);
+}
+
+function fmt(n){ return Number(n||0).toLocaleString("zh-TW"); }
+function esc(s){ return String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function slipBonus(s){ return Math.round((Number(s.revenue)||0) * (Number(s.sharePercent)||0) / 100); }
+function currentSlips(){ return data.periods[data.current]?.slips || []; }
+function currentPeriod(){ return data.periods[data.current]; }
+
+function summarize(slips){
+  const totalRevenue = slips.reduce((sum,s)=>sum+(Number(s.revenue)||0),0);
+  const totalBonus = slips.reduce((sum,s)=>sum+slipBonus(s),0);
+  return { totalRevenue, totalBonus, count:slips.length };
+}
+
+function personSummary(slips){
+  const map = new Map();
+  slips.forEach(s=>{
+    const name = s.person || "未指定";
+    if(!map.has(name)) map.set(name,{revenue:0,bonus:0,count:0});
+    const x = map.get(name);
+    x.revenue += Number(s.revenue)||0;
+    x.bonus += slipBonus(s);
+    x.count += 1;
+  });
+  return map;
+}
+
+function render(){
+  renderHeader();
+  renderTabs();
+  renderMain();
+}
+
+function renderHeader(){
+  const btn = document.getElementById("periodBtn");
+  const menu = document.getElementById("periodMenu");
+  const saveEl = document.getElementById("saveState");
+  if(btn) btn.textContent = `${periodShort(data.current)} ▾`;
+  if(saveEl){
+    if(cloudSaving) saveEl.textContent = "☁ 雲端儲存中…";
+    else if(cloudMode) saveEl.textContent = "☁ 已連線雲端";
+    else if(FIREBASE_URL) saveEl.textContent = "⚠ 雲端連線失敗（暫時僅本機）";
+    else saveEl.textContent = "本機自動儲存";
+  }
+  if(menu){
+    menu.className = periodMenuOpen ? "open" : "";
+    menu.innerHTML = data.order.map(id=>`<div class="qitem ${id===data.current?'current':''}" data-period="${esc(id)}">${esc(periodLabel(id))}</div>`).join("");
+    menu.querySelectorAll("[data-period]").forEach(el=>{
+      el.onclick = ()=>{ data.current = el.getAttribute("data-period"); periodMenuOpen=false; persist(); render(); };
+    });
+  }
+  const del = document.getElementById("deletePeriodBtn");
+  if(del) del.style.display = data.order.length>1 ? "inline-flex" : "none";
+  renderBackupMenu();
+}
+
+function renderBackupMenu(){
+  const menu = document.getElementById("backupMenu");
+  if(!menu) return;
+  menu.className = backupMenuOpen ? "open" : "";
+  const slots = [1,2,3].map(slot=>{
+    let meta = null;
+    try{ meta = JSON.parse(localStorage.getItem(`${STORAGE_KEY}-backup-${slot}-meta`)||"null"); }catch(e){}
+    const label = meta ? `${meta.label}｜${new Date(meta.time).toLocaleString("zh-TW")}` : "空白";
+    return `<div class="bitem ${meta?'clickable':''}" data-load-backup="${slot}">備份 ${slot}：${esc(label)}</div>`;
+  }).join("");
+  menu.innerHTML = `<div class="bsave" id="manualSaveBtn">＋ 儲存到下一個備份槽</div>${slots}`;
+  const saveBtn = document.getElementById("manualSaveBtn");
+  if(saveBtn) saveBtn.onclick = ()=>{
+    let slot = 1;
+    const metas = [1,2,3].map(i=>{
+      try{return JSON.parse(localStorage.getItem(`${STORAGE_KEY}-backup-${i}-meta`)||"null");}catch(e){return null;}
+    });
+    const empty = metas.findIndex(x=>!x);
+    if(empty>=0) slot=empty+1;
+    else slot = metas.map((x,i)=>({i,time:x?.time||0})).sort((a,b)=>a.time-b.time)[0].i+1;
+    localStorage.setItem(`${STORAGE_KEY}-backup-${slot}`, JSON.stringify(data));
+    localStorage.setItem(`${STORAGE_KEY}-backup-${slot}-meta`, JSON.stringify({label:periodShort(data.current),time:Date.now()}));
+    backupMenuOpen=false; renderHeader();
+  };
+  menu.querySelectorAll("[data-load-backup]").forEach(el=>{
+    el.onclick = ()=>{
+      const slot = Number(el.getAttribute("data-load-backup"));
+      const raw = localStorage.getItem(`${STORAGE_KEY}-backup-${slot}`);
+      if(!raw) return;
+      if(!confirm(`確定載入備份 ${slot}？目前尚未另外備份的變更會被覆蓋。`)) return;
+      data = ensureShape(JSON.parse(raw));
+      backupMenuOpen=false; persist(); render();
+    };
+  });
+}
+
+function renderTabs(){
+  const tabs = [
+    {name:"獎金輸入",color:PALETTE[0]},
+    {name:"本期總表",color:PALETTE[1]},
+    {name:"年度總表",color:PALETTE[2]},
+    {name:"個人總表",color:PALETTE[3]},
+    {name:"人員設定",color:PALETTE[4]}
+  ];
+  const el = document.getElementById("tabs");
+  el.innerHTML = tabs.map((t,i)=>`<div class="tab ${i===activeTab?'active':''}" data-tab="${i}"><div class="bar" style="background:${t.color}"></div><div class="name">${t.name}</div></div>`).join("");
+  el.querySelectorAll("[data-tab]").forEach(t=>t.onclick=()=>{activeTab=Number(t.getAttribute("data-tab"));renderTabs();renderMain();});
+}
+
+function renderMain(){
+  const main = document.getElementById("main");
+  const slips = currentSlips();
+  if(activeTab===0) main.innerHTML = renderEntry(slips);
+  else if(activeTab===1) main.innerHTML = renderPeriodSummary(slips);
+  else if(activeTab===2) main.innerHTML = renderAnnual();
+  else if(activeTab===3) main.innerHTML = renderStatements();
+  else main.innerHTML = renderSettings();
+  bindMainEvents();
+}
+
+function renderEntry(slips){
+  const summary = summarize(slips);
+  return `
+  <div class="statCardsRow" style="margin-bottom:14px;">
+    <div class="box"><div class="stat"><span class="label">本期業績</span><span class="value" id="totalRevenueVal">$ ${fmt(summary.totalRevenue)}</span></div></div>
+    <div class="box"><div class="stat"><span class="label">本期獎金</span><span class="value" id="totalBonusVal">$ ${fmt(summary.totalBonus)}</span></div></div>
+    <div class="box"><div class="stat"><span class="label">獎金單</span><span class="value" id="slipCountVal">${summary.count}</span></div></div>
+  </div>
+  <div class="card">
+    <h2>工程獎金單</h2>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>日期</th><th>工程名稱</th><th>業務人員</th><th>工程業績</th><th>分紅%</th><th>獎金</th><th>簽核</th><th>備註</th><th></th></tr></thead>
+        <tbody>${slips.map(s=>`
+          <tr data-slip-row="${esc(s.id)}">
+            <td><input type="date" data-field="date" data-id="${esc(s.id)}" value="${esc(s.date||'')}"></td>
+            <td><input type="text" class="plain" style="width:180px" data-field="projectName" data-id="${esc(s.id)}" value="${esc(s.projectName||'')}"></td>
+            <td><select data-field="person" data-id="${esc(s.id)}"><option value="">未指定</option>${data.roster.map(n=>`<option value="${esc(n)}" ${n===s.person?'selected':''}>${esc(n)}</option>`).join('')}</select></td>
+            <td><input type="number" style="width:110px" data-field="revenue" data-id="${esc(s.id)}" value="${Number(s.revenue)||0}"></td>
+            <td><input type="number" style="width:70px" step="0.1" data-field="sharePercent" data-id="${esc(s.id)}" value="${Number(s.sharePercent)||0}"></td>
+            <td id="bonusCell-${esc(s.id)}" style="font-family:var(--mono);font-weight:600;color:var(--gold);white-space:nowrap;">$ ${fmt(slipBonus(s))}</td>
+            <td><select data-field="approver" data-id="${esc(s.id)}"><option value="">未指定</option>${data.approvers.map(n=>`<option value="${esc(n)}" ${n===s.approver?'selected':''}>${esc(n)}</option>`).join('')}</select></td>
+            <td><input type="text" class="plain" style="width:150px" data-field="note" data-id="${esc(s.id)}" value="${esc(s.note||'')}"></td>
+            <td><button class="delBtn" data-delete-slip="${esc(s.id)}">✕</button></td>
+          </tr>`).join('')}</tbody>
+      </table>
+    </div>
+    <button class="addBtn" id="addSlipBtn">＋ 新增獎金單</button>
+  </div>
+  <div class="card"><h2>工程設備／數量與管理分工</h2>${slips.length?slips.map((s,i)=>renderProjectCard(s,i)).join(''):'<div style="font-size:13px;color:var(--muted);">尚無獎金單。</div>'}</div>`;
+}
+
+function renderProjectCard(s,i){
+  return `<div class="projectCard">
+    <div class="projectCardHead"><span class="idx">${i+1}</span><input class="pname" type="text" data-field="projectName" data-id="${esc(s.id)}" value="${esc(s.projectName||'未命名工程')}"></div>
+    <div class="projectCardBody">
+      <div class="fieldRow">
+        <div class="fcol"><div class="flabel">日期</div><input type="date" data-field="date" data-id="${esc(s.id)}" value="${esc(s.date||'')}"></div>
+        <div class="fcol"><div class="flabel">業務人員</div><select data-field="person" data-id="${esc(s.id)}"><option value="">未指定</option>${data.roster.map(n=>`<option value="${esc(n)}" ${n===s.person?'selected':''}>${esc(n)}</option>`).join('')}</select></div>
+      </div>
+      <div class="rolesBlock"><div class="rtitle">設備／型號</div>
+        <table><thead><tr><th>型號</th><th>數量</th><th></th></tr></thead><tbody>${s.models.map((m,mi)=>`<tr><td><input type="text" class="plain" data-model-field="model" data-id="${esc(s.id)}" data-mi="${mi}" value="${esc(m.model||'')}"></td><td><input type="number" style="width:90px" data-model-field="qty" data-id="${esc(s.id)}" data-mi="${mi}" value="${Number(m.qty)||0}"></td><td><button class="delBtn" data-remove-model="${esc(s.id)}" data-mi="${mi}">✕</button></td></tr>`).join('')}</tbody></table>
+        <button class="addBtn" data-add-model="${esc(s.id)}">＋ 新增型號</button>
+      </div>
+      <div class="rolesBlock" style="margin-top:14px;"><div class="rtitle">管理分工</div>
+        <table><thead><tr><th>職責</th><th>負責人</th><th></th></tr></thead><tbody>${s.roles.map((r,ri)=>`<tr><td><input type="text" class="roleNameInput" data-role-field="role" data-id="${esc(s.id)}" data-ri="${ri}" value="${esc(r.role||'')}"></td><td><select data-role-field="name" data-id="${esc(s.id)}" data-ri="${ri}"><option value="">未指定</option>${data.roster.map(n=>`<option value="${esc(n)}" ${n===r.name?'selected':''}>${esc(n)}</option>`).join('')}</select></td><td><button class="delBtn" data-remove-role="${esc(s.id)}" data-ri="${ri}">✕</button></td></tr>`).join('')}</tbody></table>
+        <button class="addBtn" data-add-role="${esc(s.id)}">＋ 新增管理人</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPeriodSummary(slips){
+  const map = personSummary(slips);
+  const total = summarize(slips);
+  return `<div class="card"><h2>${esc(periodLabel(data.current))}｜本期總表</h2>
+    <table class="sumTable"><thead><tr><th>人員</th><th>工程業績</th><th>獎金</th><th>獎金單</th></tr></thead><tbody>${Array.from(map.entries()).map(([name,x])=>`<tr><td>${esc(name)}</td><td>$ ${fmt(x.revenue)}</td><td>$ ${fmt(x.bonus)}</td><td>${x.count}</td></tr>`).join('')}</tbody></table>
+    <div class="sumFooter">總業績 $ ${fmt(total.totalRevenue)}　｜　總獎金 $ ${fmt(total.totalBonus)}</div></div>`;
+}
+
+function renderAnnual(){
+  const years = Array.from(new Set(data.order.map(fyYearOf))).sort((a,b)=>b-a);
+  if(annualYear==null || !years.includes(annualYear)) annualYear = fyYearOf(data.current);
+  const ids = data.order.filter(id=>fyYearOf(id)===annualYear);
+  const slips = ids.flatMap(id=>data.periods[id].slips);
+  const map = personSummary(slips);
+  const total=summarize(slips);
+  return `<div class="card"><h2>年度總表</h2><div style="margin-bottom:12px">${years.map(y=>`<button class="personChip ${y===annualYear?'active':''}" style="${y===annualYear?'background:'+PALETTE[2]+';border-color:'+PALETTE[2]:''}" data-fy="${y}">${esc(fyLabel(y))}</button>`).join('')}</div>
+    <table class="sumTable"><thead><tr><th>人員</th><th>年度業績</th><th>年度獎金</th><th>獎金單</th></tr></thead><tbody>${Array.from(map.entries()).map(([name,x])=>`<tr><td>${esc(name)}</td><td>$ ${fmt(x.revenue)}</td><td>$ ${fmt(x.bonus)}</td><td>${x.count}</td></tr>`).join('')}</tbody></table><div class="sumFooter">年度總業績 $ ${fmt(total.totalRevenue)}　｜　年度總獎金 $ ${fmt(total.totalBonus)}</div></div>`;
+}
+
+function renderStatements(){
+  const people = Array.from(new Set([...data.roster, ...currentSlips().map(s=>s.person).filter(Boolean)]));
+  if(!statementPerson && people.length) statementPerson=people[0];
+  const activeFY = annualYear != null ? annualYear : fyYearOf(data.current);
+  const fyIds=data.order.filter(id=>fyYearOf(id)===activeFY);
+  const fySlips=fyIds.flatMap(id=>data.periods[id].slips);
+  const pSlips=currentSlips().filter(s=>s.person===statementPerson);
+  const pFYSlips=fySlips.filter(s=>s.person===statementPerson);
+  const pSum=summarize(pSlips), fySum=summarize(pFYSlips);
+  return `<div class="card"><h2>個人總表</h2><div>${people.map((n,i)=>`<button class="personChip ${n===statementPerson?'active':''}" style="${n===statementPerson?'background:'+PALETTE[i%PALETTE.length]+';border-color:'+PALETTE[i%PALETTE.length]:''}" data-person="${esc(n)}">${esc(n)}</button>`).join('')||'<span style="color:var(--muted);font-size:13px">請先到「人員設定」新增人員。</span>'}</div></div>
+    ${statementPerson?`<div class="statCardsRow"><div class="box"><div class="stat big"><span class="label">本期獎金</span><span class="value">$ ${fmt(pSum.totalBonus)}</span></div><div style="font-size:12px;color:var(--muted)">業績 $ ${fmt(pSum.totalRevenue)}・${pSum.count} 張</div></div><div class="box"><div class="stat big"><span class="label">年度獎金</span><span class="value">$ ${fmt(fySum.totalBonus)}</span></div><div style="font-size:12px;color:var(--muted)">${esc(fyLabel(activeFY))}・業績 $ ${fmt(fySum.totalRevenue)}</div></div></div>
+    <div class="card" style="margin-top:14px"><h2>本期明細</h2><table class="sumTable"><thead><tr><th>工程</th><th>日期</th><th>業績</th><th>分紅%</th><th>獎金</th></tr></thead><tbody>${pSlips.map(s=>`<tr><td>${esc(s.projectName||'-')}</td><td>${esc(s.date||'')}</td><td>$ ${fmt(s.revenue)}</td><td>${Number(s.sharePercent)||0}%</td><td>$ ${fmt(slipBonus(s))}</td></tr>`).join('')}</tbody></table><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="addBtn" id="exportOnePersonBtn">⬇ 下載目前人員</button><button class="addBtn" id="exportAllPersonBtn">⬇ 下載全部業務人員</button></div></div>`:''}`;
+}
+
+function renderSettings(){
+  return `<div class="card"><h2>人員名冊</h2><div id="rosterChips">${data.roster.map((n,i)=>`<span class="rosterChip">${esc(n)}<button data-remove-roster="${i}">✕</button></span>`).join('')}</div><div><input type="text" class="plain" id="newRosterName" placeholder="新增人員姓名"><button class="addBtn" id="addRosterBtn">＋ 新增人員</button></div></div>
+  <div class="card"><h2>簽核人員</h2><div>${data.approvers.map((n,i)=>`<span class="rosterChip">${esc(n)}<button data-remove-approver="${i}">✕</button></span>`).join('')}</div><div><input type="text" class="plain" id="newApproverName" placeholder="新增簽核人員"><button class="addBtn" id="addApproverBtn">＋ 新增簽核人員</button></div></div>`;
+}
+
+function bindMainEvents(){
+  document.querySelectorAll("[data-field]").forEach(el=>{
+    const handler = ()=>{
+      const id=el.getAttribute("data-id"),field=el.getAttribute("data-field");
+      const slip=currentSlips().find(s=>s.id===id); if(!slip)return;
+      slip[field]=(el.type==="number")?Number(el.value||0):el.value;
+      persist();
+      if(field==="revenue"||field==="sharePercent") patchEntryTotals(id);
+    };
+    el.oninput=handler; el.onchange=handler;
+  });
+  const add=document.getElementById("addSlipBtn"); if(add)add.onclick=()=>{
+    const now=new Date();
+    currentPeriod().slips.push({id:crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random()}`,date:now.toISOString().slice(0,10),projectName:"",person:"",revenue:0,sharePercent:0,approver:"",note:"",models:[],roles:DEFAULT_ROLES.map(role=>({role,name:""}))}); persist(); renderMain(); renderHeader();
+  };
+  document.querySelectorAll("[data-delete-slip]").forEach(btn=>btn.onclick=()=>{
+    const id=btn.getAttribute("data-delete-slip"); if(!confirm("確定刪除此獎金單？"))return;
+    currentPeriod().slips=currentSlips().filter(s=>s.id!==id); persist(); renderMain(); renderHeader();
+  });
+  document.querySelectorAll("[data-model-field]").forEach(el=>{const h=()=>{const s=currentSlips().find(x=>x.id===el.getAttribute("data-id"));if(!s)return;const i=Number(el.getAttribute("data-mi"));s.models[i][el.getAttribute("data-model-field")]=el.type==="number"?Number(el.value||0):el.value;persist();};el.oninput=h;el.onchange=h;});
+  document.querySelectorAll("[data-add-model]").forEach(btn=>btn.onclick=()=>{const s=currentSlips().find(x=>x.id===btn.getAttribute("data-add-model"));if(s){s.models.push({model:"",qty:1});persist();renderMain();}});
+  document.querySelectorAll("[data-remove-model]").forEach(btn=>btn.onclick=()=>{const s=currentSlips().find(x=>x.id===btn.getAttribute("data-remove-model"));if(s){s.models.splice(Number(btn.getAttribute("data-mi")),1);persist();renderMain();}});
+  document.querySelectorAll("[data-role-field]").forEach(el=>{const h=()=>{const s=currentSlips().find(x=>x.id===el.getAttribute("data-id"));if(!s)return;const i=Number(el.getAttribute("data-ri"));s.roles[i][el.getAttribute("data-role-field")]=el.value;persist();};el.oninput=h;el.onchange=h;});
+  document.querySelectorAll("[data-add-role]").forEach(btn=>btn.onclick=()=>{const s=currentSlips().find(x=>x.id===btn.getAttribute("data-add-role"));if(s){s.roles.push({role:"新增管理人",name:""});persist();renderMain();}});
+  document.querySelectorAll("[data-remove-role]").forEach(btn=>btn.onclick=()=>{const s=currentSlips().find(x=>x.id===btn.getAttribute("data-remove-role"));if(s){s.roles.splice(Number(btn.getAttribute("data-ri")),1);persist();renderMain();}});
+  document.querySelectorAll("[data-fy]").forEach(btn=>btn.onclick=()=>{annualYear=Number(btn.getAttribute("data-fy"));renderMain();});
+  document.querySelectorAll("[data-person]").forEach(btn=>btn.onclick=()=>{statementPerson=btn.getAttribute("data-person");renderMain();});
+  const addRoster=document.getElementById("addRosterBtn");if(addRoster)addRoster.onclick=()=>{const el=document.getElementById("newRosterName");const v=el.value.trim();if(v&&!data.roster.includes(v)){data.roster.push(v);persist();renderMain();}};
+  document.querySelectorAll("[data-remove-roster]").forEach(btn=>btn.onclick=()=>{data.roster.splice(Number(btn.getAttribute("data-remove-roster")),1);persist();renderMain();});
+  const addApprover=document.getElementById("addApproverBtn");if(addApprover)addApprover.onclick=()=>{const el=document.getElementById("newApproverName");const v=el.value.trim();if(v&&!data.approvers.includes(v)){data.approvers.push(v);persist();renderMain();}};
+  document.querySelectorAll("[data-remove-approver]").forEach(btn=>btn.onclick=()=>{data.approvers.splice(Number(btn.getAttribute("data-remove-approver")),1);persist();renderMain();});
+  if(activeTab===3){
+    const activeFY=annualYear!=null?annualYear:fyYearOf(data.current), fyIds=data.order.filter(id=>fyYearOf(id)===activeFY), fySlips=fyIds.flatMap(id=>data.periods[id].slips), allPeople=Array.from(new Set([...data.roster,...currentSlips().map(s=>s.person).filter(Boolean)]));
+    const exportOnePerson=async(name)=>{const pSlips=currentSlips().filter(s=>s.person===name),pFYSlips=fySlips.filter(s=>s.person===name),pSummary=summarize(pSlips),pFYSummary=summarize(pFYSlips),canvas=await drawPersonStatementCanvas(name,periodLabel(data.current),fyLabel(activeFY),pSummary,pFYSummary,pSlips);downloadCanvasAsPNG(canvas,`${name}-${periodLabel(data.current).replace(/[\s（）:：]/g,"")}-工程獎金總表單.png`);};
+    const oneBtn=document.getElementById("exportOnePersonBtn"),allBtn=document.getElementById("exportAllPersonBtn");if(oneBtn){oneBtn.onclick=async()=>{const n=statementPerson||allPeople[0]||"";if(n)await exportOnePerson(n);};allBtn.onclick=async()=>{for(const n of allPeople){await exportOnePerson(n);await new Promise(r=>setTimeout(r,250));}};}
+  }
+}
+
+function roundRectPath(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function truncateText(str,n){const s=str||"-";return s.length>n?s.slice(0,n-1)+"…":s;}
+async function drawPersonStatementCanvas(personName,periodLabelStr,fyLabelStr,periodSummary,fySummary,periodSlips){try{await document.fonts.ready;}catch(err){}const ink="#1F2A44",line="#CBCFC2",gold="#8E7126",pine="#3F6D4E",muted="#5B6358";const W=760,pad=24,headerH=76,statsH=90,sectionTitleH=32,tableHeaderH=26,rowH=26,tableFooterH=30,tableBodyH=periodSlips.length>0?tableHeaderH+periodSlips.length*rowH+tableFooterH:40,H=headerH+pad+statsH+20+sectionTitleH+tableBodyH+pad,dpr=2,canvas=document.createElement("canvas");canvas.width=W*dpr;canvas.height=H*dpr;const ctx=canvas.getContext("2d");ctx.scale(dpr,dpr);ctx.fillStyle="#FFFFFF";ctx.fillRect(0,0,W,H);ctx.fillStyle=ink;ctx.fillRect(0,0,W,headerH);ctx.fillStyle="#F1EFE6";ctx.font="700 20px 'Noto Serif TC', serif";ctx.textBaseline="middle";ctx.fillText(`${personName} ・ 工程獎金總表單`,pad,headerH/2-6);ctx.font="500 12px 'Noto Sans TC', sans-serif";ctx.fillStyle="#B9C0AE";ctx.fillText(periodLabelStr,pad,headerH/2+16);let y=headerH+pad;const gap=14,boxW=(W-pad*2-gap)/2,stats=[{k:`本期（${periodLabelStr}）`,v:`$ ${fmt(periodSummary.totalBonus)}`,sub:`業績 $ ${fmt(periodSummary.totalRevenue)} ・ ${periodSummary.count} 張獎金單`,color:gold},{k:fyLabelStr,v:`$ ${fmt(fySummary.totalBonus)}`,sub:`業績 $ ${fmt(fySummary.totalRevenue)} ・ ${fySummary.count} 張獎金單`,color:pine}];stats.forEach((s,i)=>{const x=pad+i*(boxW+gap);ctx.strokeStyle=line;ctx.lineWidth=1;roundRectPath(ctx,x,y,boxW,statsH,8);ctx.stroke();ctx.fillStyle=muted;ctx.font="500 12px 'Noto Sans TC', sans-serif";ctx.fillText(s.k,x+14,y+22);ctx.fillStyle=s.color;ctx.font="600 22px 'IBM Plex Mono', monospace";ctx.fillText(s.v,x+14,y+50);ctx.fillStyle=muted;ctx.font="400 11px 'Noto Sans TC', sans-serif";ctx.fillText(s.sub,x+14,y+72);});y+=statsH+20;ctx.strokeStyle=line;ctx.beginPath();ctx.moveTo(pad,y+sectionTitleH-8);ctx.lineTo(W-pad,y+sectionTitleH-8);ctx.stroke();ctx.fillStyle=ink;ctx.font="700 14px 'Noto Serif TC', serif";ctx.fillText("本期獎金單明細",pad,y+10);y+=sectionTitleH;const cols={name:pad,date:190,revenue:270,pct:360,bonus:420,approver:500,note:570};if(periodSlips.length===0){ctx.fillStyle=muted;ctx.font="400 13px 'Noto Sans TC', sans-serif";ctx.fillText("本期無資料。",pad,y+20);}else{ctx.fillStyle=muted;ctx.font="500 11px 'Noto Sans TC', sans-serif";ctx.fillText("工程名稱",cols.name,y+13);ctx.fillText("日期",cols.date,y+13);ctx.fillText("業績",cols.revenue,y+13);ctx.fillText("分紅%",cols.pct,y+13);ctx.fillText("獎金",cols.bonus,y+13);ctx.fillText("簽核",cols.approver,y+13);ctx.fillText("備註",cols.note,y+13);y+=tableHeaderH;periodSlips.forEach(s=>{ctx.strokeStyle=line;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-pad,y);ctx.stroke();ctx.fillStyle=ink;ctx.font="400 12px 'Noto Sans TC', sans-serif";ctx.fillText(truncateText(s.projectName,14),cols.name,y+16);ctx.font="400 11px 'IBM Plex Mono', monospace";ctx.fillText(s.date,cols.date,y+16);ctx.fillText(fmt(s.revenue),cols.revenue,y+16);ctx.fillText(`${s.sharePercent}%`,cols.pct,y+16);ctx.fillStyle=gold;ctx.font="500 11px 'IBM Plex Mono', monospace";ctx.fillText(fmt(slipBonus(s)),cols.bonus,y+16);ctx.fillStyle=ink;ctx.font="400 11px 'Noto Sans TC', sans-serif";ctx.fillText(truncateText(s.approver,8),cols.approver,y+16);ctx.fillText(truncateText(s.note,12),cols.note,y+16);y+=rowH;});ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-pad,y);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle=ink;ctx.font="700 12px 'Noto Sans TC', sans-serif";ctx.fillText("合計",pad,y+18);ctx.fillStyle=gold;ctx.font="700 12px 'IBM Plex Mono', monospace";ctx.fillText(fmt(periodSummary.totalBonus),cols.bonus,y+18);}return canvas;}
+function downloadCanvasAsPNG(canvas,filename){canvas.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),2000);},"image/png");}
+function patchEntryTotals(id){const slip=currentSlips().find(s=>s.id===id);if(slip){const cell=document.getElementById(`bonusCell-${id}`);if(cell)cell.textContent=`$ ${fmt(slipBonus(slip))}`;}const summary=summarize(currentSlips()),setText=(elId,text)=>{const el=document.getElementById(elId);if(el)el.textContent=text;};setText("totalRevenueVal",`$ ${fmt(summary.totalRevenue)}`);setText("totalBonusVal",`$ ${fmt(summary.totalBonus)}`);setText("slipCountVal",String(summary.count));}
+
+document.getElementById("periodBtn").onclick=()=>{periodMenuOpen=!periodMenuOpen;renderHeader();};
+document.getElementById("addPeriodBtn").onclick=()=>{let newId=nextPeriodId(data.order[data.order.length-1]);while(data.periods[newId])newId=nextPeriodId(newId);data.order.push(newId);data.periods[newId]={slips:[]};data.current=newId;periodMenuOpen=false;persist();render();};
+document.getElementById("deletePeriodBtn").onclick=()=>{if(data.order.length<=1)return;if(!confirm(`確定要刪除「${periodLabel(data.current)}」這個半年期的全部資料嗎？此動作無法復原。`))return;data.order=data.order.filter(id=>id!==data.current);delete data.periods[data.current];data.current=data.order[data.order.length-1];persist();render();};
+document.getElementById("resetBtn").onclick=()=>{if(confirm("確定要清空目前這個半年期的全部獎金單資料嗎？此動作無法復原。")){data.periods[data.current]={slips:[]};persist();render();}};
+document.getElementById("backupBtn").onclick=()=>{backupMenuOpen=!backupMenuOpen;renderHeader();};
+document.addEventListener("click",ev=>{const periodWrap=document.getElementById("periodWrap");if(periodMenuOpen&&periodWrap&&!periodWrap.contains(ev.target)){periodMenuOpen=false;renderHeader();}const backupWrap=document.getElementById("backupWrap");if(backupMenuOpen&&backupWrap&&!backupWrap.contains(ev.target)){backupMenuOpen=false;renderHeader();}});
+initApp();
+</script>
+</body>
+</html>
