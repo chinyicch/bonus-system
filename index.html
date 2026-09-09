@@ -69,6 +69,7 @@ async function loadBonusSystem(user){
     html=html.replace('<script>\nconst STORAGE_KEY',bridge+'<script>\nconst STORAGE_KEY');
     const logout=`<script>\nsetTimeout(function(){\n  const a=document.querySelector('header .actions');\n  if(a){\n    const b=document.createElement('button');\n    b.className='hbtn'; b.textContent='登出';\n    b.onclick=function(){firebase.auth().signOut().then(function(){location.reload()})};\n    a.appendChild(b);\n  }\n},300);\n<\/script>\n`;
     html=html.replace('</body>',logout+'</body>');
+    html=html.replace('</body>','<script src="./safety.js"><\/script></body>');
     document.open(); document.write(html); document.close();
   }catch(err){
     appLoading=false; btn.disabled=false; msg.className='msg'; msg.textContent='系統載入失敗：'+String(err);
