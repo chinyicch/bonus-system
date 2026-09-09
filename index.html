@@ -11,7 +11,7 @@
   h1{font-size:22px;margin:0 0 6px}.sub{font-size:13px;color:#687064;margin-bottom:22px}
   label{display:block;font-size:13px;margin:12px 0 6px}input{width:100%;padding:11px 12px;border:1px solid #cbd0c3;border-radius:7px;font-size:15px}
   button{width:100%;margin-top:18px;padding:11px;border:0;border-radius:7px;background:#1f2a44;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
-  button:disabled{opacity:.55;cursor:wait}.msg{min-height:20px;margin-top:12px;font-size:13px;color:#a63d2e}.ok{color:#3f6d4e}.small{font-size:12px;color:#7a8176;margin-top:16px;line-height:1.6}
+  button:disabled{opacity:.55;cursor:wait}.msg{min-height:20px;margin-top:12px;font-size:13px;color:#a63d2e}.ok{color:#3f6d4e}.small{font-size:12px;color:#7a8176;margin-top:16px;line-height:1.6}.linkbtn{margin-top:8px;background:transparent;color:#3c5a78;border:1px solid #cbd0c3}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -26,6 +26,7 @@
     <label for="password">密碼</label>
     <input id="password" type="password" autocomplete="current-password" required>
     <button id="loginBtn" type="submit">登入系統</button>
+    <button id="forgotBtn" class="linkbtn" type="button">忘記密碼／重設密碼</button>
   </form>
   <div class="msg" id="msg"></div>
   <div class="small">只有 Firebase 已建立的帳號可以登入。資料存放於 Firebase Realtime Database。</div>
@@ -54,7 +55,9 @@ function humanAuthError(code){
     'auth/invalid-login-credentials':'電子郵件或密碼錯誤',
     'auth/user-disabled':'此帳號已停用',
     'auth/too-many-requests':'嘗試次數過多，請稍後再試',
-    'auth/network-request-failed':'網路連線失敗，請稍後再試'
+    'auth/network-request-failed':'網路連線失敗，請稍後再試',
+    'auth/user-not-found':'找不到這個帳號',
+    'auth/invalid-email':'電子郵件格式不正確'
   };
   return map[code]||'登入失敗，請確認帳號與密碼';
 }
@@ -65,12 +68,12 @@ async function loadBonusSystem(user){
   try{
     let html=await fetch('./parts/part01.txt',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.text()});
     html=html.replace('const FIREBASE_URL = "";','const FIREBASE_URL = "'+DB_URL+'";');
-    html=html.replace('</head>','<link rel="stylesheet" href="./mobile-fix.css?v=1"></head>');
-    const bridge=`<script>\n(function(){\n  const DB_URL=${JSON.stringify(DB_URL)};\n  const nativeFetch=window.fetch.bind(window);\n  window.fetch=async function(input,init){\n    let url=typeof input==='string'?input:(input&&input.url)||'';\n    if(url.indexOf(DB_URL)===0 && !/[?&]auth=/.test(url)){\n      const u=firebase.auth().currentUser;\n      if(!u) throw new Error('尚未登入');\n      const token=await u.getIdToken();\n      const sep=url.indexOf('?')>=0?'&':'?';\n      url=url+sep+'auth='+encodeURIComponent(token);\n      if(typeof input==='string') input=url; else input=new Request(url,input);\n    }\n    return nativeFetch(input,init);\n  };\n})();\n<\/script>\n`;
+    html=html.replace('</head>','<link rel="stylesheet" href="./mobile-fix.css?v=2"><link rel="stylesheet" href="./enhanced-mobile.css?v=2"></head>');
+    const bridge=`<script>\n(function(){\n  const DB_URL=${JSON.stringify(DB_URL)};\n  const nativeFetch=window.fetch.bind(window);\n  let stateEtag=null;\n  window.fetch=async function(input,init){\n    let url=typeof input==='string'?input:(input&&input.url)||'';\n    let options=Object.assign({},init||{});\n    if(url.indexOf(DB_URL)===0){\n      const u=firebase.auth().currentUser;\n      if(!u) throw new Error('尚未登入');\n      if(!/[?&]auth=/.test(url)){\n        const token=await u.getIdToken();\n        const sep=url.indexOf('?')>=0?'&':'?';\n        url=url+sep+'auth='+encodeURIComponent(token);\n      }\n      const method=String(options.method||(input&&input.method)||'GET').toUpperCase();\n      const isState=/\\/state\\.json(?:[?&]|$)/.test(url);\n      if(isState){\n        const h=new Headers(options.headers||((input&&input.headers)||undefined));\n        h.set('X-Firebase-ETag','true');\n        if(method==='PUT'&&stateEtag){h.set('if-match',stateEtag);window.dispatchEvent(new CustomEvent('haiyi-sync-start'));}\n        options.headers=h;\n      }\n      const resp=await nativeFetch(url,options);\n      if(isState){\n        const method=String(options.method||'GET').toUpperCase();\n        if(resp.status===412){window.dispatchEvent(new CustomEvent('haiyi-sync-conflict'));}\n        else if(resp.ok){const et=resp.headers.get('ETag');if(et)stateEtag=et;if(method==='PUT')window.dispatchEvent(new CustomEvent('haiyi-sync-ok',{detail:{at:Date.now()}}));}\n      }\n      return resp;\n    }\n    return nativeFetch(input,init);\n  };\n})();\n<\/script>\n`;
     html=html.replace('<script>\nconst STORAGE_KEY',bridge+'<script>\nconst STORAGE_KEY');
-    const logout=`<script>\nsetTimeout(function(){\n  const a=document.querySelector('header .actions');\n  if(a){\n    const b=document.createElement('button');\n    b.className='hbtn'; b.textContent='登出';\n    b.onclick=function(){firebase.auth().signOut().then(function(){location.reload()})};\n    a.appendChild(b);\n  }\n},300);\n<\/script>\n`;
+    const logout=`<script>\nsetTimeout(function(){\n  const a=document.querySelector('header .actions');\n  if(a&&!Array.from(a.querySelectorAll('button')).some(x=>x.textContent.trim()==='登出')){\n    const b=document.createElement('button');\n    b.className='hbtn'; b.textContent='登出';\n    b.onclick=function(){firebase.auth().signOut().then(function(){location.reload()})};\n    a.appendChild(b);\n  }\n},300);\n<\/script>\n`;
     html=html.replace('</body>',logout+'</body>');
-    html=html.replace('</body>','<script src="./safety.js"><\/script></body>');
+    html=html.replace('</body>','<script src="./safety.js?v=2"><\/script><script src="./enhancements.js?v=2"><\/script></body>');
     document.open(); document.write(html); document.close();
   }catch(err){
     appLoading=false; btn.disabled=false; msg.className='msg'; msg.textContent='系統載入失敗：'+String(err);
@@ -81,6 +84,13 @@ form.addEventListener('submit',async e=>{
   e.preventDefault(); btn.disabled=true; msg.className='msg'; msg.textContent='登入中…';
   try{await auth.signInWithEmailAndPassword(document.getElementById('email').value.trim(),document.getElementById('password').value)}
   catch(err){btn.disabled=false;msg.textContent=humanAuthError(err.code)}
+});
+
+document.getElementById('forgotBtn').addEventListener('click',async()=>{
+  const email=document.getElementById('email').value.trim();
+  if(!email){msg.className='msg';msg.textContent='請先輸入要重設密碼的電子郵件';return;}
+  try{await auth.sendPasswordResetEmail(email);msg.className='msg ok';msg.textContent='重設密碼信已寄出，請到信箱查看。'}
+  catch(err){msg.className='msg';msg.textContent=humanAuthError(err.code)}
 });
 
 auth.onAuthStateChanged(user=>{if(user)loadBonusSystem(user)});
