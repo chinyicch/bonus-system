@@ -153,7 +153,10 @@
 </div></section>
 
 <section id="close" class="hidden"><div class="card">
-  <h2>結案管理</h2>
+  <div class="headrow">
+    <h2 style="margin:0">結案管理</h2>
+    <button class="btn red small" onclick="cancelAllClosedInCurrentView()">↩ 全部取消結案（依目前篩選）</button>
+  </div>
   <div class="smartFilterRow" style="margin-bottom:10px">
     <input id="closeSearch" type="search" placeholder="搜尋案件名稱、管理人…" oninput="closeSearchState.text=this.value;renderClose()">
     <select id="closeManagerFilter" onchange="closeSearchState.manager=this.value;renderClose()"><option value="">全部管理人</option></select>
@@ -977,7 +980,7 @@ function renderClose(){
   const cnt=document.getElementById('closeFilterCount'); if(cnt) cnt.textContent=`顯示 ${a.length} / ${all.length} 筆`;
   document.getElementById('closeBody').innerHTML = a.length ? a.map((p,i)=>{
     const c=data.closedRecords.find(x=>x.id===p.id);
-    return `<tr data-id="${esc(p.id)}"><td class="muted">${i+1}</td><td>${esc(p.name)}</td><td>${esc(p.manager)}</td><td>${esc(p.doneDate||'')}</td><td><input class="perf" type="number" ${c?'disabled':''} value="${c?c.perf:''}"></td><td><input class="pct" type="number" min="0" max="10" ${c?'disabled':''} value="${c?c.pct:''}"></td><td>${c?'$'+fmt(c.bonus):'待計算'}</td><td>${c?'已結案':`<button class="btn green" onclick="finishClose(this)">確認結案</button>`}</td></tr>`;
+    return `<tr data-id="${esc(p.id)}"><td class="muted">${i+1}</td><td>${esc(p.name)}</td><td>${esc(p.manager)}</td><td>${esc(p.doneDate||'')}</td><td><input class="perf" type="number" ${c?'disabled':''} value="${c?c.perf:''}"></td><td><input class="pct" type="number" min="0" max="10" ${c?'disabled':''} value="${c?c.pct:''}"></td><td>${c?'$'+fmt(c.bonus):'待計算'}</td><td>${c?`<button class="btn red small" onclick="cancelClose('${esc(p.id)}')">取消結案</button>`:`<button class="btn green" onclick="finishClose(this)">確認結案</button>`}</td></tr>`;
   }).join('') : '<tr><td colspan="8">目前沒有符合條件的待結案案件</td></tr>';
 }
 function finishClose(btn){
@@ -990,6 +993,25 @@ function finishClose(btn){
   data.current=period;
   data.closedRecords.push({id:p.id,name:p.name,manager:p.manager,perf,pct,bonus:Math.round(perf*pct/100),doneDate,period});
   persist(); renderClose(); renderBonusAll();
+}
+async function cancelClose(id){
+  const c=data.closedRecords.find(x=>x.id===id); if(!c) return;
+  await guardedAction(`確定要取消「${c.name}」的結案嗎？這筆的工程業績／分紅%／獎金紀錄會被清掉，變回「待計算」，可以重新輸入。`, '取消結案前自動備份', 'before-delete', ()=>{
+    data.closedRecords = data.closedRecords.filter(x=>x.id!==id);
+    persist(); renderClose(); renderBonusAll();
+  });
+}
+async function cancelAllClosedInCurrentView(){
+  const all=data.projects.filter(p=>p.status==='已完工');
+  const text=normalize(closeSearchState.text), manager=closeSearchState.manager;
+  const visible=all.filter(p=>(!text||normalize(p.name+' '+p.manager).includes(text)) && (!manager||p.manager===manager));
+  const ids=new Set(visible.map(p=>p.id));
+  const targets=data.closedRecords.filter(x=>ids.has(x.id));
+  if(!targets.length) return alert('目前畫面上沒有已結案的案件可以取消。');
+  await guardedAction(`確定要把目前畫面上這 ${targets.length} 筆已結案案件全部取消結案嗎？工程業績／分紅%／獎金紀錄都會被清掉，變回「待計算」。此動作無法復原（但備份還原得回來）。`, `批次取消 ${targets.length} 筆結案前自動備份`, 'before-delete', ()=>{
+    data.closedRecords = data.closedRecords.filter(x=>!ids.has(x.id));
+    persist(); renderClose(); renderBonusAll();
+  });
 }
 
 // ====== 半年工程獎金 ======
