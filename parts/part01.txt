@@ -171,8 +171,7 @@ function nextPeriodId(id){
 function fyYearOf(id){ const [,yStr] = id.split("-"); return Number(yStr); }
 function fyLabel(y){ return `${y} 年度（${y} 年4月 ～ ${y+1} 年3月）`; }
 
-// Seeded from the user's 工程紀錄.xlsx (113 real projects, roles auto-filled;
-// 業務人員／工程業績／分紅%／簽核人員 left blank for the user to fill in).
+// Empty starter state for a brand-new period (AS-2026, no slips yet).
 // This is only used the FIRST time the tool runs on a browser with no saved data yet —
 // once anything is saved, that saved data always takes priority and this is never touched.
 const IMPORTED_SEED_DATA = {
@@ -447,7 +446,7 @@ function renderEntry(slips){
     </div>
     <button class="addBtn" id="addSlipBtn">＋ 新增獎金單</button>
   </div>
-  <div class="card"><h2>工程設備／數量與管理分工</h2>${slips.length?slips.map((s,i)=>renderProjectCard(s,i)).join(''):'<div style="font-size:13px;color:var(--muted);">尚無獎金單。</div>'}</div>`;
+  <div class="card" id="slipCards"><h2>工程設備／數量與管理分工</h2>${slips.length?slips.map((s,i)=>renderProjectCard(s,i)).join(''):'<div style="font-size:13px;color:var(--muted);">尚無獎金單。</div>'}</div>`;
 }
 
 function renderProjectCard(s,i){
@@ -513,7 +512,9 @@ function bindMainEvents(){
     const handler = ()=>{
       const id=el.getAttribute("data-id"),field=el.getAttribute("data-field");
       const slip=currentSlips().find(s=>s.id===id); if(!slip)return;
-      slip[field]=(el.type==="number")?Number(el.value||0):el.value;
+      const value=(el.type==="number")?Number(el.value||0):el.value;
+      slip[field]=value;
+      document.querySelectorAll(`[data-field="${field}"][data-id="${id}"]`).forEach(other=>{ if(other!==el) other.value=value; });
       persist();
       if(field==="revenue"||field==="sharePercent") patchEntryTotals(id);
     };

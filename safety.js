@@ -137,7 +137,7 @@
       const row=document.createElement('div');row.style.cssText='display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 4px;border-top:1px solid #E0E2DA';
       const info=document.createElement('div');
       const dt=b.createdAt?new Date(b.createdAt).toLocaleString('zh-TW'):b.key;
-      info.innerHTML=`<div style="font-weight:600;font-size:13px">${dt}</div><div style="font-size:11px;color:#687064">${String(b.reason||b.type)}｜${String(b.createdBy||'')}</div>`;
+      info.innerHTML=`<div style="font-weight:600;font-size:13px">${esc(dt)}</div><div style="font-size:11px;color:#687064">${esc(b.reason||b.type)}｜${esc(b.createdBy||'')}</div>`;
       const restore=document.createElement('button');restore.className='hbtn';restore.style.cssText='color:#A63D2E;border-color:#D8B7B1;flex:0 0 auto';restore.textContent='還原';
       restore.onclick=async()=>{
         if(prompt('還原會覆蓋目前資料。請輸入「還原」確認：')!=='還原')return;
