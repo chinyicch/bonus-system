@@ -333,23 +333,104 @@ async function fetchCloudState(){
     return {ok:true, data: payload?ensureShape(payload):null};
   }catch(err){ console.warn('cloud load failed',err); return {ok:false, reason:String(err)}; }
 }
+// ====== 多人同時編輯：三方合併（上次同步版本 / 本機 / 雲端）======
+// 整份資料存在同一個節點，兩人同時儲存時，後存的人會拿到 412。
+// 這時不能直接用自己的整份資料蓋回去（會把對方剛輸入的東西洗掉），
+// 而是以「上次同步的版本」為基準，把雙方各自的修改合併後再存。
+const BASE_KEY=STORAGE_KEY+'-base';
+let baseState=null, cloudDirty=false, pendingRender=false;
+try{ const raw=localStorage.getItem(BASE_KEY); if(raw) baseState=JSON.parse(raw); }catch(e){}
+function setBase(s){ baseState=JSON.parse(JSON.stringify(s)); try{ localStorage.setItem(BASE_KEY, JSON.stringify(baseState)); }catch(e){} }
+const jsonOf=v=>JSON.stringify(v);
+const sameVal=(a,b)=>jsonOf(a)===jsonOf(b);
+const cloneVal=v=>v===undefined?undefined:JSON.parse(JSON.stringify(v));
+const isPlainObj=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+function mergeValue(base,local,remote){
+  if(sameVal(local,remote)) return cloneVal(local);
+  if(sameVal(base,local)) return cloneVal(remote);
+  if(sameVal(base,remote)) return cloneVal(local);
+  if(Array.isArray(local)&&Array.isArray(remote)) return mergeArray(Array.isArray(base)?base:[],local,remote);
+  if(isPlainObj(local)&&isPlainObj(remote)) return mergeObject(isPlainObj(base)?base:{},local,remote);
+  return cloneVal(local); // 同一欄位雙方都改：以本機這次的輸入為準
+}
+function mergeObject(base,local,remote){
+  const out={};
+  for(const k of new Set([...Object.keys(base),...Object.keys(local),...Object.keys(remote)])){
+    const inL=k in local, inR=k in remote, inB=k in base;
+    if(!inL&&!inR) continue;
+    if(!inL){ if(!(inB&&sameVal(base[k],remote[k]))) out[k]=cloneVal(remote[k]); continue; }
+    if(!inR){ if(!(inB&&sameVal(base[k],local[k]))) out[k]=cloneVal(local[k]); continue; }
+    out[k]=mergeValue(inB?base[k]:undefined,local[k],remote[k]);
+  }
+  return out;
+}
+function mergeArray(base,local,remote){
+  const all=[...base,...local,...remote];
+  const uniqIds=a=>new Set(a.map(x=>x.id)).size===a.length;
+  if(all.length && all.every(x=>isPlainObj(x)&&x.id!=null) && uniqIds(base)&&uniqIds(local)&&uniqIds(remote)){
+    // 有 id 的清單（案件、結案紀錄）：逐筆合併；被一方刪除、另一方沒改 → 刪除；另一方有改 → 保留，避免資料遺失
+    const byId=a=>new Map(a.map(x=>[x.id,x]));
+    const B=byId(base), L=byId(local), R=byId(remote), out=[], seen=new Set();
+    const take=id=>{
+      if(seen.has(id)) return; seen.add(id);
+      const b=B.get(id), l=L.get(id), r=R.get(id);
+      if(l&&r) out.push(mergeValue(b,l,r));
+      else if(l){ if(!(b&&sameVal(b,l))) out.push(cloneVal(l)); }
+      else if(r){ if(!(b&&sameVal(b,r))) out.push(cloneVal(r)); }
+    };
+    local.forEach(x=>take(x.id)); remote.forEach(x=>take(x.id));
+    return out;
+  }
+  // 沒有 id 的清單（人員名單、期別、施工紀錄、設備列）：以內容比對，雙方新增都保留、任一方刪除就刪除
+  const prim=all.every(x=>x===null||typeof x!=='object');
+  const count=a=>{ const m=new Map(); a.forEach(x=>{ const k=jsonOf(x); m.set(k,(m.get(k)||0)+1); }); return m; };
+  const Bc=count(base), Lc=count(local), Rc=count(remote), emitted=new Map(), out=[];
+  const want=k=>{ const n=Math.max(0,(Lc.get(k)||0)+(Rc.get(k)||0)-(Bc.get(k)||0)); return prim?Math.min(n,1):n; };
+  [...local,...remote].forEach(x=>{
+    const k=jsonOf(x), e=emitted.get(k)||0;
+    if(e<want(k)){ out.push(cloneVal(x)); emitted.set(k,e+1); }
+  });
+  return out;
+}
+function isUserEditing(){
+  const a=document.activeElement;
+  return editingLogIndex!==null || !!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && !a.closest('#loginForm'));
+}
+function renderWhenIdle(){
+  if(!isUserEditing()){ pendingRender=false; render(); return; }
+  if(pendingRender) return;
+  pendingRender=true;
+  const wait=setInterval(()=>{ if(!isUserEditing()){ clearInterval(wait); pendingRender=false; render(); } },1000);
+}
+// 把雲端最新版本併入本機資料；回傳本機是否還有尚未上傳的修改
+function absorbRemote(remote){
+  const keepPeriod=data.current;
+  const merged=ensureShape(baseState?mergeValue(baseState,data,remote):cloneVal(remote));
+  if(keepPeriod && merged.order.includes(keepPeriod)) merged.current=keepPeriod; // 期別選擇屬於各自畫面，不互相切換
+  const changedView=!sameVal(merged,data);
+  data=merged; setBase(remote); saveLocalData();
+  if(changedView) renderWhenIdle();
+  return !sameVal(merged,remote);
+}
 async function pushCloudState(){
   try{
+    const snapshot=cloneState();
     const headers={'Content-Type':'application/json','X-Firebase-ETag':'true'};
     if(stateEtag) headers['if-match']=stateEtag;
-    const res=await authedFetch(STATE_PATH,{method:'PUT',headers,body:JSON.stringify(data)});
+    const res=await authedFetch(STATE_PATH,{method:'PUT',headers,body:JSON.stringify(snapshot)});
     if(res.status===412) return {ok:false, reason:'conflict'};
     if(!res.ok) throw new Error('HTTP '+res.status);
+    setBase(snapshot);
     const et=res.headers.get('ETag');
     if(et){
       stateEtag=et;
     }else{
       // Some browsers/CORS setups don't expose the ETag header on the PUT
-      // response itself, so re-fetch it explicitly to avoid every future
-      // save falsely thinking another device changed the data.
+      // response. Re-fetch it — and if someone else already saved after us,
+      // merge their version in rather than silently adopting their ETag.
       try{
-        const refresh=await authedFetch(STATE_PATH,{method:'GET',cache:'no-store',headers:{'X-Firebase-ETag':'true'}});
-        const et2=refresh.headers.get('ETag'); if(et2) stateEtag=et2;
+        const fresh=await fetchCloudState();
+        if(fresh.ok && fresh.data && !sameVal(fresh.data,snapshot) && absorbRemote(fresh.data)) cloudDirty=true;
       }catch(e){}
     }
     return {ok:true};
@@ -361,37 +442,42 @@ function renderSyncStatus(){
   else if(cloudMode) el.textContent='☁ 已連線雲端';
   else el.textContent='⚠ 本機備援（雲端連線失敗）';
 }
+async function syncCloud(){
+  if(cloudSaving){ cloudDirty=true; return; } // 一次只送一個儲存，避免自己跟自己衝突
+  cloudSaving=true; cloudDirty=false; renderSyncStatus();
+  let r={ok:false,reason:'conflict'};
+  for(let attempt=0; attempt<8; attempt++){
+    r=await pushCloudState();
+    if(r.ok || r.reason!=='conflict') break;
+    const fresh=await fetchCloudState();
+    if(!fresh.ok){ r=fresh; break; }
+    if(fresh.data) absorbRemote(fresh.data);
+    await new Promise(res=>setTimeout(res,150+Math.random()*400*(attempt+1)));
+  }
+  cloudSaving=false;
+  cloudMode=r.ok;
+  renderSyncStatus();
+  if(!r.ok){ clearTimeout(cloudSaveTimer); cloudSaveTimer=setTimeout(()=>{cloudSaveTimer=null;syncCloud();},5000); return; } // 失敗時本機資料保留，5 秒後自動重試
+  if(cloudDirty) syncCloud();
+}
 function persist(){
   saveLocalData();
   renderSyncStatus();
   queueAudit();
   clearTimeout(cloudSaveTimer);
-  cloudSaveTimer=setTimeout(async()=>{
-    cloudSaving=true; renderSyncStatus();
-    let r=await pushCloudState();
-    if(!r.ok && r.reason==='conflict'){
-      // Usually this just means our local ETag was stale (another tab/session
-      // touched the state, or a previous save's ETag wasn't captured) rather
-      // than a genuine simultaneous edit — refresh it and retry once, silently,
-      // before bothering the user. Our own in-progress edits are not discarded.
-      const fresh=await fetchCloudState();
-      if(fresh.ok) r=await pushCloudState();
-    }
-    cloudSaving=false;
-    if(r.ok) cloudMode=true;
-    else if(r.reason==='conflict'){
-      renderSyncStatus();
-      if(confirm('另一台裝置剛剛已更新資料。為避免互相覆蓋，這次儲存已停止。\n\n按「確定」重新載入最新雲端資料；本機仍保留目前內容作為備援。')) location.reload();
-      return;
-    } else cloudMode=false;
-    renderSyncStatus();
-  },350);
+  cloudSaveTimer=setTimeout(()=>{ cloudSaveTimer=null; syncCloud(); },350);
 }
+// 定期拉取其他人的修改（取代原本只測連線的 heartbeat）
 async function heartbeat(){
-  try{ const r=await authedFetch(STATE_PATH+'?shallow=true'); cloudMode=r.ok; }
-  catch(e){ cloudMode=false; }
+  if(cloudSaving || cloudSaveTimer || document.hidden) return;
+  const fresh=await fetchCloudState();
+  cloudMode=fresh.ok;
+  if(fresh.ok && fresh.data && !cloudSaving && !cloudSaveTimer && !sameVal(fresh.data,baseState)){
+    if(absorbRemote(fresh.data)) persist();
+  }
   renderSyncStatus();
 }
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) heartbeat(); });
 window.addEventListener('offline',()=>{cloudMode=false;renderSyncStatus();});
 window.addEventListener('online',heartbeat);
 
@@ -1143,14 +1229,18 @@ async function initApp(){
   const cloud=await fetchCloudState();
   if(cloud.ok){
     cloudMode=true;
-    if(cloud.data){ data=cloud.data; saveLocalData(); }
-    else await pushCloudState();
+    if(cloud.data){
+      // 本機若有離線時尚未上傳的修改，合併進來再上傳；否則直接採用雲端版本
+      const hasOfflineEdits=baseState && !sameVal(data,baseState);
+      if(hasOfflineEdits){ if(absorbRemote(cloud.data)) persist(); }
+      else { data=cloud.data; setBase(cloud.data); saveLocalData(); }
+    }
+    else await syncCloud();
     render();
   } else cloudMode=false;
   renderSyncStatus();
   createDailyBackup();
-  heartbeat();
-  setInterval(heartbeat,30000);
+  setInterval(heartbeat,10000);
 }
 
 // ====== 登入 ======
