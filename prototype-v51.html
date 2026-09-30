@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1（整合測試版）</title>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.1（整合測試版）</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <style>
@@ -84,11 +84,11 @@
 <body>
 
 <div class="login" id="loginBox">
-  <h1>工程管理系統 V5.1</h1>
+  <h1>工程管理系統 V5.1.1</h1>
   <div class="sub">海壹有限公司｜公司內部系統（整合測試版）</div>
   <form id="loginForm">
-    <label for="email">電子郵件</label>
-    <input id="email" type="email" autocomplete="username" required>
+    <label for="email">帳號或電子郵件</label>
+    <input id="email" type="text" autocomplete="username" autocapitalize="off" required>
     <label for="password">密碼</label>
     <input id="password" type="password" autocomplete="current-password" required>
     <button id="loginBtn" type="submit">登入系統</button>
@@ -101,7 +101,7 @@
 <div id="appRoot" class="hidden">
 <div class="top"><div class="topRow">
   <div>
-    <b style="font-size:21px">工程管理系統 V5.1｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
+    <b style="font-size:21px">工程管理系統 V5.1.1｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
     <div style="font-size:12px;opacity:.82">施工追蹤 → 工作單 → 結案管理 → 半年工程獎金 → 內外機台數</div>
   </div>
   <div class="topActions">
@@ -554,7 +554,7 @@ async function guardedAction(confirmMsg, backupReason, backupType, action){
 }
 // ====== 更新歷史 ======
 // 之後每次改版：APP_VERSION 改成新版號，並在 CHANGELOG 最上面加一筆（同步更新 CHANGELOG.md）。
-const APP_VERSION='5.1';
+const APP_VERSION='5.1.1';
 const CHANGELOG=[
   {ver:'5.1', date:'2026-09-30', items:[
     '多人同時輸入不再互相覆蓋：兩人同時儲存時，系統會自動合併雙方的修改（新增的案件、進場紀錄、人員都會保留）',
@@ -1485,13 +1485,16 @@ async function initApp(){
 }
 
 // ====== 登入 ======
+// 只輸入帳號（沒有 @）時，對應到內部帳號信箱，例如 85176676001 → 85176676001@haiyi.local
+const INTERNAL_EMAIL_DOMAIN='haiyi.local';
+function loginEmail(input){ const v=input.trim(); return v.includes('@')?v:v+'@'+INTERNAL_EMAIL_DOMAIN; }
 function humanAuthError(code){ const map={'auth/invalid-credential':'電子郵件或密碼錯誤','auth/invalid-login-credentials':'電子郵件或密碼錯誤','auth/user-disabled':'此帳號已停用','auth/too-many-requests':'嘗試次數過多，請稍後再試','auth/network-request-failed':'網路連線失敗，請稍後再試','auth/user-not-found':'找不到這個帳號','auth/invalid-email':'電子郵件格式不正確'}; return map[code]||'登入失敗，請確認帳號與密碼'; }
 const loginForm=document.getElementById('loginForm');
 const loginBtn=document.getElementById('loginBtn');
 const msgEl=document.getElementById('msg');
 loginForm.addEventListener('submit', async e=>{
   e.preventDefault(); loginBtn.disabled=true; msgEl.className='msg'; msgEl.textContent='登入中…';
-  try{ await auth.signInWithEmailAndPassword(document.getElementById('email').value.trim(), document.getElementById('password').value); }
+  try{ await auth.signInWithEmailAndPassword(loginEmail(document.getElementById('email').value), document.getElementById('password').value); }
   catch(err){ loginBtn.disabled=false; msgEl.textContent=humanAuthError(err.code); }
 });
 document.getElementById('forgotBtn').addEventListener('click', async()=>{
