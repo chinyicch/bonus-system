@@ -556,6 +556,9 @@ async function guardedAction(confirmMsg, backupReason, backupType, action){
 // 之後每次改版：APP_VERSION 改成新版號，並在 CHANGELOG 最上面加一筆（同步更新 CHANGELOG.md）。
 const APP_VERSION='5.1.1';
 const CHANGELOG=[
+  {ver:'5.1.1', date:'2026-09-30', items:[
+    '登入可以直接輸入帳號（例如員工編號），不用打完整信箱'
+  ]},
   {ver:'5.1', date:'2026-09-30', items:[
     '多人同時輸入不再互相覆蓋：兩人同時儲存時，系統會自動合併雙方的修改（新增的案件、進場紀錄、人員都會保留）',
     '自動同步：每 10 秒抓取其他人的修改，切回分頁時也會立即更新；正在輸入時會等輸入完才刷新畫面',
