@@ -39,6 +39,29 @@
 .proBox{position:relative;width:min(680px,100%);max-height:84vh;overflow:auto;background:#fff;color:#1f2a44;border-radius:12px;padding:20px;box-shadow:0 16px 50px rgba(0,0,0,.28)}
 .proBox h3{margin:0 32px 14px 0}
 .proClose{position:absolute;right:12px;top:10px;border:0;background:none;color:#666;font-size:26px;cursor:pointer}
+.vhBar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 10px}
+.vhBtn{border:1px solid #cbd2c8;background:#f4f6f3;color:#1f2a44;border-radius:8px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer}
+.vhBtn.primary{background:#1f2a44;border-color:#1f2a44;color:#fff}
+.vhBtn.warn{background:#fff;border-color:#d8b7b1;color:#a63d2e}
+.vhBtn:disabled{opacity:.5;cursor:wait}
+.vhToggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#5b6358}.vhToggle input{width:auto}
+.vhHint{font-size:12px;color:#687064;margin-bottom:10px;line-height:1.5}
+.vhDay{font-size:12px;font-weight:800;color:#5b6358;margin:14px 0 4px}
+.vhItem{border-top:1px solid #e0e2da;padding:10px 4px}
+.vhItem.current{background:#eef4ef;border:1px solid #cfe0d2;border-radius:8px;padding:10px 12px}
+.vhHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.vhActs{display:flex;gap:6px;flex-wrap:wrap}
+.vhName{font-weight:800;font-size:14px;color:#1f5a3a}
+.vhTime{font-weight:700;font-size:13px}
+.vhWho{font-size:12px;color:#687064;margin-top:2px}
+.vhTag{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;background:#eceee8;color:#5b6358;margin-left:4px}
+.vhTag.restore{background:#fbeae6;color:#a63d2e}
+.vhChanges{margin:6px 0 0;padding-left:20px;font-size:12.5px;color:#3a4458;line-height:1.6}
+.vhChanges.long{max-height:40vh;overflow:auto}
+.vhMore summary{font-size:12px;color:#3f6d4e;cursor:pointer;margin-top:4px}
+.vhEmpty,.vhLoading{padding:14px;background:#f4f5f0;border-radius:6px;font-size:13px;margin-top:8px}
+.vhTableWrap{overflow-x:auto;margin:10px 0}
+.vhTable{border-collapse:collapse;width:100%;font-size:13px}.vhTable th,.vhTable td{padding:6px 10px;border-bottom:1px solid #e5e8e2;text-align:right}.vhTable td:first-child,.vhTable th:first-child{text-align:left}
 .toolGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .toolGrid button,.modalPrimary{border:1px solid #cbd2c8;background:#f4f6f3;color:#1f2a44;border-radius:8px;padding:12px;font-weight:700;cursor:pointer}
 .modalPrimary{width:100%;margin-top:14px;background:#1f2a44;color:#fff}
@@ -82,7 +105,7 @@
   <div class="topActions">
     <span id="userBadge" class="topInfo"></span>
     <span id="syncState" class="topInfo"></span>
-    <button class="topbtn" onclick="showBackups()">🛡 備份／還原</button>
+    <button class="topbtn" onclick="showBackups()">🕘 版本記錄</button>
     <button class="topbtn" onclick="openRosterManager()">👥 人員管理</button>
     <button class="topbtn" onclick="dataTools()">📦 資料工具</button>
     <button class="topbtn" onclick="doLogout()">登出</button>
@@ -420,7 +443,8 @@ async function pushCloudState(){
     const res=await authedFetch(STATE_PATH,{method:'PUT',headers,body:JSON.stringify(snapshot)});
     if(res.status===412) return {ok:false, reason:'conflict'};
     if(!res.ok) throw new Error('HTTP '+res.status);
-    setBase(snapshot);
+    const prevBase=baseState; setBase(snapshot);
+    try{ noteChanges(prevBase,snapshot); }catch(e){}
     const et=res.headers.get('ETag');
     if(et){
       stateEtag=et;
@@ -463,7 +487,7 @@ async function syncCloud(){
 function persist(){
   saveLocalData();
   renderSyncStatus();
-  queueAudit();
+  // 操作紀錄改為在成功存到雲端時，記下實際修改內容（見 noteChanges）
   clearTimeout(cloudSaveTimer);
   cloudSaveTimer=setTimeout(()=>{ cloudSaveTimer=null; syncCloud(); },350);
 }
@@ -510,7 +534,8 @@ async function createDailyBackup(){
         saveLocalBackup('每日自動備份');
       }
     }
-    const listRes=await authedFetch(`${BACKUPS_PATH}/daily.json`);
+    pruneVersions().catch(()=>{});
+    const listRes=await authedFetch(`${BACKUPS_PATH}/daily.json?shallow=true`);
     if(listRes.ok){
       const obj=await listRes.json()||{};
       const keys=Object.keys(obj).sort().reverse();
@@ -525,53 +550,225 @@ async function guardedAction(confirmMsg, backupReason, backupType, action){
   catch(e){ if(!confirm('雲端備份失敗，但本機備份已建立。仍要繼續嗎？')) return; }
   action();
 }
-function flattenCloudBackups(obj){
-  const out=[];
-  for(const [type,group] of Object.entries(obj||{})) for(const [key,b] of Object.entries(group||{})) if(b&&b.state) out.push({...b,type,key});
-  return out.sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+// ====== 版本記錄（比照 Google 試算表「版本記錄」）======
+// 每次編輯告一段落（停止編輯 2 分鐘，或連續編輯滿 10 分鐘）自動存一個版本，
+// 記下是誰、改了什麼；可以替版本命名、預覽與目前的差異、還原（還原本身也會留一個版本，所以可以反悔）。
+// 版本放在 /v2Backups 底下（沿用既有資料庫權限）：vmeta 只存摘要供列表使用，vstate 存完整資料，預覽／還原時才下載。
+const VMETA_PATH=BACKUPS_PATH+'/vmeta', VSTATE_PATH=BACKUPS_PATH+'/vstate';
+const VERSION_IDLE_MS=2*60*1000, VERSION_MAX_MS=10*60*1000;
+const BACKUP_TYPE_LABEL={daily:'每日自動備份',manual:'手動備份','before-delete':'刪除前自動備份','before-import':'匯入前自動備份','before-restore':'還原前自動備份'};
+let pendingChanges=new Map(), versionTimer=null, versionPendingSince=0;
+function stateStats(s){
+  const closed=s.closedRecords||[];
+  return {projects:(s.projects||[]).length, closed:closed.length, bonus:closed.reduce((t,c)=>t+Number(c.bonus||0),0), roster:(s.roster||[]).length};
+}
+function diffSummary(a,b){
+  const out=[]; if(!a||!b) return out;
+  const pa=new Map((a.projects||[]).map(p=>[p.id,p])), pb=new Map((b.projects||[]).map(p=>[p.id,p]));
+  const countChange=(o,n,label)=>{ const x=(o||[]).length, y=(n||[]).length; return y>x?`新增${label} ${y-x} 筆`:y<x?`刪除${label} ${x-y} 筆`:sameVal(o,n)?'':`修改${label}`; };
+  for(const [id,p] of pb){
+    const o=pa.get(id);
+    if(!o){ out.push(`新增案件「${p.name}」`); continue; }
+    if(sameVal(o,p)) continue;
+    const parts=[];
+    if(o.name!==p.name) parts.push(`名稱改為「${p.name}」`);
+    if(o.status!==p.status) parts.push(`狀態 ${o.status||'-'}→${p.status||'-'}`);
+    if(o.manager!==p.manager) parts.push(`管理人 ${o.manager||'待指派'}→${p.manager||'待指派'}`);
+    const lc=countChange(o.logs,p.logs,'進場紀錄'); if(lc) parts.push(lc);
+    const ec=countChange(o.equipment,p.equipment,'設備'); if(ec) parts.push(ec);
+    out.push(`案件「${o.name}」${parts.join('、')||'修改資料'}`);
+  }
+  for(const [id,p] of pa) if(!pb.has(id)) out.push(`刪除案件「${p.name}」`);
+  const ca=new Map((a.closedRecords||[]).map(c=>[c.id+'|'+c.period,c])), cb=new Map((b.closedRecords||[]).map(c=>[c.id+'|'+c.period,c]));
+  for(const [k,c] of cb){
+    const o=ca.get(k);
+    if(!o) out.push(`結案「${c.name}」獎金 ${fmt(c.bonus)}`);
+    else if(!sameVal(o,c)) out.push(o.bonus!==c.bonus?`修改結案「${c.name}」獎金 ${fmt(o.bonus)}→${fmt(c.bonus)}`:`修改結案「${c.name}」`);
+  }
+  for(const [k,c] of ca) if(!cb.has(k)) out.push(`取消結案「${c.name}」`);
+  const ra=new Set(a.roster||[]), rb=new Set(b.roster||[]);
+  rb.forEach(n=>{ if(!ra.has(n)) out.push(`新增人員「${n}」`); });
+  ra.forEach(n=>{ if(!rb.has(n)) out.push(`移除人員「${n}」`); });
+  const oa=new Set(a.order||[]), ob=new Set(b.order||[]);
+  ob.forEach(p=>{ if(!oa.has(p)) out.push(`新增期別 ${periodShort(p)}`); });
+  oa.forEach(p=>{ if(!ob.has(p)) out.push(`刪除期別 ${periodShort(p)}`); });
+  return out;
+}
+// 每次成功存到雲端時呼叫：記下「我」這次改了什麼，累積到下一個版本
+function noteChanges(before,after){
+  const list=diffSummary(before,after);
+  if(!list.length) return;
+  audit('資料修改', list.slice(0,10).join('；')+(list.length>10?`…等 ${list.length} 項`:''));
+  list.forEach(s=>pendingChanges.set(s,true));
+  if(!versionPendingSince) versionPendingSince=Date.now();
+  clearTimeout(versionTimer);
+  const wait=Date.now()-versionPendingSince>=VERSION_MAX_MS?0:VERSION_IDLE_MS;
+  versionTimer=setTimeout(()=>{ writeVersion().catch(()=>{}); },wait);
+}
+async function writeVersion(opts={}){
+  clearTimeout(versionTimer); versionTimer=null;
+  const changes=opts.changes||[...pendingChanges.keys()];
+  if(!opts.force && !changes.length) return null;
+  const queued=[...pendingChanges.keys()];
+  if(!opts.changes){ pendingChanges.clear(); versionPendingSince=0; }
+  const state=cloneState();
+  const key=stamp()+'-'+Math.random().toString(36).slice(2,6);
+  const meta={at:new Date().toISOString(), by:currentEmail(), name:opts.name||'', kind:opts.kind||'auto',
+    changes:changes.slice(0,40), more:Math.max(0,changes.length-40), stats:stateStats(state)};
+  try{
+    const put=(path,body)=>authedFetch(path,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    let r=await put(`${VSTATE_PATH}/${key}.json`,state); if(!r.ok) throw new Error('HTTP '+r.status);
+    r=await put(`${VMETA_PATH}/${key}.json`,meta); if(!r.ok) throw new Error('HTTP '+r.status);
+    return key;
+  }catch(e){
+    if(!opts.changes){ queued.forEach(s=>pendingChanges.set(s,true)); if(!versionPendingSince) versionPendingSince=Date.now(); versionTimer=setTimeout(()=>writeVersion().catch(()=>{}),VERSION_IDLE_MS); }
+    throw e;
+  }
+}
+// 關閉或切走分頁時，把還沒存成版本的修改立刻存起來
+document.addEventListener('visibilitychange',()=>{ if(document.hidden && pendingChanges.size) writeVersion().catch(()=>{}); });
+// 保留規則（類似 Google）：已命名版本永久保留；7 天內全部保留；7～60 天每天留最後一版；60 天以上每月留最後一版
+async function pruneVersions(){
+  const r=await authedFetch(`${VMETA_PATH}.json`); if(!r.ok) return;
+  const all=await r.json()||{};
+  const now=Date.now(), kept=new Set(), del=[];
+  Object.entries(all).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([k,m])=>{
+    if(!m || m.name) return;
+    const t=Date.parse(m.at), age=(now-t)/864e5;
+    if(!(age>=7)) return;
+    const d=new Date(t), bucket=age<60?'d'+dayKey(d):'m'+d.getFullYear()+'-'+pad(d.getMonth()+1);
+    if(kept.has(bucket)) del.push(k); else kept.add(bucket);
+  });
+  for(const k of del.slice(0,100)){
+    await authedFetch(`${VSTATE_PATH}/${k}.json`,{method:'DELETE'});
+    await authedFetch(`${VMETA_PATH}/${k}.json`,{method:'DELETE'});
+  }
+}
+function parseBackupKey(k){
+  let m=/^(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)/.exec(k); if(m) return new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5],+m[6]);
+  m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(k); if(m) return new Date(+m[1],m[2]-1,+m[3],0,0,0);
+  return null;
+}
+async function loadHistoryItems(){
+  const items=[];
+  const vr=await authedFetch(`${VMETA_PATH}.json?orderBy=%22$key%22&limitToLast=300`);
+  if(!vr.ok) throw new Error('HTTP '+vr.status);
+  Object.entries(await vr.json()||{}).forEach(([key,m])=>{ if(m) items.push({src:'version',key,at:m.at,by:m.by,name:m.name||'',kind:m.kind,changes:m.changes||[],more:m.more||0,stats:m.stats}); });
+  // 既有的每日／刪除前備份也一起列出（只抓清單，不下載整份資料）
+  try{
+    const tr=await authedFetch(`${BACKUPS_PATH}.json?shallow=true`);
+    const types=Object.keys((tr.ok&&await tr.json())||{}).filter(t=>t!=='vmeta'&&t!=='vstate');
+    for(const type of types){
+      const kr=await authedFetch(`${BACKUPS_PATH}/${type}.json?shallow=true`);
+      Object.keys((kr.ok&&await kr.json())||{}).forEach(key=>{
+        const d=parseBackupKey(key);
+        items.push({src:'backup',type,key,at:d?d.toISOString():'',by:'',name:'',kind:type,changes:[BACKUP_TYPE_LABEL[type]||type],more:0});
+      });
+    }
+  }catch(e){}
+  return items.sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+}
+async function fetchHistoryState(item){
+  const path=item.src==='version'?`${VSTATE_PATH}/${item.key}.json`:`${BACKUPS_PATH}/${item.type}/${encodeURIComponent(item.key)}.json`;
+  const r=await authedFetch(path); if(!r.ok) throw new Error('HTTP '+r.status);
+  const v=await r.json(); if(!v) throw new Error('找不到這個版本的資料');
+  return ensureShape(JSON.parse(JSON.stringify(item.src==='version'?v:v.state)));
 }
 async function showBackups(){
-  try{
-    const r=await authedFetch(`${BACKUPS_PATH}.json`);
-    const obj=r.ok?await r.json():{};
-    openRestoreModal(flattenCloudBackups(obj));
-  }catch(e){ alert('目前無法讀取雲端備份，請確認網路連線。'); }
+  modal('版本記錄','<div class="vhLoading">讀取中…</div>');
+  try{ renderHistory(await loadHistoryItems(), false); }
+  catch(e){ document.getElementById('proModal')?.remove(); alert('目前無法讀取版本記錄，請確認網路連線。'); }
 }
-function openRestoreModal(items){
-  document.getElementById('backupRestoreModal')?.remove();
-  const wrap=document.createElement('div'); wrap.id='backupRestoreModal';
-  wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px';
-  const box=document.createElement('div');
-  box.style.cssText='background:#fff;color:#1f2a44;width:min(680px,100%);max-height:80vh;overflow:auto;border-radius:10px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.25)';
-  box.innerHTML='<h3 style="margin:0 0 10px">備份與還原</h3><div style="font-size:12px;color:#5b6358;margin-bottom:12px">每日自動備份保留最近 30 天；刪除前也會自動建立快照。</div>';
-  const manual=document.createElement('button'); manual.className='topbtn'; manual.style.cssText='color:#1f2a44;background:#f4f6f3;border-color:#cbd2c8;margin-right:8px';
-  manual.textContent='立即建立備份';
-  manual.onclick=async()=>{ manual.disabled=true; try{ await createCloudBackup('手動雲端備份','manual'); alert('備份完成'); wrap.remove(); }catch(e){ alert('雲端備份失敗，已建立本機備援'); } finally{ manual.disabled=false; } };
-  const closeBtn=document.createElement('button'); closeBtn.className='topbtn'; closeBtn.style.cssText='color:#1f2a44;background:#f4f6f3;border-color:#cbd2c8';
-  closeBtn.textContent='關閉'; closeBtn.onclick=()=>wrap.remove();
-  box.append(manual, closeBtn);
-  const list=document.createElement('div'); list.style.marginTop='14px';
-  if(!items.length) list.innerHTML='<div style="padding:14px;background:#f4f5f0;border-radius:6px">目前尚無雲端備份。</div>';
-  items.slice(0,60).forEach(b=>{
-    const row=document.createElement('div'); row.style.cssText='display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 4px;border-top:1px solid #e0e2da';
-    const info=document.createElement('div');
-    const dt=b.createdAt?new Date(b.createdAt).toLocaleString('zh-TW'):b.key;
-    info.innerHTML=`<div style="font-weight:600;font-size:13px">${esc(dt)}</div><div style="font-size:11px;color:#687064">${esc(b.reason||b.type)}｜${esc(b.createdBy||'')}</div>`;
-    const restore=document.createElement('button'); restore.className='topbtn'; restore.style.cssText='color:#a63d2e;background:#fff;border-color:#d8b7b1;flex:0 0 auto';
-    restore.textContent='還原';
-    restore.onclick=async()=>{
-      if(prompt('還原會覆蓋目前資料。請輸入「還原」確認：')!=='還原') return;
-      restore.disabled=true;
-      try{
-        await createCloudBackup('還原前自動備份','before-restore');
-        data=ensureShape(JSON.parse(JSON.stringify(b.state)));
-        persist(); render();
-        alert('已還原完成'); wrap.remove();
-      }catch(e){ alert('還原失敗：'+e.message); } finally{ restore.disabled=false; }
-    };
-    row.append(info, restore); list.appendChild(row);
+function historyDayLabel(d){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const x=new Date(d); x.setHours(0,0,0,0);
+  const diff=Math.round((today-x)/864e5);
+  return diff===0?'今天':diff===1?'昨天':x.toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+}
+function renderHistory(items, namedOnly){
+  const shown=namedOnly?items.filter(x=>x.name):items;
+  let html=`<div class="vhBar"><button class="vhBtn primary" id="vhName">＋ 為目前版本命名</button><label class="vhToggle"><input type="checkbox" id="vhNamedOnly" ${namedOnly?'checked':''}> 只顯示已命名的版本</label></div>
+  <div class="vhHint">系統會在每次編輯告一段落時自動儲存版本。已命名的版本永久保留；其餘 7 天內全部保留，之後每天保留一版、60 天後每月保留一版。</div>
+  <div class="vhItem current"><div class="vhTime">目前版本</div><div class="vhWho">${esc(currentEmail())}（你）正在檢視</div></div>`;
+  let lastDay='';
+  shown.forEach((x,i)=>{
+    const d=x.at?new Date(x.at):null;
+    const day=d?historyDayLabel(d):'日期不明';
+    if(day!==lastDay){ html+=`<div class="vhDay">${esc(day)}</div>`; lastDay=day; }
+    const time=d?d.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}):'';
+    const tag=x.src==='backup'?'<span class="vhTag">自動備份</span>':x.kind==='restore'?'<span class="vhTag restore">還原</span>':'';
+    const first=x.changes.slice(0,3), rest=x.changes.slice(3);
+    html+=`<div class="vhItem" data-i="${items.indexOf(x)}">
+      <div class="vhHead"><div>${x.name?`<div class="vhName">${esc(x.name)}</div>`:''}<div class="vhTime">${esc(time)} ${tag}</div>${x.by?`<div class="vhWho">${esc(x.by)}</div>`:''}</div>
+      <div class="vhActs"><button class="vhBtn" data-act="preview">預覽</button><button class="vhBtn warn" data-act="restore">還原</button>${x.src==='version'?`<button class="vhBtn" data-act="rename">${x.name?'改名':'命名'}</button>`:''}</div></div>
+      ${first.length?`<ul class="vhChanges">${first.map(c=>`<li>${esc(c)}</li>`).join('')}</ul>`:''}
+      ${rest.length||x.more?`<details class="vhMore"><summary>還有 ${rest.length+x.more} 項變更</summary><ul class="vhChanges">${rest.map(c=>`<li>${esc(c)}</li>`).join('')}${x.more?`<li>…其餘 ${x.more} 項</li>`:''}</ul></details>`:''}
+    </div>`;
   });
-  box.appendChild(list); wrap.appendChild(box); document.body.appendChild(wrap);
+  if(!shown.length) html+=`<div class="vhEmpty">${namedOnly?'還沒有已命名的版本。':'還沒有版本記錄，開始編輯後就會自動產生。'}</div>`;
+  modal('版本記錄',html,w=>{
+    w.querySelector('#vhNamedOnly').onchange=e=>renderHistory(items,e.target.checked);
+    w.querySelector('#vhName').onclick=async()=>{
+      const name=(prompt('替目前版本取個名字（例如：115 上半期發放完成）：')||'').trim(); if(!name) return;
+      try{ await writeVersion({force:true,kind:'named',name,changes:[...pendingChanges.keys()]}); pendingChanges.clear(); versionPendingSince=0; showBackups(); }
+      catch(e){ alert('命名失敗：'+e.message); }
+    };
+    w.querySelectorAll('.vhItem[data-i]').forEach(el=>{
+      const item=items[+el.dataset.i];
+      el.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=async()=>{
+        const act=btn.dataset.act;
+        if(act==='rename'){
+          const name=(prompt('版本名稱（留空則取消命名）：',item.name)||'').trim();
+          try{ const r=await authedFetch(`${VMETA_PATH}/${item.key}.json`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})}); if(!r.ok) throw new Error('HTTP '+r.status); item.name=name; renderHistory(items,namedOnly); }
+          catch(e){ alert('命名失敗：'+e.message); }
+          return;
+        }
+        btn.disabled=true;
+        try{
+          const state=await fetchHistoryState(item);
+          if(act==='preview') previewVersion(item,state,items,namedOnly);
+          else await restoreVersion(item,state);
+        }catch(e){ alert('讀取版本失敗：'+e.message); }
+        finally{ btn.disabled=false; }
+      });
+    });
+  });
+}
+function historyLabel(item){ return (item.name?`「${item.name}」`:'')+(item.at?new Date(item.at).toLocaleString('zh-TW'):item.key); }
+function previewVersion(item,state,items,namedOnly){
+  const now=stateStats(data), then=stateStats(state);
+  const since=diffSummary(state,data);
+  const row=(label,a,b)=>`<tr><td>${label}</td><td>${a}</td><td>${b}</td></tr>`;
+  const html=`<div class="vhWho">${esc(historyLabel(item))}${item.by?'｜'+esc(item.by):''}</div>
+    <div class="vhTableWrap"><table class="vhTable"><tr><th></th><th>這個版本</th><th>目前</th></tr>
+    ${row('案件數',fmt(then.projects),fmt(now.projects))}${row('結案筆數',fmt(then.closed),fmt(now.closed))}
+    ${row('獎金合計',fmt(then.bonus),fmt(now.bonus))}${row('人員數',fmt(then.roster),fmt(now.roster))}</table></div>
+    <div class="vhDay">從這個版本到目前，共有 ${since.length} 項變更${since.length?'（還原後這些變更會被取消）':''}</div>
+    ${since.length?`<ul class="vhChanges long">${since.slice(0,80).map(c=>`<li>${esc(c)}</li>`).join('')}${since.length>80?`<li>…其餘 ${since.length-80} 項</li>`:''}</ul>`:'<div class="vhEmpty">內容和目前相同。</div>'}
+    <div class="vhBar"><button class="vhBtn" id="vhBack">← 返回版本記錄</button><button class="vhBtn" id="vhCopy">下載這個版本（JSON）</button><button class="vhBtn warn" id="vhRestore">還原這個版本</button></div>`;
+  modal('預覽版本',html,w=>{
+    w.querySelector('#vhBack').onclick=()=>renderHistory(items,namedOnly);
+    w.querySelector('#vhCopy').onclick=()=>download('bonus-version_'+(item.key||'copy')+'.json',JSON.stringify({exportedAt:new Date().toISOString(),version:historyLabel(item),state},null,2));
+    w.querySelector('#vhRestore').onclick=()=>restoreVersion(item,state).catch(e=>alert('還原失敗：'+e.message));
+  });
+}
+async function restoreVersion(item,state){
+  const label=historyLabel(item);
+  if(prompt(`要把資料還原成 ${label} 的版本嗎？\n\n目前的內容會先自動存成一個版本，之後隨時可以再還原回來。\n\n請輸入「還原」確認：`)!=='還原') return;
+  // 先把目前狀態存成版本（等同 Google 的「還原前的版本仍保留在記錄中」）
+  await writeVersion({force:true,kind:'before-restore',changes:['還原前自動保存',...pendingChanges.keys()]});
+  pendingChanges.clear(); versionPendingSince=0;
+  saveLocalBackup('還原前自動備份');
+  const before=cloneState();
+  data=ensureShape(JSON.parse(JSON.stringify(state)));
+  saveLocalData(); render();
+  clearTimeout(cloudSaveTimer); cloudSaveTimer=null;
+  await syncCloud();
+  clearTimeout(versionTimer); pendingChanges.clear(); versionPendingSince=0;
+  try{ await writeVersion({force:true,kind:'restore',changes:[`還原為 ${label} 的版本`,...diffSummary(before,data)]}); }catch(e){}
+  audit('還原版本',label);
+  document.getElementById('proModal')?.remove();
+  alert(cloudMode?'已還原完成。':'已在本機還原，雲端暫時無法連線，連線後會自動上傳。');
 }
 
 // ====== 操作紀錄稽核（比照正式版 enhancements.js）======
@@ -581,7 +778,6 @@ async function audit(action,detail=''){
     await authedFetch(`${AUDIT_PATH}/${key}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({at:new Date().toISOString(),by:currentEmail(),action,detail,period:data.current})});
   }catch(e){}
 }
-function queueAudit(){ clearTimeout(auditTimer); auditTimer=setTimeout(()=>audit('資料修改','一般欄位修改'),3000); }
 async function showAudit(){
   try{
     const r=await authedFetch(`${AUDIT_PATH}.json?orderBy=%22$key%22&limitToLast=100`);
