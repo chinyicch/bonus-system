@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.2（整合測試版）</title>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1（整合測試版）</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <style>
@@ -64,8 +64,6 @@
 .vhEmpty,.vhLoading{padding:14px;background:#f4f5f0;border-radius:6px;font-size:13px;margin-top:8px}
 .vhTableWrap{overflow-x:auto;margin:10px 0}
 .vhTable{border-collapse:collapse;width:100%;font-size:13px}.vhTable th,.vhTable td{padding:6px 10px;border-bottom:1px solid #e5e8e2;text-align:right}.vhTable td:first-child,.vhTable th:first-child{text-align:left}
-.acTable{border-collapse:collapse;width:100%;font-size:13px;min-width:560px}.acTable th,.acTable td{padding:8px;border-bottom:1px solid #e5e8e2;text-align:left;vertical-align:middle}.acTable th{background:#f6f8f5;font-size:12px}
-.acSt{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700;background:#eceee8;color:#5b6358}.acSt.pending{background:#fff0d6;color:#8a5a00}.acSt.approved{background:#e5f2e8;color:#28603a}.acSt.disabled{background:#fbeae6;color:#a63d2e}
 .toolGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .toolGrid button,.modalPrimary{border:1px solid #cbd2c8;background:#f4f6f3;color:#1f2a44;border-radius:8px;padding:12px;font-weight:700;cursor:pointer}
 .modalPrimary{width:100%;margin-top:14px;background:#1f2a44;color:#fff}
@@ -86,53 +84,30 @@
 <body>
 
 <div class="login" id="loginBox">
-  <h1>工程管理系統 V5.2</h1>
+  <h1>工程管理系統 V5.1</h1>
   <div class="sub">海壹有限公司｜公司內部系統（整合測試版）</div>
   <form id="loginForm">
-    <label for="email">帳號或電子郵件</label>
-    <input id="email" type="text" autocomplete="username" autocapitalize="off" required>
+    <label for="email">電子郵件</label>
+    <input id="email" type="email" autocomplete="username" required>
     <label for="password">密碼</label>
     <input id="password" type="password" autocomplete="current-password" required>
     <button id="loginBtn" type="submit">登入系統</button>
     <button id="forgotBtn" class="linkbtn" type="button">忘記密碼／重設密碼</button>
-    <button id="toRegister" class="linkbtn" type="button">還沒有帳號？註冊新帳號</button>
-  </form>
-  <form id="registerForm" class="hidden">
-    <label for="regName">名稱</label>
-    <input id="regName" type="text" autocomplete="name" placeholder="例如：王小明" maxlength="20" required>
-    <label for="regUser">帳號</label>
-    <input id="regUser" type="text" autocomplete="username" autocapitalize="off" placeholder="英文、數字，3～20 字" maxlength="20" required>
-    <label for="regPass">密碼</label>
-    <input id="regPass" type="password" autocomplete="new-password" placeholder="至少 6 個字" required>
-    <label for="regPass2">確認密碼</label>
-    <input id="regPass2" type="password" autocomplete="new-password" required>
-    <label for="regEmail">信箱</label>
-    <input id="regEmail" type="email" autocomplete="email" placeholder="忘記密碼時用來重設" required>
-    <button id="regBtn" type="submit">註冊</button>
-    <button id="toLogin" class="linkbtn" type="button">已經有帳號了，回到登入</button>
   </form>
   <div class="msg" id="msg"></div>
-  <div class="small" id="loginNote">註冊後需要管理員核准才能使用系統。</div>
-</div>
-<div class="login hidden" id="pendingBox">
-  <h1 id="pendingTitle">等待管理員核准</h1>
-  <div class="sub" id="pendingText">你的帳號已註冊完成，管理員核准後就能使用系統。</div>
-  <button id="pendingRecheck" class="linkbtn" type="button">重新檢查</button>
-  <button class="linkbtn" type="button" onclick="doLogout()">登出</button>
-  <div class="msg" id="pendingMsg"></div>
+  <div class="small">只有 Firebase 已建立的帳號可以登入（跟正式版共用同一批帳號）。這是整合測試版，資料存放在獨立的雲端路徑，不會影響正式版現有資料。</div>
 </div>
 
 <div id="appRoot" class="hidden">
 <div class="top"><div class="topRow">
   <div>
-    <b style="font-size:21px">工程管理系統 V5.2｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
+    <b style="font-size:21px">工程管理系統 V5.1｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
     <div style="font-size:12px;opacity:.82">施工追蹤 → 工作單 → 結案管理 → 半年工程獎金 → 內外機台數</div>
   </div>
   <div class="topActions">
     <span id="userBadge" class="topInfo"></span>
     <span id="syncState" class="topInfo"></span>
     <button class="topbtn" onclick="showBackups()">🕘 版本記錄</button>
-    <button class="topbtn" id="acctBtn" style="display:none" onclick="openAccountManager()">🔑 帳號管理</button>
     <button class="topbtn" onclick="openRosterManager()">👥 人員管理</button>
     <button class="topbtn" onclick="dataTools()">📦 資料工具</button>
     <button class="topbtn" onclick="doLogout()">登出</button>
@@ -579,14 +554,8 @@ async function guardedAction(confirmMsg, backupReason, backupType, action){
 }
 // ====== 更新歷史 ======
 // 之後每次改版：APP_VERSION 改成新版號，並在 CHANGELOG 最上面加一筆（同步更新 CHANGELOG.md）。
-const APP_VERSION='5.2';
+const APP_VERSION='5.1';
 const CHANGELOG=[
-  {ver:'5.2', date:'2026-09-30', items:[
-    '新增同仁自行註冊：名稱、帳號、密碼、確認密碼、信箱',
-    '註冊後需管理員核准才能使用；管理員可在「🔑 帳號管理」核准、拒絕、停用或恢復帳號',
-    '登入可以輸入帳號或信箱；忘記密碼也可以用帳號重設（重設信寄到註冊信箱）',
-    '右上角顯示登入者的名稱'
-  ]},
   {ver:'5.1', date:'2026-09-30', items:[
     '多人同時輸入不再互相覆蓋：兩人同時儲存時，系統會自動合併雙方的修改（新增的案件、進場紀錄、人員都會保留）',
     '自動同步：每 10 秒抓取其他人的修改，切回分頁時也會立即更新；正在輸入時會等輸入完才刷新畫面',
@@ -1515,182 +1484,36 @@ async function initApp(){
   showWhatsNewOnce();
 }
 
-// ====== 登入／註冊／帳號核准 ======
-// 同仁自行註冊（名稱、帳號、密碼、信箱）→ 狀態「待核准」→ 管理員在「🔑 帳號管理」核准後才能使用。
-// 真正的權限由 Firebase 資料庫規則把關（見 firebase-rules.json），這裡的畫面只是配合顯示。
-const ADMIN_EMAIL='cyxigion04012@gmail.com';
-const USERS_PATH='/v2Users', USERNAMES_PATH='/v2Usernames';
-const USERNAME_RE=/^[a-z0-9_-]{3,20}$/;
-let myProfile=null, registering=false;
-function isAdmin(){ const u=auth.currentUser; return !!(u && (u.email||'').toLowerCase()===ADMIN_EMAIL); }
-function humanAuthError(code){ const map={'auth/invalid-credential':'帳號或密碼錯誤','auth/invalid-login-credentials':'帳號或密碼錯誤','auth/wrong-password':'帳號或密碼錯誤','auth/user-disabled':'此帳號已停用','auth/too-many-requests':'嘗試次數過多，請稍後再試','auth/network-request-failed':'網路連線失敗，請稍後再試','auth/user-not-found':'找不到這個帳號','auth/invalid-email':'電子郵件格式不正確','auth/email-already-in-use':'這個信箱已經註冊過了，請直接登入','auth/weak-password':'密碼至少需要 6 個字','auth/operation-not-allowed':'系統尚未開放註冊，請聯絡管理員'}; return map[code]||'操作失敗，請確認輸入的資料'; }
-async function lookupUsername(name){
-  const r=await fetch(`${DB_URL}${USERNAMES_PATH}/${encodeURIComponent(name)}.json`,{cache:'no-store'});
-  if(!r.ok) return {ok:false};
-  return {ok:true, entry:await r.json()};
-}
-// 輸入的是帳號就查出對應的信箱；有 @ 就當作信箱
-async function resolveLoginEmail(input){
-  const v=input.trim();
-  if(v.includes('@')) return v;
-  const name=v.toLowerCase();
-  if(!USERNAME_RE.test(name)) throw {code:'auth/user-not-found'};
-  const r=await lookupUsername(name);
-  if(!r.ok) throw {code:'auth/network-request-failed'};
-  if(!r.entry||!r.entry.email) throw {code:'auth/user-not-found'};
-  return r.entry.email;
-}
+// ====== 登入 ======
+function humanAuthError(code){ const map={'auth/invalid-credential':'電子郵件或密碼錯誤','auth/invalid-login-credentials':'電子郵件或密碼錯誤','auth/user-disabled':'此帳號已停用','auth/too-many-requests':'嘗試次數過多，請稍後再試','auth/network-request-failed':'網路連線失敗，請稍後再試','auth/user-not-found':'找不到這個帳號','auth/invalid-email':'電子郵件格式不正確'}; return map[code]||'登入失敗，請確認帳號與密碼'; }
 const loginForm=document.getElementById('loginForm');
-const registerForm=document.getElementById('registerForm');
 const loginBtn=document.getElementById('loginBtn');
 const msgEl=document.getElementById('msg');
-function setMsg(text,ok=false){ msgEl.className='msg'+(ok?' ok':''); msgEl.textContent=text; }
-function showAuthForm(which){
-  loginForm.classList.toggle('hidden',which!=='login');
-  registerForm.classList.toggle('hidden',which!=='register');
-  document.querySelector('#loginBox h1').textContent=which==='register'?'註冊新帳號':'工程管理系統 V'+APP_VERSION;
-  setMsg('');
-}
-document.getElementById('toRegister').onclick=()=>showAuthForm('register');
-document.getElementById('toLogin').onclick=()=>showAuthForm('login');
 loginForm.addEventListener('submit', async e=>{
-  e.preventDefault(); loginBtn.disabled=true; setMsg('登入中…');
-  try{ await auth.signInWithEmailAndPassword(await resolveLoginEmail(document.getElementById('email').value), document.getElementById('password').value); }
-  catch(err){ loginBtn.disabled=false; setMsg(humanAuthError(err.code)); }
+  e.preventDefault(); loginBtn.disabled=true; msgEl.className='msg'; msgEl.textContent='登入中…';
+  try{ await auth.signInWithEmailAndPassword(document.getElementById('email').value.trim(), document.getElementById('password').value); }
+  catch(err){ loginBtn.disabled=false; msgEl.textContent=humanAuthError(err.code); }
 });
 document.getElementById('forgotBtn').addEventListener('click', async()=>{
-  const input=document.getElementById('email').value.trim();
-  if(!input){ setMsg('請先在上面輸入帳號或電子郵件'); return; }
-  try{ await auth.sendPasswordResetEmail(await resolveLoginEmail(input)); setMsg('重設密碼信已寄出，請到註冊時填的信箱查看。',true); }
-  catch(err){ setMsg(humanAuthError(err.code)); }
-});
-registerForm.addEventListener('submit', async e=>{
-  e.preventDefault();
-  const name=document.getElementById('regName').value.trim();
-  const username=document.getElementById('regUser').value.trim().toLowerCase();
-  const pass=document.getElementById('regPass').value, pass2=document.getElementById('regPass2').value;
-  const email=document.getElementById('regEmail').value.trim();
-  if(!name) return setMsg('請輸入名稱');
-  if(!USERNAME_RE.test(username)) return setMsg('帳號只能用英文小寫、數字、底線或減號，長度 3～20 字');
-  if(pass.length<6) return setMsg('密碼至少需要 6 個字');
-  if(pass!==pass2) return setMsg('兩次輸入的密碼不一樣');
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return setMsg('信箱格式不正確');
-  const btn=document.getElementById('regBtn'); btn.disabled=true; setMsg('註冊中…');
-  try{
-    const taken=await lookupUsername(username);
-    if(taken.ok && taken.entry){ setMsg('這個帳號已經有人使用，請換一個'); return; }
-    registering=true;
-    const cred=await auth.createUserWithEmailAndPassword(email,pass);
-    try{ await cred.user.updateProfile({displayName:name}); }catch(e){}
-    const put=(path,body)=>authedFetch(path,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const profile={name, username, email, status:email.toLowerCase()===ADMIN_EMAIL?'approved':'pending', createdAt:new Date().toISOString()};
-    await put(`${USERS_PATH}/${cred.user.uid}.json`, profile);
-    const u=await put(`${USERNAMES_PATH}/${username}.json`, {uid:cred.user.uid, email});
-    if(!u.ok) console.warn('username reserve failed', u.status);
-    registering=false;
-    await gateUser(cred.user);
-  }catch(err){ registering=false; setMsg(humanAuthError(err.code)); }
-  finally{ btn.disabled=false; }
+  const email=document.getElementById('email').value.trim();
+  if(!email){ msgEl.className='msg'; msgEl.textContent='請先輸入要重設密碼的電子郵件'; return; }
+  try{ await auth.sendPasswordResetEmail(email); msgEl.className='msg ok'; msgEl.textContent='重設密碼信已寄出，請到信箱查看。'; }
+  catch(err){ msgEl.className='msg'; msgEl.textContent=humanAuthError(err.code); }
 });
 function doLogout(){ auth.signOut().then(()=>location.reload()); }
-function showPending(title,text){
-  document.getElementById('loginBox').classList.add('hidden');
-  document.getElementById('appRoot').classList.add('hidden');
-  document.getElementById('pendingBox').classList.remove('hidden');
-  document.getElementById('pendingTitle').textContent=title;
-  document.getElementById('pendingText').textContent=text;
-}
-document.getElementById('pendingRecheck').onclick=async()=>{
-  const m=document.getElementById('pendingMsg'); m.className='msg'; m.textContent='檢查中…';
-  if(auth.currentUser) await gateUser(auth.currentUser);
-  if(!appStarted){ m.textContent='目前還沒有核准，請稍後再試或聯絡管理員。'; }
-};
-// 登入後檢查帳號狀態：管理員直接進入；已核准進入；其他顯示等待畫面
-async function gateUser(user){
-  let profile=null, readable=true;
-  try{
-    const r=await authedFetch(`${USERS_PATH}/${user.uid}.json`,{cache:'no-store'});
-    if(r.ok) profile=await r.json(); else readable=false;
-  }catch(e){ readable=false; }
-  const put=body=>authedFetch(`${USERS_PATH}/${user.uid}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).catch(()=>{});
-  const base={name:user.displayName||(user.email||'').split('@')[0], username:'', email:user.email||'', createdAt:new Date().toISOString()};
-  if(isAdmin()){
-    if(readable && (!profile || profile.status!=='approved')) await put({...base,...(profile||{}),status:'approved'});
-    myProfile=profile||{...base,status:'approved'};
-    return enterApp();
-  }
-  if(!readable){ showPending('無法確認帳號權限','目前無法讀取帳號狀態，請確認網路連線後按「重新檢查」，或聯絡管理員。'); return; }
-  if(!profile){
-    // 規則上線前就存在的舊帳號：自動補一筆「待核准」，讓管理員看得到並核准
-    profile={...base,status:'pending'}; await put(profile);
-  }
-  myProfile=profile;
-  if(profile.status==='approved') return enterApp();
-  if(profile.status==='disabled') return showPending('帳號已停用','這個帳號已被管理員停用，如有疑問請聯絡管理員。');
-  showPending('等待管理員核准',`${profile.name||''} 你好，帳號已註冊完成（帳號：${profile.username||profile.email}）。管理員核准後，按「重新檢查」就能進入系統。`);
-}
 let appStarted=false;
-function enterApp(){
-  document.getElementById('loginBox').classList.add('hidden');
-  document.getElementById('pendingBox').classList.add('hidden');
-  document.getElementById('appRoot').classList.remove('hidden');
-  const badge=document.getElementById('userBadge'); if(badge) badge.textContent='👤 '+((myProfile&&myProfile.name)||currentEmail());
-  if(isAdmin()){ document.getElementById('acctBtn').style.display=''; refreshPendingCount(); }
-  if(!appStarted){ appStarted=true; initApp(); }
-}
 auth.onAuthStateChanged(user=>{
   if(user){
-    if(registering) return; // 註冊流程會自己接著處理
-    gateUser(user);
+    document.getElementById('loginBox').classList.add('hidden');
+    document.getElementById('appRoot').classList.remove('hidden');
+    const badge=document.getElementById('userBadge'); if(badge) badge.textContent='👤 '+currentEmail();
+    if(!appStarted){ appStarted=true; initApp(); }
   } else {
     document.getElementById('appRoot').classList.add('hidden');
-    document.getElementById('pendingBox').classList.add('hidden');
     document.getElementById('loginBox').classList.remove('hidden');
     loginBtn.disabled=false;
   }
 });
-// ====== 帳號管理（僅管理員）======
-const ACCOUNT_STATUS_LABEL={pending:'待核准',approved:'已核准',disabled:'已停用'};
-async function fetchAllUsers(){
-  const r=await authedFetch(`${USERS_PATH}.json`,{cache:'no-store'});
-  if(!r.ok) throw new Error('HTTP '+r.status);
-  return Object.entries(await r.json()||{}).map(([uid,u])=>({uid,...u}));
-}
-async function refreshPendingCount(){
-  try{
-    const n=(await fetchAllUsers()).filter(u=>u.status==='pending').length;
-    document.getElementById('acctBtn').textContent='🔑 帳號管理'+(n?`（${n} 待核准）`:'');
-  }catch(e){}
-}
-async function openAccountManager(){
-  if(!isAdmin()) return;
-  let users;
-  try{ users=await fetchAllUsers(); }catch(e){ alert('讀取帳號清單失敗：'+e.message); return; }
-  const order={pending:0,approved:1,disabled:2};
-  users.sort((a,b)=>(order[a.status]??3)-(order[b.status]??3)||String(b.createdAt).localeCompare(String(a.createdAt)));
-  const rows=users.map(u=>{
-    const me=(u.email||'').toLowerCase()===ADMIN_EMAIL;
-    const acts=me?'<span class="muted">管理員</span>':
-      u.status==='pending'?`<button class="vhBtn primary" data-uid="${esc(u.uid)}" data-st="approved">核准</button> <button class="vhBtn warn" data-uid="${esc(u.uid)}" data-st="disabled">拒絕</button>`:
-      u.status==='approved'?`<button class="vhBtn warn" data-uid="${esc(u.uid)}" data-st="disabled">停用</button>`:
-      `<button class="vhBtn" data-uid="${esc(u.uid)}" data-st="approved">恢復</button>`;
-    return `<tr><td><b>${esc(u.name||'')}</b></td><td>${esc(u.username||'-')}</td><td>${esc(u.email||'')}</td><td>${u.createdAt?esc(new Date(u.createdAt).toLocaleDateString('zh-TW')):''}</td><td><span class="acSt ${esc(u.status||'')}">${esc(ACCOUNT_STATUS_LABEL[u.status]||u.status||'')}</span></td><td style="white-space:nowrap">${acts}</td></tr>`;
-  }).join('');
-  modal('帳號管理',`<div class="vhHint">同仁註冊後會出現在這裡，核准後才能進入系統。停用後該帳號會立即無法讀寫資料。</div>
-    <div class="vhTableWrap"><table class="acTable"><tr><th>名稱</th><th>帳號</th><th>信箱</th><th>註冊日</th><th>狀態</th><th></th></tr>${rows||'<tr><td colspan="6">目前沒有帳號</td></tr>'}</table></div>`,w=>{
-    w.querySelectorAll('button[data-uid]').forEach(b=>b.onclick=async()=>{
-      const u=users.find(x=>x.uid===b.dataset.uid), st=b.dataset.st;
-      if(st==='disabled' && !confirm(`確定要${u.status==='pending'?'拒絕':'停用'}「${u.name}」的帳號嗎？`)) return;
-      b.disabled=true;
-      try{
-        const r=await authedFetch(`${USERS_PATH}/${u.uid}.json`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:st,reviewedBy:currentEmail(),reviewedAt:new Date().toISOString()})});
-        if(!r.ok) throw new Error('HTTP '+r.status);
-        audit(st==='approved'?'核准帳號':'停用帳號',`${u.name}（${u.username||u.email}）`);
-        await openAccountManager(); refreshPendingCount();
-      }catch(e){ alert('更新失敗：'+e.message); b.disabled=false; }
-    });
-  });
-}
 </script>
 </body>
 </html>
