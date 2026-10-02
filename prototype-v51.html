@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.2（整合測試版）</title>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.3（整合測試版）</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <style>
@@ -39,6 +39,10 @@
 .proBox{position:relative;width:min(680px,100%);max-height:84vh;overflow:auto;background:#fff;color:#1f2a44;border-radius:12px;padding:20px;box-shadow:0 16px 50px rgba(0,0,0,.28)}
 .proBox h3{margin:0 32px 14px 0}
 .proClose{position:absolute;right:12px;top:10px;border:0;background:none;color:#666;font-size:26px;cursor:pointer}
+.closeTabs{display:flex;gap:6px}.closeTab{border:1px solid #cbd2c8;background:#fff;border-radius:999px;padding:7px 14px;font-weight:800;cursor:pointer;color:#1f2a44}.closeTab.on{background:#1f2a44;color:#fff;border-color:#1f2a44}.ctCount{display:inline-block;min-width:20px;padding:0 6px;border-radius:999px;background:#e5e8e2;color:#1f2a44;font-size:12px;margin-left:4px}.closeTab.on .ctCount{background:#A9862F;color:#fff}
+.closeFlash{margin:10px 0;padding:12px 14px;border-radius:10px;background:#e5f2e8;border:1px solid #bcd9c3;color:#28603a;font-size:14px;line-height:1.7}.closeFlash .btn{margin-left:6px}
+#close .smartFilterRow input{flex:1 1 220px;width:auto}#close .smartFilterRow select{flex:0 1 180px;width:auto}.closeTable th,.closeTable td .btn,.closeTable td:nth-child(4){white-space:nowrap}.closeTable{min-width:900px}
+.closeTable input{min-width:90px}.linkish{border:0;background:none;color:#a63d2e;font-size:12px;text-decoration:underline;cursor:pointer;padding:4px}
 .unitTable{min-width:560px}.unitTotal td{font-weight:800;background:#f6f8f5}.clickRow{cursor:pointer}.clickRow:hover td{background:#f6f8f5}
 .verLink{border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer;vertical-align:middle;margin-left:6px}
 .clVer{border-top:1px solid #e0e2da;padding:12px 2px}.clVer:first-of-type{border-top:0}.clHead{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.clNum{font-weight:900;font-size:16px}.clDate{font-size:12px;color:#687064}.clNew{font-size:11px;font-weight:800;background:#e5f2e8;color:#28603a;border-radius:999px;padding:1px 8px}.clVer ul{margin:6px 0 0;padding-left:20px;font-size:13px;line-height:1.7;color:#3a4458}
@@ -85,7 +89,7 @@
 <body>
 
 <div class="login" id="loginBox">
-  <h1>工程管理系統 V5.1.2</h1>
+  <h1>工程管理系統 V5.1.3</h1>
   <div class="sub">海壹有限公司｜公司內部系統（整合測試版）</div>
   <form id="loginForm">
     <label for="email">帳號或電子郵件</label>
@@ -102,7 +106,7 @@
 <div id="appRoot" class="hidden">
 <div class="top"><div class="topRow">
   <div>
-    <b style="font-size:21px">工程管理系統 V5.1.2｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
+    <b style="font-size:21px">工程管理系統 V5.1.3｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
     <div style="font-size:12px;opacity:.82">施工追蹤 → 工作單 → 結案管理 → 半年工程獎金 → 內外機台數</div>
   </div>
   <div class="topActions">
@@ -181,14 +185,21 @@
 <section id="close" class="hidden"><div class="card">
   <div class="headrow">
     <h2 style="margin:0">結案管理</h2>
-    <button class="btn red small" onclick="cancelAllClosedInCurrentView()">↩ 全部取消結案（依目前篩選）</button>
+    <div class="closeTabs">
+      <button class="closeTab on" data-ctab="pending" onclick="setCloseTab('pending')">待結案 <span id="closePendingCount" class="ctCount">0</span></button>
+      <button class="closeTab" data-ctab="done" onclick="setCloseTab('done')">已結案 <span id="closeDoneCount" class="ctCount">0</span></button>
+    </div>
   </div>
+  <div id="closeFlash" class="closeFlash hidden"></div>
+  <div class="callout muted" id="closeHint"></div>
   <div class="smartFilterRow" style="margin-bottom:10px">
     <input id="closeSearch" type="search" placeholder="搜尋案件名稱、管理人…" oninput="closeSearchState.text=this.value;renderClose()">
     <select id="closeManagerFilter" onchange="closeSearchState.manager=this.value;renderClose()"><option value="">全部管理人</option></select>
-    <span id="closeFilterCount"></span>
+    <select id="closePeriodFilter" class="hidden" onchange="closeSearchState.period=this.value;renderClose()"></select>
+    <span id="closeFilterCount" class="muted"></span>
+    <button class="btn green small" id="closeBatchBtn" onclick="finishCloseBatch()">✓ 已填寫的全部結案</button>
   </div>
-  <div class="scroll"><table class="table"><thead><tr><th>#</th><th>案件</th><th>管理人</th><th>完工日</th><th>工程績效</th><th>本案 %</th><th>工程獎金</th><th></th></tr></thead><tbody id="closeBody"></tbody></table></div>
+  <div class="scroll"><table class="table closeTable"><thead id="closeHead"></thead><tbody id="closeBody"></tbody></table></div>
 </div></section>
 
 <section id="bonus" class="hidden"><div class="card">
@@ -567,8 +578,16 @@ async function guardedAction(confirmMsg, backupReason, backupType, action){
 }
 // ====== 更新歷史 ======
 // 之後每次改版：APP_VERSION 改成新版號，並在 CHANGELOG 最上面加一筆（同步更新 CHANGELOG.md）。
-const APP_VERSION='5.1.2';
+const APP_VERSION='5.1.3';
 const CHANGELOG=[
+  {ver:'5.1.3', date:'2026-10-02', items:[
+    '結案管理分成「待結案」與「已結案」兩個分頁，各自顯示筆數',
+    '待結案：輸入工程績效與分紅 % 時即時算出工程獎金，並顯示會計入哪一個半年期',
+    '按「結案」後案件移到「已結案」，畫面提示已計入哪一期半年工程獎金，可一鍵前往查看',
+    '新增「已填寫的全部結案」，一次結案多筆',
+    '已結案：可依半年期篩選、顯示獎金合計；金額打錯用「修改」更正，不需撤回重填',
+    '原本的紅色「取消結案」改為不顯眼的「撤回結案」，並移除「全部取消結案」大按鈕'
+  ]},
   {ver:'5.1.2', date:'2026-10-02', items:[
     '內外機台數改為按季紀錄：一季 3 個月（Q1＝1～3 月…Q4＝10～12 月），可切換季別查看每人內機／外機台數，並標示統計期間',
     '新增「各季總覽」：每一季的期間、案件數、人數、內機、外機、合計',
@@ -1315,49 +1334,128 @@ function markDone(){
 }
 
 // ====== 結案管理 ======
-let closeSearchState={text:'',manager:''};
+// 流程：工作單按「完工」→ 這裡「待結案」填工程績效、分紅% → 結案後計入該半年期的「半年工程獎金」，並移到「已結案」。
+// 已結案的金額要更正用「修改」；真的不該結案才用「撤回結案」（會回到待結案）。
+let closeSearchState={text:'',manager:'',period:''};
+let closeTab='pending', closeDraft={}; // closeDraft：待結案列上尚未送出的輸入，重新整理畫面時保留
+function setCloseTab(t){ closeTab=t; document.querySelectorAll('.closeTab').forEach(b=>b.classList.toggle('on',b.dataset.ctab===t)); renderClose(); }
+function closeMatches(name,manager){
+  const text=normalize(closeSearchState.text);
+  return (!text||normalize(name+' '+manager).includes(text)) && (!closeSearchState.manager||manager===closeSearchState.manager);
+}
+function pendingCloseProjects(){
+  const closed=new Set(data.closedRecords.map(c=>c.id));
+  return data.projects.filter(p=>p.status==='已完工' && !closed.has(p.id));
+}
 function renderClose(){
-  const all=data.projects.filter(p=>p.status==='已完工');
   const managerSel=document.getElementById('closeManagerFilter');
   if(managerSel){
     const cur=closeSearchState.manager;
     managerSel.innerHTML='<option value="">全部管理人</option>'+data.roster.map(n=>`<option ${n===cur?'selected':''}>${esc(n)}</option>`).join('');
   }
-  const text=normalize(closeSearchState.text), manager=closeSearchState.manager;
-  const a=all.filter(p=>(!text||normalize(p.name+' '+p.manager).includes(text)) && (!manager||p.manager===manager));
-  const cnt=document.getElementById('closeFilterCount'); if(cnt) cnt.textContent=`顯示 ${a.length} / ${all.length} 筆`;
-  document.getElementById('closeBody').innerHTML = a.length ? a.map((p,i)=>{
-    const c=data.closedRecords.find(x=>x.id===p.id);
-    return `<tr data-id="${esc(p.id)}"><td class="muted">${i+1}</td><td>${esc(p.name)}</td><td>${esc(p.manager)}</td><td>${esc(p.doneDate||'')}</td><td><input class="perf" type="number" ${c?'disabled':''} value="${c?c.perf:''}"></td><td><input class="pct" type="number" min="0" max="10" ${c?'disabled':''} value="${c?c.pct:''}"></td><td>${c?'$'+fmt(c.bonus):'待計算'}</td><td>${c?`<button class="btn red small" onclick="cancelClose('${esc(p.id)}')">取消結案</button>`:`<button class="btn green" onclick="finishClose(this)">確認結案</button>`}</td></tr>`;
-  }).join('') : '<tr><td colspan="8">目前沒有符合條件的待結案案件</td></tr>';
+  const pendingAll=pendingCloseProjects(), doneAll=data.closedRecords;
+  document.getElementById('closePendingCount').textContent=pendingAll.length;
+  document.getElementById('closeDoneCount').textContent=doneAll.length;
+  const isPending=closeTab==='pending';
+  document.getElementById('closeBatchBtn').classList.toggle('hidden',!isPending);
+  const periodSel=document.getElementById('closePeriodFilter');
+  periodSel.classList.toggle('hidden',isPending);
+  const cnt=document.getElementById('closeFilterCount');
+  if(isPending){
+    document.getElementById('closeHint').textContent='已完工的案件會出現在這裡。填好工程績效與本案分紅 % 後按「結案」，就會計入該案完工日所屬半年期的「半年工程獎金」，並移到「已結案」。';
+    const a=pendingAll.filter(p=>closeMatches(p.name,p.manager));
+    cnt.textContent=`顯示 ${a.length} / ${pendingAll.length} 筆`;
+    document.getElementById('closeHead').innerHTML='<tr><th>#</th><th>案件</th><th>管理人</th><th>完工日</th><th>計入半年期</th><th>工程績效</th><th>本案 %</th><th>工程獎金</th><th></th></tr>';
+    document.getElementById('closeBody').innerHTML = a.length ? a.map((p,i)=>{
+      const d=closeDraft[p.id]||{}, period=periodFromDate(p.doneDate||new Date().toISOString().slice(0,10));
+      const bonus=d.perf&&d.pct!==''&&d.pct!=null?Math.round(d.perf*d.pct/100):null;
+      return `<tr data-id="${esc(p.id)}"><td class="muted">${i+1}</td><td>${esc(p.name)}</td><td>${esc(p.manager||'待指派')}</td><td>${esc(p.doneDate||'')}</td><td class="muted">${esc(periodShort(period))}</td>
+        <td><input class="perf" type="number" min="0" inputmode="numeric" placeholder="金額" value="${d.perf??''}" oninput="closeDraftInput(this)"></td>
+        <td><input class="pct" type="number" min="0" max="10" step="0.1" inputmode="decimal" placeholder="0–10" value="${d.pct??''}" oninput="closeDraftInput(this)"></td>
+        <td class="bonusCell">${bonus!=null?'$'+fmt(bonus):'<span class="muted">待計算</span>'}</td>
+        <td><button class="btn green small" onclick="finishClose('${esc(p.id)}')">✓ 結案</button></td></tr>`;
+    }).join('') : `<tr><td colspan="9">${pendingAll.length?'沒有符合篩選條件的案件':'目前沒有待結案的案件 🎉　（工作單按「完工」後，案件會出現在這裡）'}</td></tr>`;
+  } else {
+    document.getElementById('closeHint').textContent='這裡是已計入半年工程獎金的案件。金額有誤請按「修改」；若案件不該結案，可「撤回結案」讓它回到待結案。';
+    const periods=[...new Set(doneAll.map(c=>c.period))].sort((a,b)=>periodSortKey(b)-periodSortKey(a));
+    if(closeSearchState.period && !periods.includes(closeSearchState.period)) closeSearchState.period='';
+    periodSel.innerHTML='<option value="">全部半年期</option>'+periods.map(x=>`<option value="${x}" ${x===closeSearchState.period?'selected':''}>${esc(periodShort(x))}</option>`).join('');
+    const a=doneAll.filter(c=>closeMatches(c.name,c.manager) && (!closeSearchState.period||c.period===closeSearchState.period))
+      .slice().sort((x,y)=>String(y.doneDate||'').localeCompare(String(x.doneDate||'')));
+    cnt.textContent=`顯示 ${a.length} / ${doneAll.length} 筆｜獎金合計 $${fmt(a.reduce((s,c)=>s+Number(c.bonus||0),0))}`;
+    document.getElementById('closeHead').innerHTML='<tr><th>#</th><th>案件</th><th>管理人</th><th>完工日</th><th>半年期</th><th>工程績效</th><th>本案 %</th><th>工程獎金</th><th></th></tr>';
+    document.getElementById('closeBody').innerHTML = a.length ? a.map((c,i)=>`<tr><td class="muted">${i+1}</td><td>${esc(c.name)}</td><td>${esc(c.manager||'')}</td><td>${esc(c.doneDate||'')}</td>
+      <td><a href="#" onclick="openBonusPeriod('${esc(c.period)}');return false">${esc(periodShort(c.period))}</a></td><td>$${fmt(c.perf)}</td><td>${esc(c.pct)}%</td><td><b>$${fmt(c.bonus)}</b></td>
+      <td style="white-space:nowrap"><button class="btn small" onclick="editClose('${esc(c.id)}','${esc(c.period)}')">✎ 修改</button> <button class="linkish" onclick="cancelClose('${esc(c.id)}','${esc(c.period)}')">撤回結案</button></td></tr>`).join('')
+      : '<tr><td colspan="9">沒有符合條件的已結案案件</td></tr>';
+  }
 }
-function finishClose(btn){
-  const row=btn.closest('tr'); const p=data.projects.find(x=>x.id===row.dataset.id); if(!p) return;
-  const perf=+row.querySelector('.perf').value, pct=+row.querySelector('.pct').value;
-  if(!perf||pct<0||pct>10) return alert('請確認績效與 0–10%');
+function closeDraftInput(input){
+  const row=input.closest('tr'), id=row.dataset.id;
+  const perf=row.querySelector('.perf').value, pct=row.querySelector('.pct').value;
+  closeDraft[id]={perf:perf===''?'':+perf, pct:pct===''?'':+pct};
+  const cell=row.querySelector('.bonusCell');
+  cell.innerHTML = perf!=='' && pct!=='' ? '$'+fmt(Math.round(+perf*+pct/100)) : '<span class="muted">待計算</span>';
+}
+function validClose(perf,pct){ return perf>0 && pct!=='' && pct>=0 && pct<=10; }
+function closeOne(p,perf,pct){
   const doneDate=p.doneDate||new Date().toISOString().slice(0,10);
+  if(!p.doneDate) p.doneDate=doneDate;
   const period=periodFromDate(doneDate);
   if(!data.order.includes(period)){ data.order.push(period); data.order.sort((a,b)=>periodSortKey(a)-periodSortKey(b)); }
-  data.current=period;
   data.closedRecords.push({id:p.id,name:p.name,manager:p.manager,perf,pct,bonus:Math.round(perf*pct/100),doneDate,period});
-  persist(); renderClose(); renderBonusAll();
+  delete closeDraft[p.id];
+  return period;
 }
-async function cancelClose(id){
-  const c=data.closedRecords.find(x=>x.id===id); if(!c) return;
-  await guardedAction(`確定要取消「${c.name}」的結案嗎？這筆的工程業績／分紅%／獎金紀錄會被清掉，變回「待計算」，可以重新輸入。`, '取消結案前自動備份', 'before-delete', ()=>{
-    data.closedRecords = data.closedRecords.filter(x=>x.id!==id);
-    persist(); renderClose(); renderBonusAll();
+function showCloseFlash(html){
+  const el=document.getElementById('closeFlash'); el.innerHTML=html; el.classList.remove('hidden');
+  clearTimeout(showCloseFlash.t); showCloseFlash.t=setTimeout(()=>el.classList.add('hidden'),15000);
+}
+function finishClose(id){
+  const p=data.projects.find(x=>x.id===id); if(!p) return;
+  const d=closeDraft[id]||{};
+  if(!validClose(d.perf,d.pct)) return alert('請填寫工程績效（大於 0）與本案分紅 %（0–10）');
+  const period=closeOne(p,d.perf,d.pct);
+  data.current=period;
+  persist(); renderClose(); renderBonusAll();
+  showCloseFlash(`✓「${esc(p.name)}」已結案，工程獎金 <b>$${fmt(Math.round(d.perf*d.pct/100))}</b> 已計入 <b>${esc(periodShort(period))}</b> 半年工程獎金。 <button class="btn small" onclick="openBonusPeriod('${period}')">前往半年工程獎金 →</button>`);
+}
+function finishCloseBatch(){
+  const ready=pendingCloseProjects().filter(p=>closeMatches(p.name,p.manager) && closeDraft[p.id] && validClose(closeDraft[p.id].perf,closeDraft[p.id].pct));
+  if(!ready.length) return alert('目前沒有填寫完整（工程績效＋分紅 %）的案件。');
+  const total=ready.reduce((s,p)=>s+Math.round(closeDraft[p.id].perf*closeDraft[p.id].pct/100),0);
+  if(!confirm(`要把已填寫的 ${ready.length} 筆案件全部結案嗎？\n工程獎金合計 $${fmt(total)}`)) return;
+  const periods=new Set(ready.map(p=>closeOne(p,closeDraft[p.id].perf,closeDraft[p.id].pct)));
+  data.current=[...periods].sort((a,b)=>periodSortKey(b)-periodSortKey(a))[0];
+  persist(); renderClose(); renderBonusAll();
+  showCloseFlash(`✓ 已結案 ${ready.length} 筆，工程獎金合計 <b>$${fmt(total)}</b>，已計入 ${[...periods].map(x=>'<b>'+esc(periodShort(x))+'</b>').join('、')} 半年工程獎金。 <button class="btn small" onclick="openBonusPeriod('${data.current}')">前往半年工程獎金 →</button>`);
+}
+function openBonusPeriod(period){
+  if(period && data.order.includes(period)) data.current=period;
+  go('bonus', document.querySelector('.tab[onclick*="\'bonus\'"]'));
+  const t=document.querySelector('.bsTab[data-btab="period"]'); if(t) setBonusTab('period',t);
+}
+function editClose(id,period){
+  const c=data.closedRecords.find(x=>x.id===id && x.period===period); if(!c) return;
+  modal('修改結案金額',`<div class="muted" style="margin-bottom:8px">${esc(c.name)}｜${esc(c.manager||'')}｜${esc(periodShort(c.period))}</div>
+    <div class="grid2"><div><label>工程績效</label><input id="ecPerf" type="number" min="0" value="${c.perf}"></div><div><label>本案 %（0–10）</label><input id="ecPct" type="number" min="0" max="10" step="0.1" value="${c.pct}"></div></div>
+    <div class="callout">工程獎金：<b id="ecBonus">$${fmt(c.bonus)}</b></div>
+    <button class="btn green" id="ecSave">儲存修改</button>`, w=>{
+    const upd=()=>{ const pf=+w.querySelector('#ecPerf').value, pc=+w.querySelector('#ecPct').value; w.querySelector('#ecBonus').textContent='$'+fmt(Math.round(pf*pc/100)); };
+    w.querySelector('#ecPerf').oninput=upd; w.querySelector('#ecPct').oninput=upd;
+    w.querySelector('#ecSave').onclick=()=>{
+      const perf=+w.querySelector('#ecPerf').value, pctRaw=w.querySelector('#ecPct').value, pct=+pctRaw;
+      if(!validClose(perf,pctRaw===''?'':pct)) return alert('請填寫工程績效（大於 0）與本案分紅 %（0–10）');
+      c.perf=perf; c.pct=pct; c.bonus=Math.round(perf*pct/100);
+      persist(); renderClose(); renderBonusAll(); w.remove();
+    };
   });
 }
-async function cancelAllClosedInCurrentView(){
-  const all=data.projects.filter(p=>p.status==='已完工');
-  const text=normalize(closeSearchState.text), manager=closeSearchState.manager;
-  const visible=all.filter(p=>(!text||normalize(p.name+' '+p.manager).includes(text)) && (!manager||p.manager===manager));
-  const ids=new Set(visible.map(p=>p.id));
-  const targets=data.closedRecords.filter(x=>ids.has(x.id));
-  if(!targets.length) return alert('目前畫面上沒有已結案的案件可以取消。');
-  await guardedAction(`確定要把目前畫面上這 ${targets.length} 筆已結案案件全部取消結案嗎？工程業績／分紅%／獎金紀錄都會被清掉，變回「待計算」。此動作無法復原（但備份還原得回來）。`, `批次取消 ${targets.length} 筆結案前自動備份`, 'before-delete', ()=>{
-    data.closedRecords = data.closedRecords.filter(x=>!ids.has(x.id));
+async function cancelClose(id,period){
+  const c=data.closedRecords.find(x=>x.id===id && (!period||x.period===period)); if(!c) return;
+  await guardedAction(`確定要撤回「${c.name}」的結案嗎？\n這筆會從 ${periodShort(c.period)} 半年工程獎金移除，回到「待結案」重新填寫。\n（只是金額打錯的話，請用「修改」就好）`, '撤回結案前自動備份', 'before-delete', ()=>{
+    data.closedRecords = data.closedRecords.filter(x=>x!==c);
+    closeDraft[c.id]={perf:c.perf,pct:c.pct};
     persist(); renderClose(); renderBonusAll();
   });
 }
