@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.1（整合測試版）</title>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.2（整合測試版）</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <style>
@@ -39,6 +39,7 @@
 .proBox{position:relative;width:min(680px,100%);max-height:84vh;overflow:auto;background:#fff;color:#1f2a44;border-radius:12px;padding:20px;box-shadow:0 16px 50px rgba(0,0,0,.28)}
 .proBox h3{margin:0 32px 14px 0}
 .proClose{position:absolute;right:12px;top:10px;border:0;background:none;color:#666;font-size:26px;cursor:pointer}
+.unitTable{min-width:560px}.unitTotal td{font-weight:800;background:#f6f8f5}.clickRow{cursor:pointer}.clickRow:hover td{background:#f6f8f5}
 .verLink{border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer;vertical-align:middle;margin-left:6px}
 .clVer{border-top:1px solid #e0e2da;padding:12px 2px}.clVer:first-of-type{border-top:0}.clHead{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.clNum{font-weight:900;font-size:16px}.clDate{font-size:12px;color:#687064}.clNew{font-size:11px;font-weight:800;background:#e5f2e8;color:#28603a;border-radius:999px;padding:1px 8px}.clVer ul{margin:6px 0 0;padding-left:20px;font-size:13px;line-height:1.7;color:#3a4458}
 .vhBar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 10px}
@@ -84,7 +85,7 @@
 <body>
 
 <div class="login" id="loginBox">
-  <h1>工程管理系統 V5.1.1</h1>
+  <h1>工程管理系統 V5.1.2</h1>
   <div class="sub">海壹有限公司｜公司內部系統（整合測試版）</div>
   <form id="loginForm">
     <label for="email">帳號或電子郵件</label>
@@ -101,7 +102,7 @@
 <div id="appRoot" class="hidden">
 <div class="top"><div class="topRow">
   <div>
-    <b style="font-size:21px">工程管理系統 V5.1.1｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
+    <b style="font-size:21px">工程管理系統 V5.1.2｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
     <div style="font-size:12px;opacity:.82">施工追蹤 → 工作單 → 結案管理 → 半年工程獎金 → 內外機台數</div>
   </div>
   <div class="topActions">
@@ -239,8 +240,20 @@
 </div></section>
 
 <section id="units" class="hidden"><div class="card">
-  <h2>內外機台數統計</h2>
-  <div class="scroll"><table class="table"><thead><tr><th>人員</th><th>內機</th><th>外機</th><th>來源案件</th></tr></thead><tbody id="unitBody"></tbody></table></div>
+  <div class="headrow"><h2>內外機台數統計</h2><select id="unitQuarterSel" style="width:auto;max-width:100%" onchange="setUnitQuarter(this.value)"></select></div>
+  <div class="muted" id="unitQuarterInfo"></div>
+  <div class="callout muted">一季 3 個月（Q1＝1～3 月、Q2＝4～6 月、Q3＝7～9 月、Q4＝10～12 月），台數依案件「完工日期」歸到該季。本頁僅做紀錄，季獎金不在本系統計算。</div>
+  <div class="scroll"><table class="table unitTable"><thead><tr><th>人員</th><th>內機</th><th>外機</th><th>合計</th><th>來源案件（完工日）</th></tr></thead><tbody id="unitBody"></tbody></table></div>
+</div>
+<div class="card">
+  <h2>各季總覽</h2>
+  <div class="muted">點一列可以切換到那一季的明細。</div>
+  <div class="scroll"><table class="table unitTable"><thead><tr><th>季別</th><th>期間</th><th>案件數</th><th>人數</th><th>內機</th><th>外機</th><th>合計</th></tr></thead><tbody id="unitQuarterBody"></tbody></table></div>
+</div>
+<div class="card hidden" id="unitPendingWrap">
+  <h2>尚未完工（不計入季別）</h2>
+  <div class="muted">這些案件已登記設備台數，完工後會依完工日期自動歸到該季。</div>
+  <div class="scroll"><table class="table unitTable"><thead><tr><th>案件</th><th>狀態</th><th>內機</th><th>外機</th></tr></thead><tbody id="unitPendingBody"></tbody></table></div>
 </div></section>
 
 </div>
@@ -554,8 +567,14 @@ async function guardedAction(confirmMsg, backupReason, backupType, action){
 }
 // ====== 更新歷史 ======
 // 之後每次改版：APP_VERSION 改成新版號，並在 CHANGELOG 最上面加一筆（同步更新 CHANGELOG.md）。
-const APP_VERSION='5.1.1';
+const APP_VERSION='5.1.2';
 const CHANGELOG=[
+  {ver:'5.1.2', date:'2026-10-02', items:[
+    '內外機台數改為按季紀錄：一季 3 個月（Q1＝1～3 月…Q4＝10～12 月），可切換季別查看每人內機／外機台數，並標示統計期間',
+    '新增「各季總覽」：每一季的期間、案件數、人數、內機、外機、合計',
+    '尚未完工的案件另外列出，完工後依完工日期自動歸季',
+    '案件狀態從下拉選單改成「已完工」時，也會自動記下完工日期'
+  ]},
   {ver:'5.1.1', date:'2026-09-30', items:[
     '登入可以直接輸入帳號（例如員工編號），不用打完整信箱'
   ]},
@@ -1286,7 +1305,7 @@ function saveLog(){
   document.getElementById('logWork').value=''; document.getElementById('logNote').value='';
   persist(); renderLogs(); renderTrack();
 }
-function setStatus(v){ const p=pnow(); if(!p) return; p.status=v; persist(); renderTrack(); }
+function setStatus(v){ const p=pnow(); if(!p) return; p.status=v; if(v==='已完工' && !p.doneDate) p.doneDate=new Date().toISOString().slice(0,10); persist(); renderTrack(); renderUnits(); }
 function markDone(){
   const p=pnow(); if(!p) return alert('請先在「施工追蹤」新增案件。');
   p.status='已完工'; p.doneDate=new Date().toISOString().slice(0,10);
@@ -1439,16 +1458,53 @@ document.addEventListener('click', ev=>{
 });
 
 // ====== 內外機台數 ======
-function renderUnits(){
-  const g={};
-  data.projects.forEach(p=>p.equipment.forEach(e=>{
-    [['indoor','i'],['outdoor','o']].forEach(([k,t])=>{
+// 季別：一季 3 個月，比照舊季獎金系統用日曆季（Q1＝1～3 月、Q2＝4～6 月、Q3＝7～9 月、Q4＝10～12 月）。
+// 台數依「案件完工日期」歸到該季；尚未完工的案件另外列出，不計入任何一季。這裡只做紀錄，季獎金不在本系統計算。
+let unitQuarter=null; // null＝目前這一季；'all'＝全部
+function quarterIdOf(dateStr){ const m=/^(\d{4})-(\d{2})/.exec(dateStr||''); return m?`${m[1]}-Q${Math.floor((+m[2]-1)/3)+1}`:''; }
+function quarterRange(qid){
+  const [y,q]=qid.split('-Q').map(Number), s=(q-1)*3+1, e=s+2, last=new Date(y,e,0).getDate();
+  return `${y}/${s}/1～${y}/${e}/${last}`;
+}
+function quarterTitle(qid){ const [y,q]=qid.split('-Q'); return `${y} 年 Q${q}`; }
+function projectUnitDate(p){ return p.status==='已完工' ? (p.doneDate || (p.logs||[]).map(l=>l.date).filter(Boolean).sort().pop() || p.createdDate || '') : ''; }
+function collectUnits(){
+  const rows=[]; // 每一筆：{q, person, kind:'i'|'o', project, date}
+  data.projects.forEach(p=>{
+    const date=projectUnitDate(p), q=quarterIdOf(date);
+    (p.equipment||[]).forEach(e=>[['indoor','i'],['outdoor','o']].forEach(([k,t])=>{
       const n=e[k]; if(!n||n==='待確認') return;
-      g[n]??={i:0,o:0,c:new Set()};
-      g[n][t]++; g[n].c.add(p.name);
-    });
-  }));
-  document.getElementById('unitBody').innerHTML = Object.entries(g).map(([n,x])=>`<tr><td>${esc(n)}</td><td>${x.i}</td><td>${x.o}</td><td>${[...x.c].map(esc).join('<br>')}</td></tr>`).join('') || '<tr><td colspan="4">尚無資料</td></tr>';
+      rows.push({q, person:n, kind:t, project:p, date});
+    }));
+  });
+  return rows;
+}
+function setUnitQuarter(v){ unitQuarter=v; renderUnits(); }
+function renderUnits(){
+  const rows=collectUnits(), nowQ=quarterIdOf(new Date().toISOString().slice(0,10));
+  const quarters=[...new Set([nowQ,...rows.map(r=>r.q).filter(Boolean)])].sort().reverse();
+  const sel=unitQuarter||nowQ;
+  document.getElementById('unitQuarterSel').innerHTML=quarters.map(q=>`<option value="${q}" ${q===sel?'selected':''}>${quarterTitle(q)}（${quarterRange(q)}）${q===nowQ?'｜本季':''}</option>`).join('')+`<option value="all" ${sel==='all'?'selected':''}>全部期間（已完工）</option>`;
+  document.getElementById('unitQuarterInfo').textContent=sel==='all'?'所有已完工案件的累計台數':`統計期間 ${quarterRange(sel)}，依案件完工日期歸季`;
+  // 選定季別：每人內機／外機台數
+  const picked=rows.filter(r=>r.q && (sel==='all'||r.q===sel));
+  const g={};
+  picked.forEach(r=>{ g[r.person]??={i:0,o:0,c:new Map()}; g[r.person][r.kind]++; g[r.person].c.set(r.project.id,`${r.project.name}（${r.date}）`); });
+  const people=Object.entries(g).sort((a,b)=>(b[1].i+b[1].o)-(a[1].i+a[1].o));
+  const ti=people.reduce((s,[,x])=>s+x.i,0), to=people.reduce((s,[,x])=>s+x.o,0);
+  document.getElementById('unitBody').innerHTML = people.length
+    ? people.map(([n,x])=>`<tr><td>${esc(n)}</td><td>${x.i}</td><td>${x.o}</td><td><b>${x.i+x.o}</b></td><td>${[...x.c.values()].map(esc).join('<br>')}</td></tr>`).join('')+`<tr class="unitTotal"><td>合計</td><td>${ti}</td><td>${to}</td><td>${ti+to}</td><td></td></tr>`
+    : '<tr><td colspan="5">這一季還沒有已完工案件的台數</td></tr>';
+  // 各季總覽
+  const byQ={};
+  rows.filter(r=>r.q).forEach(r=>{ byQ[r.q]??={i:0,o:0,p:new Set(),people:new Set()}; byQ[r.q][r.kind]++; byQ[r.q].p.add(r.project.id); byQ[r.q].people.add(r.person); });
+  document.getElementById('unitQuarterBody').innerHTML = Object.keys(byQ).sort().reverse().map(q=>{ const x=byQ[q]; return `<tr class="clickRow" onclick="setUnitQuarter('${q}')"><td><b>${quarterTitle(q)}</b>${q===nowQ?' <span class="badge">本季</span>':''}</td><td>${quarterRange(q)}</td><td>${x.p.size}</td><td>${x.people.size}</td><td>${x.i}</td><td>${x.o}</td><td><b>${x.i+x.o}</b></td></tr>`; }).join('') || '<tr><td colspan="7">尚無資料</td></tr>';
+  // 尚未完工（不計入季別）
+  const pend={};
+  rows.filter(r=>!r.q).forEach(r=>{ pend[r.project.id]??={p:r.project,i:0,o:0}; pend[r.project.id][r.kind]++; });
+  const pl=Object.values(pend);
+  document.getElementById('unitPendingWrap').classList.toggle('hidden',!pl.length);
+  document.getElementById('unitPendingBody').innerHTML=pl.map(x=>`<tr><td>${esc(x.p.name)}</td><td>${esc(x.p.status)}</td><td>${x.i}</td><td>${x.o}</td></tr>`).join('');
 }
 
 // ====== 整體渲染／啟動 ======
