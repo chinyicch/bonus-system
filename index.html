@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.3（整合測試版）</title>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.4（整合測試版）</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <style>
@@ -43,6 +43,7 @@
 .closeFlash{margin:10px 0;padding:12px 14px;border-radius:10px;background:#e5f2e8;border:1px solid #bcd9c3;color:#28603a;font-size:14px;line-height:1.7}.closeFlash .btn{margin-left:6px}
 #close .smartFilterRow input{flex:1 1 220px;width:auto}#close .smartFilterRow select{flex:0 1 180px;width:auto}.closeTable th,.closeTable td .btn,.closeTable td:nth-child(4){white-space:nowrap}.closeTable{min-width:900px}
 .closeTable input{min-width:90px}.linkish{border:0;background:none;color:#a63d2e;font-size:12px;text-decoration:underline;cursor:pointer;padding:4px}
+.equip td{vertical-align:middle}.equip tr.eqSub td{border-top:1px dashed #e5e8e2}.equip tr.eqFirst td{border-top:2px solid #dfe3dc}.eqTag{display:inline-block;margin-top:4px;font-size:11px;font-weight:800;background:#e9eef6;color:#3c5a78;border-radius:999px;padding:1px 7px;white-space:nowrap}.eqIn{display:flex;align-items:center;gap:6px}.eqLabel{font-size:12px;font-weight:800;color:#3c5a78;white-space:nowrap}.eqActs{white-space:nowrap}.eqActs .btn{margin:2px 0}
 .unitTable{min-width:560px}.unitTotal td{font-weight:800;background:#f6f8f5}.clickRow{cursor:pointer}.clickRow:hover td{background:#f6f8f5}
 .verLink{border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer;vertical-align:middle;margin-left:6px}
 .clVer{border-top:1px solid #e0e2da;padding:12px 2px}.clVer:first-of-type{border-top:0}.clHead{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.clNum{font-weight:900;font-size:16px}.clDate{font-size:12px;color:#687064}.clNew{font-size:11px;font-weight:800;background:#e5f2e8;color:#28603a;border-radius:999px;padding:1px 8px}.clVer ul{margin:6px 0 0;padding-left:20px;font-size:13px;line-height:1.7;color:#3a4458}
@@ -89,7 +90,7 @@
 <body>
 
 <div class="login" id="loginBox">
-  <h1>工程管理系統 V5.1.3</h1>
+  <h1>工程管理系統 V5.1.4</h1>
   <div class="sub">海壹有限公司｜公司內部系統（整合測試版）</div>
   <form id="loginForm">
     <label for="email">帳號或電子郵件</label>
@@ -106,7 +107,7 @@
 <div id="appRoot" class="hidden">
 <div class="top"><div class="topRow">
   <div>
-    <b style="font-size:21px">工程管理系統 V5.1.3｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
+    <b style="font-size:21px">工程管理系統 V5.1.4｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
     <div style="font-size:12px;opacity:.82">施工追蹤 → 工作單 → 結案管理 → 半年工程獎金 → 內外機台數</div>
   </div>
   <div class="topActions">
@@ -156,8 +157,8 @@
     <div><label>工程管理人</label><select id="wManager" onchange="setManager(this.value)"></select></div>
     <div><label>案件狀態</label><select id="wStatus" onchange="setStatus(this.value)"><option>施工中</option><option>待收尾</option><option>已完工</option></select></div>
   </div>
-  <div class="headrow"><div><h3>設備明細｜一台一列</h3><div class="muted">設備號碼｜品牌｜型號｜內機｜外機｜排水｜風管</div></div><button class="btn green" onclick="addEquipment()">＋ 新增設備</button></div>
-  <div class="scroll"><table class="table equip"><thead><tr><th>設備號碼</th><th>品牌</th><th>型號</th><th>內機</th><th>外機</th><th>排水</th><th>風管</th><th></th></tr></thead><tbody id="equipmentBody"></tbody></table></div>
+  <div class="headrow"><div><h3>設備明細｜一組一列</h3><div class="muted">一組＝一台外機；一對多請按該組的「＋ 內機」增加內機，每台內機各有排水、風管</div><div class="muted" id="equipSummary"></div></div><button class="btn green" onclick="addEquipment()">＋ 新增設備</button></div>
+  <div class="scroll"><table class="table equip"><thead><tr><th>設備號碼</th><th>品牌</th><th>型號</th><th>外機</th><th>內機</th><th>排水</th><th>風管</th><th></th></tr></thead><tbody id="equipmentBody"></tbody></table></div>
   <h3>每次進場工程紀錄</h3><div id="logHistory"></div>
   <div class="callout">
     <div class="grid2">
@@ -345,6 +346,7 @@ function ensureShape(obj){
     if(!p.id) p.id='p-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
     if(!Array.isArray(p.logs)) p.logs=[];
     if(!Array.isArray(p.equipment)) p.equipment=[];
+    p.equipment.forEach(normalizeEquipment);
     if(!p.status) p.status='施工中';
   });
   out.closedRecords.forEach(c=>{ if(!c.period) c.period=periodFromDate(c.doneDate); });
@@ -578,8 +580,15 @@ async function guardedAction(confirmMsg, backupReason, backupType, action){
 }
 // ====== 更新歷史 ======
 // 之後每次改版：APP_VERSION 改成新版號，並在 CHANGELOG 最上面加一筆（同步更新 CHANGELOG.md）。
-const APP_VERSION='5.1.3';
+const APP_VERSION='5.1.4';
 const CHANGELOG=[
+  {ver:'5.1.4', date:'2026-10-02', items:[
+    '設備明細支援一對多：一組＝一台外機，可按「＋ 內機」增加內機1、內機2、內機3…',
+    '每台內機各自有排水、風管負責人；排水／風管可選「無」',
+    '新增內機時預設沿用上一台內機的負責人，可再個別修改',
+    '內外機台數：一對多的每台內機各算 1 台；施工追蹤顯示「N 組｜內機 M」',
+    '舊的設備資料自動轉換成「一組＋內機1」，不需重新輸入'
+  ]},
   {ver:'5.1.3', date:'2026-10-02', items:[
     '結案管理分成「待結案」與「已結案」兩個分頁，各自顯示筆數',
     '待結案：輸入工程績效與分紅 % 時即時算出工程獎金，並顯示會計入哪一個半年期',
@@ -1019,7 +1028,8 @@ function renameRosterPerson(oldName, newName){
   data.projects.forEach(p=>{
     if(p.manager===oldName) p.manager=newName;
     (p.equipment||[]).forEach(e=>{
-      ['indoor','outdoor','drain','duct'].forEach(k=>{ if(e[k]===oldName) e[k]=newName; });
+      if(e.outdoor===oldName) e.outdoor=newName;
+      (e.indoors||[]).forEach(u=>['indoor','drain','duct'].forEach(k=>{ if(u[k]===oldName) u[k]=newName; }));
     });
     (p.logs||[]).forEach(l=>{
       if(l.work && l.work.includes(oldName)){
@@ -1110,7 +1120,7 @@ function renderTrack(){
   const dups=dupProjectIds();
   document.getElementById('projectBody').innerHTML = sorted.length ? sorted.map((p,i)=>{
     const l=p.logs.at(-1)||{};
-    return `<tr data-pid="${esc(p.id)}" data-status="${esc(p.status)}" class="${dups.has(p.id)?'dupRow':''}"><td><input type="checkbox" class="rowSel" data-pid="${esc(p.id)}" ${selectedProjectIds.has(p.id)?'checked':''} onchange="toggleSelectProject('${esc(p.id)}',this.checked)"></td><td class="muted">${i+1}</td><td><b>${esc(p.createdDate||'-')}</b></td><td><b>${esc(p.name)}</b></td><td>${esc(p.manager)}</td><td>${esc(l.date||'-')}</td><td>${esc(l.work||'')}</td><td>${p.equipment.length} 台</td><td><span class="badge ${p.status==='已完工'?'':'warn'}">${esc(p.status)}</span></td><td style="white-space:nowrap"><button class="btn" onclick="openWork('${p.id}')">開啟工作單</button> <button class="btn red small" onclick="deleteProject('${p.id}')">刪除</button></td></tr>`;
+    return `<tr data-pid="${esc(p.id)}" data-status="${esc(p.status)}" class="${dups.has(p.id)?'dupRow':''}"><td><input type="checkbox" class="rowSel" data-pid="${esc(p.id)}" ${selectedProjectIds.has(p.id)?'checked':''} onchange="toggleSelectProject('${esc(p.id)}',this.checked)"></td><td class="muted">${i+1}</td><td><b>${esc(p.createdDate||'-')}</b></td><td><b>${esc(p.name)}</b></td><td>${esc(p.manager)}</td><td>${esc(l.date||'-')}</td><td>${esc(l.work||'')}</td><td>${(c=>c.outdoor?`${c.outdoor} 組｜內機 ${c.indoor}`:"0 台")(equipmentCounts(p))}</td><td><span class="badge ${p.status==='已完工'?'':'warn'}">${esc(p.status)}</span></td><td style="white-space:nowrap"><button class="btn" onclick="openWork('${p.id}')">開啟工作單</button> <button class="btn red small" onclick="deleteProject('${p.id}')">刪除</button></td></tr>`;
   }).join('') : '<tr><td colspan="10" class="muted">尚無案件，按「＋新增案件」建立第一筆。</td></tr>';
   installSearchBar();
   applyTrackFilter();
@@ -1241,12 +1251,58 @@ function loadProject(id){
   renderEquipment(); renderLogs(); renderCrew();
 }
 function setManager(v){ const p=pnow(); if(!p) return; p.manager=v; persist(); renderTrack(); }
+// 設備：一列＝一組（一台外機），底下可有多台內機（一對多）；每台內機各自有排水、風管負責人。
+// 舊資料（indoor/drain/duct 直接放在設備上）會自動轉成 indoors[0]。
+function newIndoor(){ return {indoor:'待確認',drain:'待確認',duct:'待確認'}; }
+function normalizeEquipment(e){
+  if(!e || typeof e!=='object') return;
+  if(!Array.isArray(e.indoors) || !e.indoors.length){
+    e.indoors=[{indoor:e.indoor||'待確認', drain:e.drain||'待確認', duct:e.duct||'待確認'}];
+  }
+  delete e.indoor; delete e.drain; delete e.duct;
+  if(!e.outdoor) e.outdoor='待確認';
+}
+function equipmentCounts(p){
+  const eq=p.equipment||[];
+  return {outdoor:eq.length, indoor:eq.reduce((s,e)=>s+((e.indoors||[]).length||1),0)};
+}
+function equipOpts(v){ return opts(['待確認','無',...data.roster], v); } // 排水／風管可選「無」
 function renderEquipment(){
   const p=pnow(); if(!p) return;
-  document.getElementById('equipmentBody').innerHTML = p.equipment.length ? p.equipment.map((e,i)=>`<tr><td><b>${i+1}</b></td><td><select onchange="editEq(${i},'brand',this.value)">${opts(brands,e.brand)}</select></td><td><input value="${esc(e.model)}" placeholder="例 RAC-22VP" onchange="editEq(${i},'model',this.value)"></td><td><select onchange="editEq(${i},'indoor',this.value)">${personOpts(e.indoor)}</select></td><td><select onchange="editEq(${i},'outdoor',this.value)">${personOpts(e.outdoor)}</select></td><td><select onchange="editEq(${i},'drain',this.value)">${personOpts(e.drain)}</select></td><td><select onchange="editEq(${i},'duct',this.value)">${personOpts(e.duct)}</select></td><td><button class="btn red small" onclick="removeEq(${i})">刪除</button></td></tr>`).join('') : '<tr><td colspan="8" class="muted">尚無設備，按「＋新增設備」建立第 1 台。</td></tr>';
+  p.equipment.forEach(normalizeEquipment);
+  document.getElementById('equipmentBody').innerHTML = p.equipment.length ? p.equipment.map((e,i)=>{
+    const n=e.indoors.length, span=n>1?` rowspan="${n}"`:'';
+    return e.indoors.map((u,j)=>`<tr class="${j===0?'eqFirst':'eqSub'}">
+      ${j===0?`<td${span}><b>${i+1}</b>${n>1?`<div class="eqTag">一對${n}</div>`:''}</td>
+        <td${span}><select onchange="editEq(${i},'brand',this.value)">${opts(brands,e.brand)}</select></td>
+        <td${span}><input value="${esc(e.model)}" placeholder="例 RAC-22VP" onchange="editEq(${i},'model',this.value)"></td>
+        <td${span}><select onchange="editEq(${i},'outdoor',this.value)">${personOpts(e.outdoor)}</select></td>`:''}
+      <td><div class="eqIn"><span class="eqLabel">內機${j+1}</span><select onchange="editIndoor(${i},${j},'indoor',this.value)">${personOpts(u.indoor)}</select></div></td>
+      <td><select onchange="editIndoor(${i},${j},'drain',this.value)">${equipOpts(u.drain)}</select></td>
+      <td><select onchange="editIndoor(${i},${j},'duct',this.value)">${equipOpts(u.duct)}</select></td>
+      <td class="eqActs">${n>1?`<button class="linkish" title="移除內機${j+1}" onclick="removeIndoor(${i},${j})">✕ 內機${j+1}</button>`:''}
+        ${j===n-1?`<button class="btn small" onclick="addIndoor(${i})">＋ 內機</button>`:''}
+        ${j===0?`<button class="btn red small" onclick="removeEq(${i})">刪除整組</button>`:''}</td>
+    </tr>`).join('');
+  }).join('') : '<tr><td colspan="8" class="muted">尚無設備，按「＋新增設備」建立第 1 組。一對多的話，再按該組的「＋ 內機」增加內機。</td></tr>';
+  const c=equipmentCounts(p);
+  document.getElementById('equipSummary').textContent=p.equipment.length?`共 ${c.outdoor} 組｜外機 ${c.outdoor} 台｜內機 ${c.indoor} 台`:'';
 }
-function addEquipment(){ const p=pnow(); if(!p) return; p.equipment.push({brand:'待確認',model:'',indoor:'待確認',outdoor:'待確認',drain:'待確認',duct:'待確認'}); persist(); renderEquipment(); renderTrack(); renderUnits(); }
+function addEquipment(){ const p=pnow(); if(!p) return; p.equipment.push({brand:'待確認',model:'',outdoor:'待確認',indoors:[newIndoor()]}); persist(); renderEquipment(); renderTrack(); renderUnits(); }
 function editEq(i,k,v){ const p=pnow(); if(!p) return; p.equipment[i][k]=v; persist(); renderUnits(); }
+function editIndoor(i,j,k,v){ const p=pnow(); if(!p) return; p.equipment[i].indoors[j][k]=v; persist(); renderUnits(); }
+function addIndoor(i){
+  const p=pnow(); if(!p) return;
+  const list=p.equipment[i].indoors, last=list[list.length-1];
+  list.push(last?{...last}:newIndoor()); // 預設沿用上一台內機的負責人，通常同一組是同一批人
+  persist(); renderEquipment(); renderTrack(); renderUnits();
+}
+function removeIndoor(i,j){
+  const p=pnow(); if(!p) return;
+  if(!confirm(`確定移除第 ${i+1} 組的「內機${j+1}」？`)) return;
+  p.equipment[i].indoors.splice(j,1);
+  persist(); renderEquipment(); renderTrack(); renderUnits();
+}
 function removeEq(i){
   guardedAction('確定刪除這台設備？','刪除設備前自動備份','before-delete', ()=>{
     const p=pnow(); if(!p) return; p.equipment.splice(i,1); persist(); renderEquipment(); renderTrack(); renderUnits();
@@ -1570,10 +1626,11 @@ function collectUnits(){
   const rows=[]; // 每一筆：{q, person, kind:'i'|'o', project, date}
   data.projects.forEach(p=>{
     const date=projectUnitDate(p), q=quarterIdOf(date);
-    (p.equipment||[]).forEach(e=>[['indoor','i'],['outdoor','o']].forEach(([k,t])=>{
-      const n=e[k]; if(!n||n==='待確認') return;
-      rows.push({q, person:n, kind:t, project:p, date});
-    }));
+    const add=(n,t)=>{ if(n && n!=='待確認' && n!=='無') rows.push({q, person:n, kind:t, project:p, date}); };
+    (p.equipment||[]).forEach(e=>{
+      add(e.outdoor,'o');
+      (e.indoors||[{indoor:e.indoor}]).forEach(u=>add(u.indoor,'i')); // 一對多：每台內機各算 1 台
+    });
   });
   return rows;
 }
