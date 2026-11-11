@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.9（整合測試版）</title>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.10（整合測試版）</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <style>
@@ -145,12 +145,53 @@
   .ctTable td.ctWho{white-space:normal;align-self:center}
   .ctTable td.ctAct{text-align:right;width:auto}.ctTable .ctDelBtn{opacity:.8}
 }
+.mtStats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}.mtStats .stat{font-size:22px}.mtStatSm{font-size:16px!important;margin-top:6px}
+.mtLateBox{background:#fff0ed;border-color:#e8c4bc}.mtLateBox .stat{color:#a63d2e}
+.mtCard{border:1px solid #dfe3dc;border-radius:12px;padding:12px 14px;margin-bottom:10px;background:#fff}
+.mtHead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.mtDate{font-weight:900;color:#1f2a44}.mtTitle{font-size:15px}
+.mtKind{font-size:12px;font-weight:800;background:#e9eef6;color:#3c5a78;border-radius:999px;padding:2px 9px}
+.mtHead .vhBtn{padding:5px 10px;font-size:12px}
+.mtWho{font-size:12px;color:#687064;margin-top:4px}
+.mtCols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}.mtCols h5{margin:6px 0 4px;font-size:12px;color:#5b6358}
+.mtText{white-space:pre-wrap;font-size:13.5px;line-height:1.6}
+.mtRaw summary,.mtAiBox summary{cursor:pointer;font-size:12px;font-weight:800;color:#3c5a78;margin:6px 0 4px}
+.mtAct{display:grid;grid-template-columns:22px 1fr auto auto;gap:6px;align-items:center;padding:5px 6px;border-radius:8px;font-size:13px;cursor:pointer;margin:0}
+.mtAct:hover{background:#f6f8f5}.mtAct input{width:auto;margin:0}
+.mtAct.done .mtActT{text-decoration:line-through;color:#9aa196}.mtAct.late{background:#fff0ed}.mtAct.late .mtActD{color:#a63d2e;font-weight:800}
+.mtActO{font-size:12px;font-weight:800;color:#3c5a78}.mtActD{font-size:12px;color:#687064;white-space:nowrap}
+.mtTodo .mtAct{grid-template-columns:22px 1fr auto auto minmax(120px,auto);border-bottom:1px solid #eef0ea;border-radius:0}
+.mtActM{border:0;background:none;color:#3c5a78;font-size:12px;cursor:pointer;text-align:left;text-decoration:underline;padding:0}
+.mtOwners{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;font-size:12px;color:#5b6358}
+.mtMeta{font-size:11px;color:#9aa196;margin-top:6px;text-align:right}
+.mtAiBox{border:1px solid #dfe3dc;border-radius:10px;padding:6px 12px;margin-top:8px;background:#fafbf9}.mtAiBox.open{padding:12px}
+.mtMd{font-size:13.5px;line-height:1.65}.mtMdH{font-weight:900;margin-top:8px;color:#1f2a44}
+.mtAiTop{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;background:#f6f8f5;border-radius:10px;padding:8px 12px}
+.mtAiPanel textarea{margin-top:8px}
+.mtAiPaste{background:#f3f6fb;border:1px solid #d5deec;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.6;margin:8px 0}
+.mtAiOk{background:#e5f2e8;color:#28603a;border-radius:8px;padding:8px 10px;font-size:13px;margin:8px 0}
+.mtAiErr{background:#fff0ed;color:#a63d2e;border-radius:8px;padding:8px 10px;font-size:13px;margin:8px 0}
+.proBox.mtWide{width:min(980px,100%)}
+.mtForm #mtF_content{min-height:200px}
+.mtPeople{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mtPerson{border:1px solid #cbd2c8;background:#fff;border-radius:999px;padding:5px 11px;font-size:13px;cursor:pointer;color:#5b6358}.mtPerson.on{background:#3c5a78;border-color:#3c5a78;color:#fff;font-weight:800}
+.mtPeople input{width:auto;flex:1 1 140px;padding:6px 9px;font-size:13px}
+.mtActs{display:flex;flex-direction:column;gap:6px}
+.mtActRow{display:grid;grid-template-columns:22px 1fr 130px 140px 28px;gap:6px;align-items:center}.mtActRow input{padding:7px 8px;font-size:14px}.mtActRow .mtRDone{width:auto}
+.mtRX{border:0;background:#f1f2ee;border-radius:999px;width:24px;height:24px;cursor:pointer;color:#a63d2e;font-weight:800;padding:0}
+.mtLbl{display:block;font-size:12px;font-weight:700;margin:10px 0 4px}
+#meet .smartFilterRow input{flex:1 1 220px;width:auto}#meet .smartFilterRow select{flex:0 1 170px;width:auto}#meet .smartFilterRow label{white-space:nowrap}
+@media(max-width:760px){
+  .mtStats{grid-template-columns:1fr 1fr}.mtCols{grid-template-columns:1fr}
+  .mtActRow{grid-template-columns:22px 1fr 1fr 28px}.mtActRow .mtRT{grid-column:2/4;grid-row:1}.mtActRow .mtRX{grid-column:4;grid-row:1}.mtActRow .mtRDone{grid-column:1;grid-row:1}
+  .mtActRow .mtRO{grid-column:2;grid-row:2}.mtActRow .mtRD{grid-column:3;grid-row:2}
+  .mtTodo .mtAct{grid-template-columns:22px 1fr auto}.mtTodo .mtActM{grid-column:2/-1}
+}
 </style>
 </head>
 <body>
 
 <div class="login" id="loginBox">
-  <h1>工程管理系統 V5.1.9</h1>
+  <h1>工程管理系統 V5.1.10</h1>
   <div class="sub">海壹有限公司｜公司內部系統（整合測試版）</div>
   <form id="loginForm">
     <label for="email">帳號或電子郵件</label>
@@ -167,8 +208,8 @@
 <div id="appRoot" class="hidden">
 <div class="top"><div class="topRow">
   <div>
-    <b style="font-size:21px">工程管理系統 V5.1.9｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
-    <div style="font-size:12px;opacity:.82">施工追蹤 → 工作單 → 結案管理 → 半年工程獎金 → 內外機台數｜案件追蹤</div>
+    <b style="font-size:21px">工程管理系統 V5.1.10｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
+    <div style="font-size:12px;opacity:.82">施工追蹤 → 工作單 → 結案管理 → 半年工程獎金 → 內外機台數｜案件追蹤｜開會紀錄</div>
   </div>
   <div class="topActions">
     <span id="userBadge" class="topInfo"></span>
@@ -187,7 +228,25 @@
   <button class="tab" onclick="go('bonus',this)">半年工程獎金</button>
   <button class="tab" onclick="go('units',this)">內外機台數</button>
   <button class="tab" onclick="go('ctrack',this)">案件追蹤</button>
+  <button class="tab" onclick="go('meet',this)">開會紀錄</button>
 </div>
+
+<section id="meet" class="hidden"><div class="card">
+  <div class="headrow">
+    <div><h2 style="margin-bottom:4px">開會紀錄｜會議與追蹤事項</h2><div class="muted">每次開會記重點、決議、待辦；待辦會自動整理到「追蹤事項」，逾期標紅。AI 可以幫忙把隨手打的內容整理好、分析問題。</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn small" onclick="mtTab('ai')">🤖 AI 分析整理</button>
+      <button class="btn green" onclick="mtEdit()">＋ 新增會議</button>
+    </div>
+  </div>
+  <div id="mtStats" class="mtStats"></div>
+  <div class="closeTabs" style="margin:12px 0 10px">
+    <button class="closeTab on" data-mtab="list" onclick="mtTab('list')">會議紀錄 <span id="mtCntList" class="ctCount">0</span></button>
+    <button class="closeTab" data-mtab="todo" onclick="mtTab('todo')">追蹤事項 <span id="mtCntTodo" class="ctCount">0</span></button>
+    <button class="closeTab" data-mtab="ai" onclick="mtTab('ai')">AI 分析 <span id="mtCntAi" class="ctCount">0</span></button>
+  </div>
+  <div id="mtBody"></div>
+</div></section>
 
 <section id="ctrack" class="hidden"><div class="card">
   <div class="headrow">
@@ -418,7 +477,9 @@ function freshData(){
     roster: [...IMPORTED_HISTORY.roster],
     projects: JSON.parse(JSON.stringify(IMPORTED_HISTORY.projects)),
     closedRecords: [],
-    caseTrack: []
+    caseTrack: [],
+    meetings: [],
+    meetAi: []
   };
 }
 function ensureShape(obj){
@@ -437,6 +498,10 @@ function ensureShape(obj){
   });
   const ctNames=a=>[...new Set(a.filter(x=>typeof x==='string'&&x.trim()))];
   if(!Array.isArray(out.ctPartners)) out.ctPartners=ctNames(out.caseTrack.map(c=>c.partner)).sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+  if(!Array.isArray(out.meetings)) out.meetings=[];
+  out.meetings=out.meetings.filter(m=>m&&typeof m==='object');
+  out.meetings.forEach(m=>{ if(!m.id) m.id='mt-'+Date.now()+'-'+Math.random().toString(36).slice(2,6); });
+  if(!Array.isArray(out.meetAi)) out.meetAi=[];
   if(!Array.isArray(out.ctVendors)) out.ctVendors=ctNames(['勤一','阿慶','恩瑋','阿瑋','狗哥',...out.caseTrack.map(c=>c.vendor)]);
   out.projects.forEach(p=>{
     if(!p.id) p.id='p-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
@@ -680,8 +745,15 @@ async function guardedAction(confirmMsg, backupReason, backupType, action){
 }
 // ====== 更新歷史 ======
 // 之後每次改版：APP_VERSION 改成新版號，並在 CHANGELOG 最上面加一筆（同步更新 CHANGELOG.md）。
-const APP_VERSION='5.1.9';
+const APP_VERSION='5.1.10';
 const CHANGELOG=[
+  {ver:'5.1.10', date:'2026-11-11', items:[
+    '新增第七個分頁「開會紀錄」：每次開會記日期、類型、主題、出席人員、會議內容、重點、決議、待辦（負責人、期限）',
+    '「追蹤事項」自動整理所有會議的待辦：未完成、逾期（標紅）、已完成，可依負責人篩選，打勾就完成',
+    '「🤖 AI 幫我整理」：會議內容隨手打，AI 整理成重點、決議、待辦；「AI 分析」分頁可做綜合分析（反覆出現的問題、逾期事項怎麼推進、下次議程）或直接問問題，結果會存檔',
+    'AI 用自己的 Anthropic 金鑰（只存在這台電腦，不會上傳）；沒有金鑰可以「📋 複製給 Claude」再把回答貼回來',
+    '開會紀錄和案件追蹤分開存，互不影響'
+  ]},
   {ver:'5.1.9', date:'2026-11-11', items:[
     '案件追蹤：案件狀況下面多了「＋ 備註」，大家都可以加（例：預計 12 月進場、等設計師通知），按 Enter 就存；每則記下誰、什麼時候寫的',
     '表格顯示最新兩則，較早的可以展開；每則右上角 × 可刪除',
@@ -788,7 +860,7 @@ const BACKUP_TYPE_LABEL={daily:'每日自動備份',manual:'手動備份','befor
 let pendingChanges=new Map(), versionTimer=null, versionPendingSince=0;
 function stateStats(s){
   const closed=s.closedRecords||[];
-  return {projects:(s.projects||[]).length, closed:closed.length, bonus:closed.reduce((t,c)=>t+Number(c.bonus||0),0), roster:(s.roster||[]).length, caseTrack:(s.caseTrack||[]).length};
+  return {projects:(s.projects||[]).length, closed:closed.length, bonus:closed.reduce((t,c)=>t+Number(c.bonus||0),0), roster:(s.roster||[]).length, caseTrack:(s.caseTrack||[]).length, meetings:(s.meetings||[]).length};
 }
 function diffSummary(a,b){
   const out=[]; if(!a||!b) return out;
@@ -841,6 +913,16 @@ function diffSummary(a,b){
     lb.forEach(n=>{ if(!la.has(n)) out.push(`${l}名單新增「${n}」`); });
     la.forEach(n=>{ if(!lb.has(n)) out.push(`${l}名單移除「${n}」`); });
   }
+  const ma=new Map((a.meetings||[]).map(m=>[m.id,m])), mb=new Map((b.meetings||[]).map(m=>[m.id,m]));
+  const mName=m=>`${m.date||''} ${m.title||m.kind||'會議'}`.trim();
+  for(const [id,m] of mb){
+    const o=ma.get(id); if(!o){ out.push(`新增會議紀錄「${mName(m)}」`); continue; }
+    if(sameVal(o,m)) continue;
+    const od=new Map((o.actions||[]).map(x=>[x.id,x])), doneNow=(m.actions||[]).filter(x=>x&&x.done&&!(od.get(x.id)||{}).done).map(x=>x.t);
+    out.push(`會議「${mName(m)}」${doneNow.length?`完成事項：${doneNow.slice(0,3).join('、')}`:'修改紀錄'}`);
+  }
+  for(const [id,m] of ma) if(!mb.has(id)) out.push(`刪除會議紀錄「${mName(m)}」`);
+  const aiA=(a.meetAi||[]).length, aiB=(b.meetAi||[]).length; if(aiB>aiA) out.push(`新增 AI 分析 ${aiB-aiA} 筆`);
   return out;
 }
 // 每次成功存到雲端時呼叫：記下「我」這次改了什麼，累積到下一個版本
@@ -991,7 +1073,7 @@ function previewVersion(item,state,items,namedOnly){
   const html=`<div class="vhWho">${esc(historyLabel(item))}${item.by?'｜'+esc(item.by):''}</div>
     <div class="vhTableWrap"><table class="vhTable"><tr><th></th><th>這個版本</th><th>目前</th></tr>
     ${row('案件數',fmt(then.projects),fmt(now.projects))}${row('結案筆數',fmt(then.closed),fmt(now.closed))}
-    ${row('獎金合計',fmt(then.bonus),fmt(now.bonus))}${row('人員數',fmt(then.roster),fmt(now.roster))}${row('案件追蹤',fmt(then.caseTrack),fmt(now.caseTrack))}</table></div>
+    ${row('獎金合計',fmt(then.bonus),fmt(now.bonus))}${row('人員數',fmt(then.roster),fmt(now.roster))}${row('案件追蹤',fmt(then.caseTrack),fmt(now.caseTrack))}${row('開會紀錄',fmt(then.meetings||0),fmt(now.meetings||0))}</table></div>
     <div class="vhDay">從這個版本到目前，共有 ${since.length} 項變更${since.length?'（還原後這些變更會被取消）':''}</div>
     ${since.length?`<ul class="vhChanges long">${since.slice(0,80).map(c=>`<li>${esc(c)}</li>`).join('')}${since.length>80?`<li>…其餘 ${since.length-80} 項</li>`:''}</ul>`:'<div class="vhEmpty">內容和目前相同。</div>'}
     <div class="vhBar"><button class="vhBtn" id="vhBack">← 返回版本記錄</button><button class="vhBtn" id="vhCopy">下載這個版本（JSON）</button><button class="vhBtn warn" id="vhRestore">還原這個版本</button></div>`;
@@ -1639,14 +1721,297 @@ async function ctExport(){
   await audit('案件追蹤匯出',`共 ${rows.length} 筆`);
 }
 
+// ====== 開會紀錄（會議紀錄＋追蹤事項＋AI 分析整理）======
+// 資料放在 data.meetings、data.meetAi（同一份雲端資料，共用登入、多人合併、版本記錄、備份都沿用），跟案件追蹤 data.caseTrack 分開存，互不影響。
+// AI：每台電腦可以填自己的 Anthropic API 金鑰（只存在這台電腦的瀏覽器，不會上傳到系統）；沒有金鑰也可以「複製給 Claude」，再把回答貼回來。
+const MT_KINDS=['週會','月會','工程會議','臨時會議','其他'];
+const MT_AI_KEY=STORAGE_KEY+'-ai-key', MT_AI_MODEL=STORAGE_KEY+'-ai-model';
+const MT_MODELS=[['claude-opus-5-5','Claude Opus 5.5（最聰明）'],['claude-sonnet-5','Claude Sonnet 5（較快、較省）']];
+const MT_SYSTEM='你是海壹／勤一空調工程公司的會議記錄助理。一律用台灣繁體中文。只根據提供的紀錄整理，不要編造人名、日期、數字；資訊不足就寫「紀錄中沒有提到」。用條列、簡潔。';
+let mtState={tab:'list',text:'',kind:'',todo:'open',owner:''};
+let mtAiBusy=false, mtAiOut=null;
+function mtToday(){ return dayKey(); }
+function mtWeek(d){ const x=new Date(d+'T12:00:00'); return isNaN(x)?'':'（'+'日一二三四五六'[x.getDay()]+'）'; }
+function mtFind(id){ return data.meetings.find(m=>m.id===id); }
+function mtActs(m){ return Array.isArray(m.actions)?m.actions.filter(a=>a&&a.t):[]; }
+function mtTouch(m){ m.updatedAt=new Date().toISOString(); m.updatedBy=currentEmail(); }
+function mtOverdue(a){ return !a.done && a.due && a.due<mtToday(); }
+function mtUid(p){ return p+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6); }
+function mtSorted(){ return [...data.meetings].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.createdAt||'').localeCompare(String(a.createdAt||''))); }
+function mtAllActs(){ return mtSorted().flatMap(m=>mtActs(m).map(a=>({a,m}))); }
+function mtNameList(){ return [...new Set([...(data.roster||[]),...data.meetings.flatMap(m=>[...(m.attendees||[]),...mtActs(m).map(a=>a.owner)])].filter(Boolean))]; }
+function mtMd(t){ // AI 回答的簡單排版：# 標題、**粗體**、條列
+  return esc(t||'').split('\n').map(l=>{ const h=l.match(/^\s*#{1,4}\s*(.*)$/); if(h) return `<div class="mtMdH">${h[1].replace(/\*\*/g,'')}</div>`; return `<div>${l.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')||'&nbsp;'}</div>`; }).join('');
+}
+function mtTab(t){ mtState.tab=t; renderMeetings(); }
+function renderMeetings(){
+  const body=document.getElementById('mtBody'); if(!body) return;
+  const acts=mtAllActs(), open=acts.filter(x=>!x.a.done), late=open.filter(x=>mtOverdue(x.a));
+  const month=mtToday().slice(0,7), last=mtSorted()[0];
+  document.getElementById('mtStats').innerHTML=`<div class="box"><div class="muted">未完成事項</div><div class="stat">${open.length}</div></div>
+    <div class="box${late.length?' mtLateBox':''}"><div class="muted">逾期</div><div class="stat">${late.length}</div></div>
+    <div class="box"><div class="muted">本月開會</div><div class="stat">${data.meetings.filter(m=>String(m.date||'').startsWith(month)).length}</div></div>
+    <div class="box"><div class="muted">最近一次</div><div class="stat mtStatSm">${last?esc(last.date||'')+esc(mtWeek(last.date)):'—'}</div></div>`;
+  document.querySelectorAll('#meet [data-mtab]').forEach(b=>b.classList.toggle('on',b.dataset.mtab===mtState.tab));
+  document.getElementById('mtCntList').textContent=data.meetings.length;
+  document.getElementById('mtCntTodo').textContent=open.length;
+  document.getElementById('mtCntAi').textContent=(data.meetAi||[]).length;
+  body.innerHTML=mtState.tab==='todo'?mtTodoHtml(acts):mtState.tab==='ai'?mtAiHtml():mtListHtml();
+  if(mtState.tab==='ai') mtAiBind();
+}
+function mtListHtml(){
+  const q=mtState.text.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const list=mtSorted().filter(m=>(!mtState.kind||m.kind===mtState.kind)&&(!q.length||q.every(t=>[m.title,m.kind,m.date,m.content,m.summary,m.decisions,(m.attendees||[]).join(' '),...mtActs(m).map(a=>a.t+' '+(a.owner||''))].join(' ').toLowerCase().includes(t))));
+  const bar=`<div class="smartFilterRow" style="margin-bottom:10px"><input id="mtSearch" type="search" placeholder="搜尋會議內容、決議、待辦、人名…" oninput="mtState.text=this.value;clearTimeout(window.__mtT);window.__mtT=setTimeout(()=>{renderMeetings();const e=document.getElementById('mtSearch');e.focus();e.setSelectionRange(e.value.length,e.value.length);},200)" value="${esc(mtState.text)}">
+    <select onchange="mtState.kind=this.value;renderMeetings()"><option value="">全部會議</option>${MT_KINDS.map(k=>`<option${k===mtState.kind?' selected':''}>${k}</option>`).join('')}</select><span class="muted">${list.length} / ${data.meetings.length} 次</span></div>`;
+  if(!data.meetings.length) return bar+`<div class="vhEmpty">還沒有會議紀錄。按右上「＋ 新增會議」開始記；會議內容可以先隨便打，再按「🤖 AI 幫我整理」整理成重點、決議、待辦。</div>`;
+  if(!list.length) return bar+`<div class="vhEmpty">沒有符合條件的會議。</div>`;
+  return bar+list.map(m=>{
+    const as=mtActs(m), done=as.filter(a=>a.done).length;
+    return `<div class="mtCard">
+      <div class="mtHead"><span class="mtDate">${esc(m.date||'')}${esc(mtWeek(m.date))}</span>${m.kind?`<span class="mtKind">${esc(m.kind)}</span>`:''}<b class="mtTitle">${esc(m.title||'（沒有主題）')}</b>
+        <span style="flex:1"></span><button class="vhBtn" data-id="${esc(m.id)}" onclick="mtAiMeeting(this.dataset.id)">🤖 AI 整理</button><button class="vhBtn" data-id="${esc(m.id)}" onclick="mtEdit(this.dataset.id)">編輯</button></div>
+      ${(m.attendees||[]).length?`<div class="mtWho">出席：${esc(m.attendees.join('、'))}</div>`:''}
+      <div class="mtCols">
+        <div>${m.summary?`<h5>重點</h5><div class="mtText">${esc(m.summary)}</div>`:''}${m.content?`<details class="mtRaw"${m.summary?'':' open'}><summary>會議內容</summary><div class="mtText">${esc(m.content)}</div></details>`:''}</div>
+        <div>${m.decisions?`<h5>決議</h5><div class="mtText">${esc(m.decisions)}</div>`:''}${as.length?`<h5>待辦（${done}/${as.length} 完成）</h5>${as.map(a=>mtActHtml(a,m)).join('')}`:''}</div>
+      </div>
+      ${m.ai&&m.ai.text?`<details class="mtAiBox"><summary>🤖 AI 整理（${esc(whoShort(m.ai.by))} ${esc(ctWhen(m.ai.at))}）</summary><div class="mtMd">${mtMd(m.ai.text)}</div></details>`:''}
+      <div class="mtMeta">${m.updatedBy?`最後修改：${esc(whoShort(m.updatedBy))} ${esc(ctWhen(m.updatedAt))}`:''}</div>
+    </div>`;
+  }).join('');
+}
+function mtActHtml(a,m,showMeeting){
+  return `<label class="mtAct${a.done?' done':''}${mtOverdue(a)?' late':''}"><input type="checkbox" data-m="${esc(m.id)}" data-a="${esc(a.id)}" onchange="mtToggle(this)"${a.done?' checked':''}>
+    <span class="mtActT">${esc(a.t)}</span><span class="mtActO">${esc(a.owner||'未指定')}</span><span class="mtActD">${a.due?esc(a.due.slice(5).replace('-','/'))+(mtOverdue(a)?' 逾期':''):'無期限'}</span>
+    ${showMeeting?`<button type="button" class="mtActM" data-id="${esc(m.id)}" onclick="mtEdit(this.dataset.id)">${esc(m.date||'')} ${esc(m.title||m.kind||'')}</button>`:''}</label>`;
+}
+function mtToggle(el){
+  const m=mtFind(el.dataset.m); if(!m) return; const a=mtActs(m).find(x=>x.id===el.dataset.a); if(!a) return;
+  if(el.checked){ a.done=true; a.doneAt=new Date().toISOString(); a.doneBy=currentEmail(); } else { delete a.done; delete a.doneAt; delete a.doneBy; }
+  mtTouch(m); persist(); renderMeetings();
+}
+function mtTodoHtml(acts){
+  const owners=[...new Set(acts.map(x=>x.a.owner).filter(Boolean))];
+  const st=mtState.todo, ow=mtState.owner;
+  const list=acts.filter(({a})=>(st==='all'||(st==='open'&&!a.done)||(st==='late'&&mtOverdue(a))||(st==='done'&&a.done))&&(!ow||(ow==='(none)'?!a.owner:a.owner===ow)))
+    .sort((x,y)=>(!x.a.due)-(!y.a.due)||String(x.a.due||'').localeCompare(String(y.a.due||'')));
+  const byOwner=owners.map(o=>[o,acts.filter(x=>!x.a.done&&x.a.owner===o).length]).filter(x=>x[1]).sort((a,b)=>b[1]-a[1]);
+  return `<div class="smartFilterRow" style="margin-bottom:8px"><select onchange="mtState.todo=this.value;renderMeetings()">${[['open','未完成'],['late','逾期'],['done','已完成'],['all','全部']].map(([v,l])=>`<option value="${v}"${v===st?' selected':''}>${l}</option>`).join('')}</select>
+    <select onchange="mtState.owner=this.value;renderMeetings()"><option value="">全部負責人</option>${owners.map(o=>`<option value="${esc(o)}"${o===ow?' selected':''}>${esc(o)}</option>`).join('')}<option value="(none)"${ow==='(none)'?' selected':''}>（未指定）</option></select><span class="muted">${list.length} 項</span></div>
+    ${byOwner.length?`<div class="mtOwners">還沒完成：${byOwner.map(([o,n])=>`<button class="ctChip" data-o="${esc(o)}" onclick="mtState.owner=this.dataset.o;mtState.todo='open';renderMeetings()">${esc(o)} <b>${n}</b></button>`).join('')}</div>`:''}
+    ${list.length?`<div class="mtTodo">${list.map(({a,m})=>mtActHtml(a,m,true)).join('')}</div>`:'<div class="vhEmpty">沒有符合條件的事項。開會時在「待辦」加事項，就會出現在這裡。</div>'}`;
+}
+// ---------- 會議編輯 ----------
+function mtEdit(id){
+  const m=id?mtFind(id):null;
+  if(id&&!m) return alert('找不到這次會議，可能已被其他人刪除。');
+  const v=k=>esc(m?m[k]||'':'');
+  const names=mtNameList(), att=new Set(m?m.attendees||[]:[]);
+  modal(m?'編輯會議紀錄':'新增會議紀錄',`<div class="ctForm mtForm">
+    <div class="grid3"><div><label>日期</label><input id="mtF_date" type="date" value="${m?esc(m.date||''):mtToday()}"></div>
+      <div><label>會議類型</label><select id="mtF_kind">${MT_KINDS.map(k=>`<option${(m?m.kind:'月會')===k?' selected':''}>${k}</option>`).join('')}</select></div>
+      <div><label>主題</label><input id="mtF_title" value="${v('title')}" placeholder="例：11 月月會、竹北案進度"></div></div>
+    <label>出席人員</label><div class="mtPeople" id="mtF_people">${[...new Set([...names,...att])].map(n=>`<button type="button" class="mtPerson${att.has(n)?' on':''}" data-n="${esc(n)}">${esc(n)}</button>`).join('')}<input id="mtF_other" placeholder="＋ 其他人，Enter 加入"></div>
+    <div class="ctLabelRow"><label>會議內容（先隨便打，可以請 AI 整理）</label><button type="button" class="linkish" id="mtF_ai">🤖 AI 幫我整理</button></div>
+    <textarea id="mtF_content" rows="9" placeholder="開會時想到什麼就打什麼，例：&#10;竹北案 12/5 進場，阿慶負責配管&#10;倉庫要整理，小白下週前處理">${v('content')}</textarea>
+    <div id="mtF_aiPanel"></div>
+    <div class="grid2"><div><label>重點</label><textarea id="mtF_summary" rows="4">${v('summary')}</textarea></div><div><label>決議</label><textarea id="mtF_decisions" rows="4">${v('decisions')}</textarea></div></div>
+    <div class="ctLabelRow"><label>待辦事項（會自動整理到「追蹤事項」）</label><button type="button" class="linkish" id="mtF_addAct">＋ 加一項</button></div>
+    <div id="mtF_acts" class="mtActs"></div>
+    ${m?`<div class="ctMeta">${m.createdBy?`建立：${esc(whoShort(m.createdBy))} ${esc(ctWhen(m.createdAt))}`:''}${m.updatedBy?`｜最後修改：${esc(whoShort(m.updatedBy))} ${esc(ctWhen(m.updatedAt))}`:''}</div>`:''}
+    <div class="vhBar" style="margin-top:14px"><button class="vhBtn primary" id="mtSave">儲存</button><button class="vhBtn" id="mtCancel">取消</button>${m?'<span style="flex:1"></span><button class="vhBtn warn" id="mtDel">刪除這次會議</button>':''}</div>
+  </div>`,w=>{
+    w.querySelector('.proBox').classList.add('mtWide');
+    const f=k=>w.querySelector('#mtF_'+k);
+    // 出席人員
+    const people=f('people');
+    people.onclick=e=>{ const b=e.target.closest('.mtPerson'); if(b) b.classList.toggle('on'); };
+    f('other').onkeydown=e=>{ if(e.key!=='Enter'||e.isComposing) return; e.preventDefault(); const n=e.target.value.trim(); if(!n) return;
+      let b=[...people.querySelectorAll('.mtPerson')].find(x=>x.dataset.n===n);
+      if(!b){ b=document.createElement('button'); b.type='button'; b.className='mtPerson'; b.dataset.n=n; b.textContent=n; people.insertBefore(b,e.target); }
+      b.classList.add('on'); e.target.value=''; };
+    // 待辦列
+    const box=f('acts');
+    const addRow=a=>{ a=a||{}; const r=document.createElement('div'); r.className='mtActRow'; r.dataset.id=a.id||mtUid('ac'); r.dataset.done=a.done?'1':''; if(a.doneAt) r.dataset.doneAt=a.doneAt; if(a.doneBy) r.dataset.doneBy=a.doneBy;
+      r.innerHTML=`<input type="checkbox" class="mtRDone" title="完成"${a.done?' checked':''}><input class="mtRT" placeholder="事項" value="${esc(a.t||'')}"><input class="mtRO" list="rosterList" placeholder="負責人" value="${esc(a.owner||'')}"><input class="mtRD" type="date" value="${esc(a.due||'')}"><button type="button" class="mtRX" title="刪除這項">×</button>`;
+      r.querySelector('.mtRX').onclick=()=>r.remove(); box.appendChild(r); return r; };
+    (m?mtActs(m):[]).forEach(addRow); if(!m) addRow();
+    f('addAct').onclick=()=>addRow().querySelector('.mtRT').focus();
+    const readActs=()=>[...box.querySelectorAll('.mtActRow')].map(r=>{ const t=r.querySelector('.mtRT').value.trim(); if(!t) return null;
+      const a={id:r.dataset.id,t}; const o=r.querySelector('.mtRO').value.trim(), d=r.querySelector('.mtRD').value; if(o) a.owner=o; if(d) a.due=d;
+      if(r.querySelector('.mtRDone').checked){ a.done=true; a.doneAt=r.dataset.doneAt||new Date().toISOString(); a.doneBy=r.dataset.doneBy||currentEmail(); }
+      return a; }).filter(Boolean);
+    // AI 整理會議內容 → 填重點、決議、待辦
+    f('ai').onclick=()=>mtAiStructure(w,f,addRow,[...people.querySelectorAll('.mtPerson.on')].map(b=>b.dataset.n));
+    const read=()=>({date:f('date').value, kind:f('kind').value, title:f('title').value.trim(), attendees:[...people.querySelectorAll('.mtPerson.on')].map(b=>b.dataset.n),
+      content:f('content').value.trim(), summary:f('summary').value.trim(), decisions:f('decisions').value.trim(), actions:readActs()});
+    const norm=x=>Array.isArray(x)?(x.length?x:null):(x===''||x==null?null:x);
+    const stable=x=>JSON.stringify(x,(k,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.keys(v).sort().reduce((o,q)=>(o[q]=v[q],o),{}):v);  // 雲端回來的欄位順序會變，比對時不看順序
+    const orig=m?{date:m.date,kind:m.kind,title:m.title,attendees:m.attendees,content:m.content,summary:m.summary,decisions:m.decisions,actions:mtActs(m)}:{};
+    w.querySelector('#mtCancel').onclick=()=>w.remove();
+    w.querySelector('#mtSave').onclick=()=>{
+      const val=read();
+      if(!val.date){ alert('請填日期'); return; }
+      if(!val.title&&!val.content&&!val.actions.length&&!val.decisions){ alert('請至少填主題、內容、決議或待辦其中一項'); return; }
+      let t=id?mtFind(id):null;
+      if(id&&!t&&!confirm('這次會議剛被其他人刪除了，要用你填的內容重新建立嗎？')) return;
+      const isNew=!t;
+      if(isNew){ t={id:id||mtUid('mt'),createdAt:new Date().toISOString(),createdBy:currentEmail()}; data.meetings.push(t); }
+      let changed=isNew;
+      Object.keys(val).forEach(k=>{ if(isNew||stable(norm(val[k]))!==stable(norm(orig[k]))){ if(norm(val[k])==null) delete t[k]; else t[k]=val[k]; changed=true; } }); // 只寫入有改的欄位
+      if(changed){ mtTouch(t); persist(); }
+      w.remove(); mtState.tab='list'; renderMeetings();
+    };
+    const del=w.querySelector('#mtDel');
+    if(del) del.onclick=()=>guardedAction(`確定刪除 ${m.date} 「${m.title||m.kind||'會議'}」這次會議紀錄（含待辦事項）？`,'刪除會議紀錄前自動備份','before-delete',()=>{
+      data.meetings=data.meetings.filter(x=>x.id!==id); persist(); w.remove(); renderMeetings(); audit('刪除會議紀錄',`${m.date} ${m.title||''}`);
+    });
+    if(!m) f('title').focus();
+  });
+}
+// ---------- AI ----------
+function mtKey(){ try{ return localStorage.getItem(MT_AI_KEY)||''; }catch(e){ return ''; } }
+function mtModel(){ try{ return localStorage.getItem(MT_AI_MODEL)||MT_MODELS[0][0]; }catch(e){ return MT_MODELS[0][0]; } }
+async function mtCallAI(prompt,maxTokens){
+  const key=mtKey(); if(!key) throw new Error('這台電腦還沒設定 AI 金鑰');
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:mtModel(),max_tokens:maxTokens||4000,system:MT_SYSTEM,messages:[{role:'user',content:prompt}]})});
+  let j=null; try{ j=await res.json(); }catch(e){}
+  if(!res.ok) throw new Error((j&&j.error&&j.error.message)||('HTTP '+res.status));
+  return ((j&&j.content)||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+}
+function mtAiSettings(after){
+  modal('AI 設定（只存在這台電腦）',`<div class="toolHint">AI 分析要用 Anthropic 的 API 金鑰（console.anthropic.com 申請，用量另外計費）。<b>金鑰只存在這台電腦的瀏覽器</b>，不會上傳到工程管理系統，其他人看不到；每台要用 AI 的電腦各自設定。會議內容會送到 Anthropic（Claude）分析。<br>沒有金鑰也可以用「📋 複製給 Claude」，貼到 claude.ai 對話，再把回答貼回來。</div>
+    <label class="mtLbl">API 金鑰</label><input id="mtKeyIn" type="password" autocomplete="off" placeholder="sk-ant-…" value="${esc(mtKey())}">
+    <label class="mtLbl">模型</label><select id="mtModelIn">${MT_MODELS.map(([v,l])=>`<option value="${v}"${v===mtModel()?' selected':''}>${l}</option>`).join('')}</select>
+    <div class="vhBar" style="margin-top:12px"><button class="vhBtn primary" id="mtKeySave">儲存</button><button class="vhBtn" id="mtKeyTest">測試連線</button>${mtKey()?'<button class="vhBtn warn" id="mtKeyDel">清除金鑰</button>':''}<span id="mtKeyMsg" class="muted"></span></div>`,w=>{
+    const save=()=>{ try{ const k=w.querySelector('#mtKeyIn').value.trim(); if(k) localStorage.setItem(MT_AI_KEY,k); else localStorage.removeItem(MT_AI_KEY); localStorage.setItem(MT_AI_MODEL,w.querySelector('#mtModelIn').value); }catch(e){ alert('這個瀏覽器不能儲存設定'); } };
+    w.querySelector('#mtKeySave').onclick=()=>{ save(); w.remove(); if(after) after(); else renderMeetings(); };
+    w.querySelector('#mtKeyTest').onclick=async()=>{ save(); const msg=w.querySelector('#mtKeyMsg'); msg.textContent='測試中…'; try{ const r=await mtCallAI('回答「OK」兩個字就好。',20); msg.textContent='✓ 連線成功：'+r.slice(0,20); }catch(e){ msg.textContent='✗ '+e.message; } };
+    const d=w.querySelector('#mtKeyDel'); if(d) d.onclick=()=>{ try{ localStorage.removeItem(MT_AI_KEY); }catch(e){} w.remove(); renderMeetings(); };
+  });
+}
+function mtDigest(ms){
+  const today=mtToday(); let out='', budget=60000;
+  for(const m of ms){
+    const as=mtActs(m);
+    const part=[`## ${m.date||''}${mtWeek(m.date)} ${m.kind||''} ${m.title||''}`.trim(), (m.attendees||[]).length?`出席：${m.attendees.join('、')}`:'',
+      m.summary?`重點：\n${m.summary}`:'', m.decisions?`決議：\n${m.decisions}`:'', m.content?`紀錄：\n${m.content}`:'',
+      as.length?'待辦：\n'+as.map(a=>`- [${a.done?'已完成':'未完成'}] ${a.t}｜負責：${a.owner||'未指定'}｜期限：${a.due||'無'}${mtOverdue(a)?'（已逾期）':''}`).join('\n'):''].filter(Boolean).join('\n');
+    if(out.length+part.length>budget){ out+='\n\n（較早的會議太長，省略）'; break; }
+    out+=(out?'\n\n':'')+part;
+  }
+  return out||'（沒有會議紀錄）'+`\n今天是 ${today}`;
+}
+const MT_STRUCT_TPL=(content,att,date)=>`請把下面的會議原始紀錄整理好，只輸出 JSON（不要其他文字）：
+{"summary":["重點1","重點2"],"decisions":["決議1"],"actions":[{"t":"要做的事","owner":"負責人","due":"YYYY-MM-DD"}]}
+規則：負責人盡量用這些名字：${[...new Set([...att,...(data.roster||[])])].join('、')||'（無名單）'}；紀錄沒寫負責人或期限就給空字串；期限若寫「下週」「月底」請換算成日期（會議日期 ${date}）。
+
+會議原始紀錄：
+${content}`;
+function mtParseJSON(t){ const s=String(t||''); const i=s.indexOf('{'), j=s.lastIndexOf('}'); if(i<0||j<i) throw new Error('回答裡找不到 JSON'); return JSON.parse(s.slice(i,j+1)); }
+function mtApplyStruct(f,addRow,obj){
+  const arr=x=>Array.isArray(x)?x.map(s=>String(s).trim()).filter(Boolean):[];
+  const put=(k,lines)=>{ if(!lines.length) return; const el=f(k); const add=lines.map(s=>'・'+s.replace(/^[・\-\*•]\s*/,'')).join('\n'); el.value=el.value.trim()?el.value.trim()+'\n'+add:add; };
+  put('summary',arr(obj.summary)); put('decisions',arr(obj.decisions));
+  let n=0; (Array.isArray(obj.actions)?obj.actions:[]).forEach(a=>{ if(!a||!String(a.t||'').trim()) return; const due=/^\d{4}-\d\d-\d\d$/.test(a.due||'')?a.due:''; addRow({t:String(a.t).trim(),owner:String(a.owner||'').trim(),due}); n++; });
+  // 拿掉空白的待辦列
+  [...document.querySelectorAll('#mtF_acts .mtActRow')].forEach(r=>{ if(!r.querySelector('.mtRT').value.trim()&&!r.querySelector('.mtRO').value.trim()) r.remove(); });
+  return n;
+}
+async function mtAiStructure(w,f,addRow,att){
+  const content=f('content').value.trim(); if(!content){ alert('先在「會議內容」打一些內容，AI 才能整理'); f('content').focus(); return; }
+  const prompt=MT_STRUCT_TPL(content,att,f('date').value||mtToday());
+  const panel=f('aiPanel');
+  if(!mtKey()){ // 沒有金鑰：複製給 Claude，再把回答貼回來
+    panel.innerHTML=`<div class="mtAiPaste"><b>這台電腦沒有設定 AI 金鑰，可以這樣用</b>（要自動整理，到「AI 分析」分頁按「⚙ AI 設定」填金鑰）：<br>① 按「📋 複製給 Claude」→ ② 到 claude.ai 貼上送出 → ③ 把 Claude 的回答整段貼到下面 → ④ 按「套用」<br>
+      <div class="vhBar" style="margin:8px 0"><button type="button" class="vhBtn primary" id="mtCopy">📋 複製給 Claude</button><a class="vhBtn" href="https://claude.ai/new" target="_blank" rel="noopener">開啟 claude.ai</a></div>
+      <textarea id="mtPasteIn" rows="4" placeholder="把 Claude 的回答貼在這裡"></textarea><div class="vhBar" style="margin-top:6px"><button type="button" class="vhBtn primary" id="mtPasteGo">套用</button><button type="button" class="vhBtn" id="mtPasteX">關閉</button></div></div>`;
+    panel.querySelector('#mtCopy').onclick=()=>mtCopy(prompt);
+    panel.querySelector('#mtPasteX').onclick=()=>panel.innerHTML='';
+    panel.querySelector('#mtPasteGo').onclick=()=>{ try{ const n=mtApplyStruct(f,addRow,mtParseJSON(panel.querySelector('#mtPasteIn').value)); panel.innerHTML=`<div class="mtAiOk">✓ 已套用，加了 ${n} 項待辦。請確認後按「儲存」。</div>`; }catch(e){ alert('看不懂貼上的內容：'+e.message+'\n請把 Claude 的回答整段（含 { } 的部分）貼上。'); } };
+    return;
+  }
+  const btn=f('ai'); btn.disabled=true; btn.textContent='🤖 AI 整理中…'; panel.innerHTML='<div class="vhLoading">AI 整理中，約 10～30 秒…</div>';
+  try{ const n=mtApplyStruct(f,addRow,mtParseJSON(await mtCallAI(prompt,3000))); panel.innerHTML=`<div class="mtAiOk">✓ AI 已整理到下面的重點、決議、待辦（加了 ${n} 項待辦）。請確認、修改後按「儲存」。</div>`; }
+  catch(e){ panel.innerHTML=`<div class="mtAiErr">AI 整理失敗：${esc(e.message)}</div>`; }
+  finally{ btn.disabled=false; btn.textContent='🤖 AI 幫我整理'; }
+}
+async function mtCopy(text){
+  try{ await navigator.clipboard.writeText(text); alert('已複製。到 claude.ai 開新對話，貼上（Ctrl+V）送出，再把回答貼回來。'); }
+  catch(e){ modal('複製給 Claude',`<div class="toolHint">瀏覽器不讓自動複製，請全選下面的文字（Ctrl+A、Ctrl+C）：</div><textarea rows="14" readonly>${esc(text)}</textarea>`,w=>{ const t=w.querySelector('textarea'); t.focus(); t.select(); }); }
+}
+// 單次會議的 AI 整理（存到這次會議）
+async function mtAiMeeting(id){
+  const m=mtFind(id); if(!m) return;
+  const prompt=`請整理這次會議：一、重點摘要 二、決議 三、待辦（誰、什麼時候）與還沒指定負責人的事 四、需要注意的風險或遺漏 五、建議下次追蹤的事。\n\n${mtDigest([m])}`;
+  if(!mtKey()) return mtPasteFlow(prompt,'這次會議的 AI 整理',t=>{ const x=mtFind(id); if(!x) return; x.ai={text:t,at:new Date().toISOString(),by:currentEmail()}; mtTouch(x); persist(); renderMeetings(); });
+  modal('🤖 AI 整理中…','<div class="vhLoading">AI 整理中，約 10～30 秒…</div>');
+  try{ const t=await mtCallAI(prompt,3000); const x=mtFind(id); if(x){ x.ai={text:t,at:new Date().toISOString(),by:currentEmail()}; mtTouch(x); persist(); }
+    modal('🤖 AI 整理：'+(m.title||m.date),`<div class="mtMd">${mtMd(t)}</div><div class="toolHint" style="margin-top:8px">已存到這次會議（會議卡片下方「🤖 AI 整理」）。</div>`); renderMeetings(); }
+  catch(e){ modal('AI 整理失敗',`<div class="mtAiErr">${esc(e.message)}</div><div class="vhBar" style="margin-top:10px"><button class="vhBtn" onclick="mtAiSettings()">⚙ AI 設定</button></div>`); }
+}
+function mtPasteFlow(prompt,title,onSave){
+  modal(title,`<div class="mtAiPaste">這台電腦沒有設定 AI 金鑰，可以這樣用：<br>① 按「📋 複製給 Claude」→ ② 到 claude.ai 貼上送出 → ③ 把回答貼到下面 → ④ 按「儲存」
+    <div class="vhBar" style="margin:8px 0"><button class="vhBtn primary" id="mtCopy2">📋 複製給 Claude</button><a class="vhBtn" href="https://claude.ai/new" target="_blank" rel="noopener">開啟 claude.ai</a><button class="vhBtn" id="mtSet2">⚙ 設定金鑰</button></div>
+    <textarea id="mtPaste2" rows="10" placeholder="把 Claude 的回答貼在這裡"></textarea><div class="vhBar" style="margin-top:6px"><button class="vhBtn primary" id="mtSave2">儲存</button></div></div>`,w=>{
+    w.querySelector('#mtCopy2').onclick=()=>mtCopy(prompt);
+    w.querySelector('#mtSet2').onclick=()=>mtAiSettings();
+    w.querySelector('#mtSave2').onclick=()=>{ const t=w.querySelector('#mtPaste2').value.trim(); if(!t) return alert('請先貼上 Claude 的回答'); onSave(t); w.remove(); };
+  });
+}
+// AI 分析分頁：綜合分析、直接問問題；結果存在 data.meetAi（最多留 30 筆）
+function mtAiHtml(){
+  const key=!!mtKey(), hist=[...(data.meetAi||[])].sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+  return `<div class="mtAiPanel">
+    <div class="mtAiTop"><div class="muted">${key?`✓ 這台電腦已設定 AI 金鑰（${esc((MT_MODELS.find(x=>x[0]===mtModel())||[0,mtModel()])[1])}）`:'這台電腦沒有設定 AI 金鑰：會用「📋 複製給 Claude」，再把回答貼回來存檔'}</div><button class="vhBtn" onclick="mtAiSettings()">⚙ AI 設定</button></div>
+    <div class="smartFilterRow" style="margin:10px 0"><label class="muted">分析範圍</label><select id="mtAiScope">${[['3','最近 3 次會議'],['6','最近 6 次會議'],['month','這個月'],['open','還沒完成的事項'],['all','全部會議']].map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></div>
+    <div class="vhBar"><button class="vhBtn primary" id="mtAiGo">🤖 綜合分析</button><span class="muted">重點、決議、反覆出現的問題、逾期事項怎麼推進、下次議程</span></div>
+    <textarea id="mtAiQ" rows="2" placeholder="也可以直接問，例：最近工程延誤的原因是什麼？誰手上的事最多？"></textarea>
+    <div class="vhBar" style="margin-top:6px"><button class="vhBtn" id="mtAiAsk">💬 問 AI</button></div>
+    <div id="mtAiOut">${mtAiOut?mtAiOut:''}</div>
+    <h4 style="margin:16px 0 6px">分析紀錄（${hist.length}）</h4>
+    ${hist.length?hist.map(h=>`<details class="mtAiBox"><summary>${esc(ctWhen(h.at))}｜${esc(whoShort(h.by))}｜${esc(h.scope||'')}${h.q?'｜問：'+esc(h.q.slice(0,30)):''}</summary><div class="mtMd">${mtMd(h.text)}</div><div class="vhBar" style="margin-top:6px"><button class="vhBtn warn" data-id="${esc(h.id)}" onclick="mtAiDel(this.dataset.id)">刪除這筆</button></div></details>`).join(''):'<div class="muted">還沒有分析紀錄。</div>'}
+  </div>`;
+}
+function mtScopeMeetings(scope){
+  const ms=mtSorted(), month=mtToday().slice(0,7);
+  if(scope==='3') return ms.slice(0,3); if(scope==='6') return ms.slice(0,6);
+  if(scope==='month') return ms.filter(m=>String(m.date||'').startsWith(month));
+  if(scope==='open') return ms.filter(m=>mtActs(m).some(a=>!a.done)).map(m=>({...m,actions:mtActs(m).filter(a=>!a.done),content:''}));
+  return ms;
+}
+function mtAiBind(){
+  const go=document.getElementById('mtAiGo'), ask=document.getElementById('mtAiAsk'); if(!go) return;
+  const run=async(q)=>{
+    if(mtAiBusy) return;
+    const sel=document.getElementById('mtAiScope'), scope=sel.value, label=sel.options[sel.selectedIndex].text, ms=mtScopeMeetings(scope);
+    if(!ms.length) return alert('這個範圍沒有會議紀錄');
+    const prompt=q?`根據以下會議紀錄回答問題：「${q}」。今天是 ${mtToday()}。\n\n${mtDigest(ms)}`
+      :`以下是公司的會議紀錄（${label}）。今天是 ${mtToday()}。請整理：\n一、重點摘要（3～6 點）\n二、已經做的決議\n三、反覆出現的問題或風險\n四、還沒完成／逾期的事項：誰負責、建議怎麼推進\n五、下次開會建議討論的議題\n\n${mtDigest(ms)}`;
+    const save=t=>{ if(!Array.isArray(data.meetAi)) data.meetAi=[]; data.meetAi.push({id:mtUid('ai'),at:new Date().toISOString(),by:currentEmail(),scope:label,...(q?{q}:{}),text:t});
+      data.meetAi=data.meetAi.sort((a,b)=>String(a.at).localeCompare(String(b.at))).slice(-30); persist(); };
+    if(!mtKey()) return mtPasteFlow(prompt,q?'問 AI':'AI 綜合分析',t=>{ save(t); mtAiOut=`<div class="mtAiBox open"><div class="mtMd">${mtMd(t)}</div></div>`; renderMeetings(); });
+    mtAiBusy=true; const out=document.getElementById('mtAiOut'); out.innerHTML='<div class="vhLoading">AI 分析中，約 20～60 秒…</div>'; go.disabled=ask.disabled=true;
+    try{ const t=await mtCallAI(prompt,5000); save(t); mtAiOut=`<div class="mtAiBox open"><div class="mtMd">${mtMd(t)}</div><div class="muted" style="margin-top:6px">已存到下面的分析紀錄</div></div>`; }
+    catch(e){ mtAiOut=`<div class="mtAiErr">AI 分析失敗：${esc(e.message)}</div>`; }
+    finally{ mtAiBusy=false; renderMeetings(); }
+  };
+  go.onclick=()=>run('');
+  ask.onclick=()=>{ const q=document.getElementById('mtAiQ').value.trim(); if(!q) return alert('請先輸入問題'); run(q); };
+}
+function mtAiDel(id){ if(!confirm('刪除這筆分析紀錄？')) return; data.meetAi=(data.meetAi||[]).filter(x=>x.id!==id); persist(); renderMeetings(); }
+
 function go(id,b){
-  ['track','work','close','bonus','units','ctrack'].forEach(x=>document.getElementById(x).classList.toggle('hidden', x!==id));
+  ['track','work','close','bonus','units','ctrack','meet'].forEach(x=>document.getElementById(x).classList.toggle('hidden', x!==id));
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
   if(b) b.classList.add('on');
   if(id==='close') renderClose();
   if(id==='bonus') renderBonusAll();
   if(id==='units') renderUnits();
   if(id==='ctrack') renderCaseTrack();
+  if(id==='meet') renderMeetings();
 }
 
 // ====== 施工追蹤 ======
@@ -2248,9 +2613,10 @@ function renderAll(){
 }
 function render(){
   renderAll();
-  const activeSection=['track','work','close','bonus','units','ctrack'].find(id=>!document.getElementById(id).classList.contains('hidden'));
+  const activeSection=['track','work','close','bonus','units','ctrack','meet'].find(id=>!document.getElementById(id).classList.contains('hidden'));
   if(activeSection==='close') renderClose();
   if(activeSection==='ctrack') renderCaseTrack();
+  if(activeSection==='meet') renderMeetings();
   if(activeSection==='bonus') renderBonusAll();
 }
 async function initApp(){
