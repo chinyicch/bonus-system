@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.8（整合測試版）</title>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.9（整合測試版）</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <style>
@@ -90,7 +90,7 @@
 .ctChip b{font-weight:900;margin-left:2px}.ctChip.on{background:#1f2a44!important;color:#fff!important;border-color:#1f2a44}
 .st-wait{background:#eaf0f8;color:#3c5a78}.st-pipe{background:#fff0d6;color:#8a5a00}.st-duct{background:#ffe0b3;color:#7a4300}.st-inst{background:#efe6f7;color:#6b3f8f}.st-done{background:#e5f2e8;color:#28603a}.st-hold,.st-cancel{background:#eceee8;color:#5b6358}
 .pay-none{background:#f1f2ee;color:#8a9087}.pay-zero{background:#fbeae6;color:#a63d2e}.pay-part{background:#fff0d6;color:#8a5a00}.pay-full{background:#e5f2e8;color:#28603a}
-.ctTable{min-width:1200px}.ctTable th,.ctTable td{padding:8px 6px}.ctTable td{vertical-align:top;font-size:13px}
+.ctTable{min-width:1230px}.ctTable th,.ctTable td{padding:8px 6px}.ctTable td{vertical-align:top;font-size:13px}
 .ctSt,.ctPay{width:auto;padding:6px 8px;font-size:13px;font-weight:800;border:0;border-radius:999px;cursor:pointer}.ctSt{min-width:138px}.ctPay{min-width:72px}
 .ctSel{width:auto;min-width:92px;max-width:124px;padding:6px;font-size:13px;background:#fff}
 .ctDate{width:128px;padding:5px 6px;font-size:13px}.ctCrew{min-width:56px;max-width:90px;word-break:break-all}
@@ -118,6 +118,16 @@
 .ctBulk.hidden{display:none}.ctBulk select{width:auto;padding:6px 8px;font-size:13px;border:0}.ctBulk .ctGhost{background:rgba(255,255,255,.15)}
 .ctAct{width:34px;text-align:center}.ctDelBtn{border:0;background:none;cursor:pointer;font-size:15px;opacity:.35;padding:4px}.ctDelBtn:hover,tr:hover .ctDelBtn{opacity:1}
 .ctLItem .ctLRen{color:#3c5a78}
+.ctNotes{margin-top:6px;max-width:210px}
+.ctNote{position:relative;background:#fffbea;border:1px solid #efe0a6;border-radius:8px;padding:4px 20px 4px 7px;margin-top:4px;font-size:12px;line-height:1.4;white-space:pre-wrap;word-break:break-word;color:#3a3a2a}
+.ctNoteBy{display:block;font-size:10.5px;color:#8a8f86;margin-top:1px}
+.ctNoteS{display:inline-block;font-size:10px;background:#eceee8;color:#5b6358;border-radius:999px;padding:0 6px;margin-right:4px}
+.ctNoteX{position:absolute;top:2px;right:2px;border:0;background:none;color:#b9a26a;cursor:pointer;font-size:14px;line-height:1;padding:2px 4px}.ctNoteX:hover{color:#a63d2e}
+.ctNoteBtn{margin-top:5px;border:1px dashed #cbd2c8;background:#fff;color:#5b6358;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;cursor:pointer}.ctNoteBtn:hover{border-color:#8a5a00;color:#8a5a00}
+.ctNoteAdd{display:flex;gap:4px;margin-top:5px}.ctNoteAdd input{flex:1;min-width:0;padding:5px 7px;font-size:12px}
+.ctNoteOk{border:0;background:#42634b;color:#fff;border-radius:7px;padding:0 9px;cursor:pointer;font-weight:800}
+.ctMore{display:block;border:0;background:none;color:#3c5a78;font-size:11px;cursor:pointer;padding:2px 0}
+.ctMNotes{max-height:180px;overflow:auto}.ctMNotes .ctNote{padding-right:7px}.ctForm .ctNoteAdd input{font-size:14px;padding:8px}
 .ctAsk{width:100%;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#fff6f4;border:1px solid #e8c4bc;border-radius:10px;padding:8px 10px;font-size:13px}.ctAsk .vhBtn{padding:5px 9px;font-size:12px}
 @media(max-width:760px){
   .ctTable{min-width:0}.ctTable thead{display:none}
@@ -127,7 +137,7 @@
   .ctTable tr.ctPicked{border-color:#3c5a78}.ctTable tr.ctPicked td{background:none}
   .ctTable td.ctTdTitle{grid-column:1/-1;order:-2;padding-right:30px}.ctTable .ctTitle{min-width:0;font-size:15px}
   .ctTable td.ctCk{position:absolute;top:10px;right:8px;width:auto}
-  .ctTable td.ctTdSt{order:-1}.ctTable td.ctTdPay{order:-1}
+  .ctTable td.ctTdSt{order:-1;grid-column:1/-1}.ctTable td.ctTdPay{order:-1}.ctTable .ctNotes{max-width:none}
   .ctTable td[data-l]::before{content:attr(data-l);display:block;font-size:11px;color:#727b70;margin-bottom:2px}
   .ctTable .ctSt,.ctTable .ctPay,.ctTable .ctSel,.ctTable .ctDate{width:100%;min-width:0;max-width:none}
   .ctTable td.ctCrew:empty{display:none}
@@ -140,7 +150,7 @@
 <body>
 
 <div class="login" id="loginBox">
-  <h1>工程管理系統 V5.1.8</h1>
+  <h1>工程管理系統 V5.1.9</h1>
   <div class="sub">海壹有限公司｜公司內部系統（整合測試版）</div>
   <form id="loginForm">
     <label for="email">帳號或電子郵件</label>
@@ -157,7 +167,7 @@
 <div id="appRoot" class="hidden">
 <div class="top"><div class="topRow">
   <div>
-    <b style="font-size:21px">工程管理系統 V5.1.8｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
+    <b style="font-size:21px">工程管理系統 V5.1.9｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
     <div style="font-size:12px;opacity:.82">施工追蹤 → 工作單 → 結案管理 → 半年工程獎金 → 內外機台數｜案件追蹤</div>
   </div>
   <div class="topActions">
@@ -670,8 +680,14 @@ async function guardedAction(confirmMsg, backupReason, backupType, action){
 }
 // ====== 更新歷史 ======
 // 之後每次改版：APP_VERSION 改成新版號，並在 CHANGELOG 最上面加一筆（同步更新 CHANGELOG.md）。
-const APP_VERSION='5.1.8';
+const APP_VERSION='5.1.9';
 const CHANGELOG=[
+  {ver:'5.1.9', date:'2026-11-11', items:[
+    '案件追蹤：案件狀況下面多了「＋ 備註」，大家都可以加（例：預計 12 月進場、等設計師通知），按 Enter 就存；每則記下誰、什麼時候寫的',
+    '表格顯示最新兩則，較早的可以展開；每則右上角 × 可刪除',
+    '編輯視窗也看得到全部狀況備註、可以直接加；原本的「備註」改叫「其他備註」',
+    '搜尋找得到備註內容；匯出 Excel 多一欄「狀況備註」'
+  ]},
   {ver:'5.1.8', date:'2026-11-11', items:[
     '案件追蹤可以刪除：每列最右邊有 🗑；也可以勾選多筆一起刪（跟其他分頁一樣先自動備份、要輸入「刪除」確認，之後也能從版本記錄還原）',
     '勾選多筆後，可以一次改案件狀況、收款、合作夥伴、施工廠商',
@@ -815,6 +831,8 @@ function diffSummary(a,b){
     if(o.pay!==c.pay) parts.push(`收款 ${ctPayText(o.pay)}→${ctPayText(c.pay)}`);
     const f=CT_FIELDS.filter(([k])=>k!=='status'&&k!=='pay'&&!sameVal(o[k]??'',c[k]??'')).map(([,l])=>l);
     if(f.length) parts.push('修改'+f.join('、'));
+    const na=(o.stNotes||[]).length, nb=(c.stNotes||[]).length;
+    if(nb>na) parts.push(`新增備註「${(c.stNotes[nb-1]||{}).t||''}」`); else if(nb<na) parts.push('刪除備註');
     out.push(`案件追蹤「${c.title}」${parts.join('、')||'修改資料'}`);
   }
   out.push(...many(tDel,'刪除'));
@@ -1238,6 +1256,35 @@ const CT_FILTER_KEY=STORAGE_KEY+'-ct-filter';
 try{ Object.assign(ctState, JSON.parse(localStorage.getItem(CT_FILTER_KEY)||'{}')); }catch(e){}  // 篩選、排序記在這台裝置
 let ctSearchTimer=null;
 const ctSel=new Set();  // 勾選的案件（只在自己畫面）
+// 狀況備註：案件狀況下面「＋ 備註」，大家都可以加；每則 {t 內容, by 誰, at 時間, s 當時的狀況}
+let ctNoteOpen=null, ctNoteDraft='', ctNoteFocus=false;
+const ctNoteAll=new Set();  // 展開看全部備註的案件
+function ctNotes(c){ return Array.isArray(c.stNotes)?c.stNotes.filter(n=>n&&n.t):[]; }
+function ctNoteText(n){ return `${ctWhen(n.at)} ${whoShort(n.by)}：${n.t}`; }
+function ctNoteHtml(c){
+  const id=esc(c.id), ns=ctNotes(c), shown=ctNoteAll.has(c.id)?ns:ns.slice(-2);
+  const more=ns.length>shown.length?`<button class="ctMore" data-id="${id}" onclick="ctNoteAll.add(this.dataset.id);renderCaseTrack()">…前面還有 ${ns.length-shown.length} 則</button>`:'';
+  const items=shown.map(n=>`<div class="ctNote">${n.s&&n.s!==c.status?`<span class="ctNoteS">${esc(n.s)}</span>`:''}${esc(n.t)}<span class="ctNoteBy">${esc(whoShort(n.by))} ${esc(ctWhen(n.at))}</span><button class="ctNoteX" data-id="${id}" data-at="${esc(n.at)}" onclick="ctNoteDel(this)" title="刪除這則">×</button></div>`).join('');
+  const add=ctNoteOpen===c.id
+    ?`<div class="ctNoteAdd"><input class="ctNoteIn" data-id="${id}" placeholder="輸入備註，Enter 儲存" onkeydown="ctNoteKey(event,this)"><button class="ctNoteOk" onclick="ctNoteSave(this.previousElementSibling)" title="儲存">✓</button></div>`
+    :`<button class="ctNoteBtn" data-id="${id}" onclick="ctNoteStart(this.dataset.id)">＋ 備註</button>`;
+  return `<div class="ctNotes">${more}${items}${add}</div>`;
+}
+function ctNoteStart(id){ ctNoteOpen=id; ctNoteDraft=''; ctNoteFocus=true; renderCaseTrack(); }
+function ctNoteKey(e,el){ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); ctNoteSave(el); } else if(e.key==='Escape'){ ctNoteOpen=null; ctNoteDraft=''; renderCaseTrack(); } }
+function ctAddNote(c,t){ t=String(t||'').trim(); if(!t) return false; c.stNotes=[...ctNotes(c),{t,by:currentEmail(),at:new Date().toISOString(),s:c.status}]; ctTouch(c); persist(); return true; }
+function ctNoteSave(el){
+  const c=ctFind(el.dataset.id); ctNoteOpen=null; ctNoteDraft='';
+  if(c) ctAddNote(c,el.value);
+  renderCaseTrack();
+}
+function ctNoteDel(el){
+  const c=ctFind(el.dataset.id); if(!c) return;
+  const n=ctNotes(c).find(x=>x.at===el.dataset.at); if(!n) return;
+  if(!confirm(`刪除這則備註？\n\n「${n.t}」`)) return;
+  const rest=ctNotes(c).filter(x=>x!==n); if(rest.length) c.stNotes=rest; else delete c.stNotes;
+  ctTouch(c); persist(); renderCaseTrack();
+}
 function ctClass(s){ return 'st-'+((CT_STATUS.find(x=>x.v===s)||{}).c||'wait'); }
 function ctNormStatus(s){ s=String(s||'').trim(); s=CT_OLD_STATUS[s]||s.replace(/\(/g,'（').replace(/\)/g,'）'); return CT_STATUS.some(x=>x.v===s)?s:'待進場'; }
 function ctClosed(c){ return c.status==='驗收完成' && c.pay===100; }
@@ -1276,7 +1323,7 @@ function ctMatches(c){
   if(p==='full'&&v!==100) return false;
   const terms=ctState.text.trim().toLowerCase().split(/\s+/).filter(Boolean);
   if(terms.length){
-    const hay=[c.title,c.partner,c.vendor,c.status,c.crew,c.next,c.progress,c.equipment,c.note,c.no,c.row?'第'+c.row+'列':'',c.hole?'挖孔':'',c.duct?'風管':''].join(' ').toLowerCase();
+    const hay=[c.title,c.partner,c.vendor,c.status,c.crew,c.next,c.progress,c.equipment,c.note,c.no,c.row?'第'+c.row+'列':'',c.hole?'挖孔':'',c.duct?'風管':'',...ctNotes(c).map(n=>n.t)].join(' ').toLowerCase();
     if(!terms.every(t=>hay.includes(t))) return false;
   }
   return true;
@@ -1322,13 +1369,14 @@ function renderCaseTrack(){
   if(!all.length){ body.innerHTML=`<tr><td colspan="11"><div class="vhEmpty">還沒有案件。按「＋ 新增案件」，或「📥 匯入 Excel」選裝潢場整理檔。</div></td></tr>`; return; }
   if(!list.length){ body.innerHTML=`<tr><td colspan="11"><div class="vhEmpty">沒有符合條件的案件。</div></td></tr>`; return; }
   const sel=(id,k,cls,opts)=>`<select class="${cls}" data-id="${id}" data-k="${k}" onchange="ctSet(this)">${opts}</select>`;
+  const typing=body.querySelector('.ctNoteIn'); if(typing) ctNoteDraft=typing.value;
   body.innerHTML=list.map(c=>{
     const id=esc(c.id);
     const sub=[c.no?`項次 ${esc(c.no)}`:'',c.row?`Excel 第 ${c.row} 列`:''].filter(Boolean).join('｜');
     const tag=(k,l)=>`<button class="ctTag${c[k]?' on':''}" data-id="${id}" data-k="${k}" onclick="ctToggle(this)" title="${c[k]?'有':'沒有'}${l}，點一下切換">${c[k]?'✓ ':''}${l}</button>`;
     return `<tr class="${ctSel.has(c.id)?'ctPicked':''}">
       <td class="ctCk"><input type="checkbox" class="ctRowSel" data-id="${id}" onchange="ctPick(this)"${ctSel.has(c.id)?' checked':''} aria-label="勾選"></td>
-      <td class="ctTdSt">${sel(id,'status','ctSt '+ctClass(c.status),ctStatusOptions(c.status))}<div class="ctTags">${tag('hole','挖孔')}${tag('duct','風管')}</div></td>
+      <td class="ctTdSt">${sel(id,'status','ctSt '+ctClass(c.status),ctStatusOptions(c.status))}<div class="ctTags">${tag('hole','挖孔')}${tag('duct','風管')}</div>${ctNoteHtml(c)}</td>
       <td class="ctTdPay">${sel(id,'pay','ctPay '+ctPayClass(c.pay),ctPayOptions(c.pay))}</td>
       <td class="ctTdTitle"><div class="ctTitle" data-id="${id}" onclick="ctEdit(this.dataset.id)">${esc(c.title)}</div>${sub?`<div class="ctSub">${sub}</div>`:''}</td>
       <td data-l="合作夥伴">${sel(id,'partner','ctSel',ctOptions('partner',c.partner||'',true))}</td>
@@ -1340,6 +1388,7 @@ function renderCaseTrack(){
       <td class="ctAct"><button class="ctDelBtn" data-id="${id}" onclick="ctDelete([this.dataset.id])" title="刪除這筆">🗑</button></td>
     </tr>`;
   }).join('');
+  const ni=body.querySelector('.ctNoteIn'); if(ni){ ni.value=ctNoteDraft; if(ctNoteFocus) ni.focus(); } ctNoteFocus=false;  // 只有剛按「＋ 備註」時才跳到輸入框
   const all2=document.getElementById('ctSelAll'); if(all2){ const picked=list.filter(c=>ctSel.has(c.id)).length; all2.checked=picked>0&&picked===list.length; all2.indeterminate=picked>0&&picked<list.length; }
 }
 // 勾選多筆：一次改狀況／收款／夥伴／廠商，或一起刪除
@@ -1421,11 +1470,20 @@ function ctEdit(id){
     <div class="ctLabelRow"><label>進度紀錄</label><button type="button" class="linkish" id="ctToday">＋ 今天日期</button></div>
     <textarea id="ctF_progress" rows="4">${v('progress')}</textarea>
     <label>設備型號</label><textarea id="ctF_equipment" rows="2">${v('equipment')}</textarea>
-    <label>備註</label><textarea id="ctF_note" rows="2">${v('note')}</textarea>
+    <label>其他備註</label><textarea id="ctF_note" rows="2">${v('note')}</textarea>
+    ${c?`<label>狀況備註（大家都可以加，加了就存）</label><div id="ctMNotes" class="ctMNotes"></div><div class="ctNoteAdd"><input id="ctMNoteIn" placeholder="輸入備註，Enter 加入"><button type="button" class="vhBtn" id="ctMNoteAdd">加入</button></div>`:''}
     ${meta?`<div class="ctMeta">${meta}</div>`:''}
     <div class="vhBar" style="margin-top:14px"><button class="vhBtn primary" id="ctSave">儲存</button><button class="vhBtn" id="ctCancel">取消</button>${c?'<span style="flex:1"></span><button class="vhBtn warn" id="ctDel">刪除</button>':''}</div>
   </div>`,w=>{
     const f=k=>w.querySelector('#ctF_'+k);
+    const mn=w.querySelector('#ctMNotes');
+    if(mn){
+      const drawN=()=>{ const cur=ctFind(id); const ns=cur?ctNotes(cur):[]; mn.innerHTML=ns.length?ns.map(n=>`<div class="ctNote">${n.s?`<span class="ctNoteS">${esc(n.s)}</span>`:''}${esc(n.t)}<span class="ctNoteBy">${esc(whoShort(n.by))} ${esc(ctWhen(n.at))}</span></div>`).join(''):'<div class="muted">還沒有備註</div>'; };
+      const inp=w.querySelector('#ctMNoteIn');
+      const addN=()=>{ const cur=ctFind(id); if(cur&&ctAddNote(cur,inp.value)){ inp.value=''; drawN(); renderCaseTrack(); } };
+      w.querySelector('#ctMNoteAdd').onclick=addN; inp.onkeydown=e=>{ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); addN(); } };
+      drawN();
+    }
     ['partner','vendor'].forEach(kind=>{
       const s=f(kind); let prev=s.value;
       s.onchange=()=>{ if(s.value!=='__add'){ prev=s.value; return; } const n=ctAskNew(kind); s.innerHTML=ctOptions(kind,n||prev); prev=s.value; };
@@ -1573,9 +1631,9 @@ async function ctExport(){
   const XLSX=await loadXLSX();
   const list=ctSorted(data.caseTrack.filter(ctMatches));
   const rows=list.map(c=>({來源列:c.row||'',項次:c.no||'','案名／地點':c.title,合作夥伴:c.partner||'',施工廠商:c.vendor||'',案件狀況:c.status,挖孔:c.hole?'有':'',風管:c.duct?'有':'','收款%':c.pay??'',
-    進件日期:c.date||'','進場／負責':c.crew||'',下一步:c.next||'',進度:c.progress||'',設備型號:c.equipment||'',備註:c.note||'',最後修改:whoShort(c.updatedBy),修改時間:c.updatedAt?new Date(c.updatedAt).toLocaleString('zh-TW'):''}));
+    進件日期:c.date||'','進場／負責':c.crew||'',下一步:c.next||'',進度:c.progress||'',設備型號:c.equipment||'',備註:c.note||'',狀況備註:ctNotes(c).map(ctNoteText).join('；'),最後修改:whoShort(c.updatedBy),修改時間:c.updatedAt?new Date(c.updatedAt).toLocaleString('zh-TW'):''}));
   const wb=XLSX.utils.book_new(), ws=XLSX.utils.json_to_sheet(rows);
-  ws['!cols']=[6,6,30,14,10,16,5,5,7,11,14,24,40,30,24,10,18].map(w=>({wch:w}));
+  ws['!cols']=[6,6,30,14,10,16,5,5,7,11,14,24,40,30,24,36,10,18].map(w=>({wch:w}));
   XLSX.utils.book_append_sheet(wb,ws,'案件總表');
   XLSX.writeFile(wb,'案件追蹤_'+dayKey()+'.xlsx');
   await audit('案件追蹤匯出',`共 ${rows.length} 筆`);
