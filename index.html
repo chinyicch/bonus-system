@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.6（整合測試版）</title>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.7（整合測試版）</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <style>
@@ -88,24 +88,36 @@
 .ctChips{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 10px}
 .ctChip{border:1px solid #cbd2c8;background:#fff;border-radius:999px;padding:6px 12px;font-weight:800;font-size:13px;cursor:pointer;color:#1f2a44}
 .ctChip b{font-weight:900;margin-left:2px}.ctChip.on{background:#1f2a44!important;color:#fff!important;border-color:#1f2a44}
-.st-wait{background:#eaf0f8;color:#3c5a78}.st-doing{background:#fff0d6;color:#8a5a00}.st-pay{background:#fbeae6;color:#a63d2e}.st-done{background:#e5f2e8;color:#28603a}.st-hold,.st-cancel{background:#eceee8;color:#5b6358}
-.ctTable{min-width:1080px}.ctTable td{vertical-align:top;font-size:13px}
-.ctSt{width:auto;min-width:92px;padding:6px 8px;font-size:13px;font-weight:800;border:0;border-radius:999px;cursor:pointer}
-.ctTitle{font-weight:800;cursor:pointer;color:#1f2a44;min-width:170px}.ctTitle:hover{text-decoration:underline}
-.ctSub{font-size:11px;color:#727b70;margin-top:3px}.ctNo{white-space:nowrap}
-.ctProg{white-space:pre-wrap;line-height:1.45;min-width:220px;max-width:340px}.ctEq{font-size:12px;color:#3a4458;min-width:160px;max-width:260px}
+.st-wait{background:#eaf0f8;color:#3c5a78}.st-pipe{background:#fff0d6;color:#8a5a00}.st-duct{background:#ffe0b3;color:#7a4300}.st-inst{background:#efe6f7;color:#6b3f8f}.st-done{background:#e5f2e8;color:#28603a}.st-hold,.st-cancel{background:#eceee8;color:#5b6358}
+.pay-none{background:#f1f2ee;color:#8a9087}.pay-zero{background:#fbeae6;color:#a63d2e}.pay-part{background:#fff0d6;color:#8a5a00}.pay-full{background:#e5f2e8;color:#28603a}
+.ctTable{min-width:1160px}.ctTable th,.ctTable td{padding:8px 6px}.ctTable td{vertical-align:top;font-size:13px}
+.ctSt,.ctPay{width:auto;padding:6px 8px;font-size:13px;font-weight:800;border:0;border-radius:999px;cursor:pointer}.ctSt{min-width:138px}.ctPay{min-width:72px}
+.ctSel{width:auto;min-width:92px;max-width:124px;padding:6px;font-size:13px;background:#fff}
+.ctDate{width:128px;padding:5px 6px;font-size:13px}.ctCrew{min-width:56px;max-width:90px;word-break:break-all}
+.ctTags{display:flex;gap:4px;margin-top:5px}
+.ctTag{border:1px dashed #cbd2c8;background:#fff;color:#9aa196;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700;cursor:pointer}.ctTag.on{border:1px solid #3c5a78;background:#3c5a78;color:#fff}
+.ctTitle{font-weight:800;cursor:pointer;color:#1f2a44;min-width:150px}.ctTitle:hover{text-decoration:underline}
+.ctSub{font-size:11px;color:#727b70;margin-top:3px}
+.ctProg{white-space:pre-wrap;line-height:1.45;min-width:200px;max-width:340px}.ctEq{font-size:12px;color:#3a4458;margin-top:3px}
 .ctNext{color:#8a5a00;font-weight:800;margin-bottom:2px}
 .ctWho{font-size:11px;color:#727b70;white-space:nowrap}
 .ctForm label{display:block;font-size:12px;font-weight:700;margin:10px 0 4px}.ctForm .grid2{margin:0}.ctForm textarea{min-height:0}
+.ctChecks{display:flex;gap:16px;margin-top:8px}.ctForm .ctChecks label,.ctChecks label{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;margin:0}.ctChecks input{width:auto}
+.ctPayRow{display:flex;align-items:center;gap:6px}.ctPayRow input{flex:1}
+.ctQuick{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}.ctQuick .vhBtn{padding:4px 8px;font-size:12px}
 .ctLabelRow{display:flex;justify-content:space-between;align-items:flex-end}
 .ctMeta{font-size:12px;color:#687064;margin-top:10px;line-height:1.6}
-#ctrack .smartFilterRow input{flex:1 1 240px;width:auto}#ctrack .smartFilterRow select{flex:0 1 190px;width:auto}
+.ctListSec h4{margin:14px 0 6px}.ctListBox{display:flex;flex-wrap:wrap;gap:6px}
+.ctLItem{display:inline-flex;align-items:center;gap:4px;border:1px solid #cbd2c8;border-radius:999px;padding:3px 4px 3px 10px;font-size:13px;background:#fff}.ctLItem small{color:#8a9087}
+.ctLItem button{border:0;background:#f1f2ee;border-radius:999px;width:20px;height:20px;cursor:pointer;color:#a63d2e;font-weight:800;line-height:1;padding:0}
+.ctAddRow{display:flex;gap:6px;margin-top:8px}.ctAddRow input{flex:1;padding:7px 9px;font-size:14px}
+#ctrack .smartFilterRow input{flex:1 1 220px;width:auto}#ctrack .smartFilterRow select{flex:0 1 165px;width:auto}
 </style>
 </head>
 <body>
 
 <div class="login" id="loginBox">
-  <h1>工程管理系統 V5.1.6</h1>
+  <h1>工程管理系統 V5.1.7</h1>
   <div class="sub">海壹有限公司｜公司內部系統（整合測試版）</div>
   <form id="loginForm">
     <label for="email">帳號或電子郵件</label>
@@ -122,7 +134,7 @@
 <div id="appRoot" class="hidden">
 <div class="top"><div class="topRow">
   <div>
-    <b style="font-size:21px">工程管理系統 V5.1.6｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
+    <b style="font-size:21px">工程管理系統 V5.1.7｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
     <div style="font-size:12px;opacity:.82">施工追蹤 → 工作單 → 結案管理 → 半年工程獎金 → 內外機台數｜案件追蹤</div>
   </div>
   <div class="topActions">
@@ -146,8 +158,9 @@
 
 <section id="ctrack" class="hidden"><div class="card">
   <div class="headrow">
-    <div><h2 style="margin-bottom:4px">案件追蹤｜案件整理</h2><div class="muted">單純整理案件：誰的案子、做到哪、下一步。所有登入的人共用同一份，每筆會記下最後修改的人。</div></div>
+    <div><h2 style="margin-bottom:4px">案件追蹤｜案件整理</h2><div class="muted">單純整理案件：誰的案子、做到哪、收了多少、下一步。所有登入的人共用同一份，每筆會記下最後修改的人。</div></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn small" onclick="ctLists()">⚙ 夥伴／廠商名單</button>
       <button class="btn small" onclick="ctImport()">📥 匯入 Excel</button>
       <button class="btn small" onclick="ctExport()">📤 匯出 Excel</button>
       <button class="btn green" onclick="ctEdit()">＋ 新增案件</button>
@@ -157,10 +170,12 @@
   <div class="smartFilterRow" style="margin-bottom:10px">
     <input id="ctSearch" type="search" placeholder="搜尋案名、地點、夥伴、型號、進度…（空格分開可多條件）" oninput="ctSetFilter('text',this.value)">
     <select id="ctPartner" onchange="ctSetFilter('partner',this.value)"></select>
+    <select id="ctVendor" onchange="ctSetFilter('vendor',this.value)"></select>
+    <select id="ctPayF" onchange="ctSetFilter('pay',this.value)"></select>
     <select id="ctSort" onchange="ctSetFilter('sort',this.value)"><option value="recent">最近修改在上</option><option value="date">進件日期（新→舊）</option><option value="row">Excel 列（新→舊）</option><option value="title">案名</option></select>
     <span id="ctCount" class="muted"></span>
   </div>
-  <div class="scroll"><table class="table ctTable"><thead><tr><th>狀態</th><th>案名／地點</th><th>合作夥伴</th><th>進件日期</th><th>進場／負責</th><th>下一步／進度</th><th>設備型號</th><th>最後修改</th></tr></thead><tbody id="ctBody"></tbody></table></div>
+  <div class="scroll"><table class="table ctTable"><thead><tr><th>案件狀況</th><th>收款</th><th>案名／地點</th><th>合作夥伴</th><th>施工廠商</th><th>進件日期</th><th>進場／負責</th><th>下一步／進度／設備</th><th>最後修改</th></tr></thead><tbody id="ctBody"></tbody></table></div>
 </div></section>
 
 <section id="track"><div class="card" id="trackCard">
@@ -380,7 +395,15 @@ function ensureShape(obj){
   if(!Array.isArray(out.closedRecords)) out.closedRecords=[];
   if(!Array.isArray(out.caseTrack)) out.caseTrack=[];
   out.caseTrack=out.caseTrack.filter(c=>c&&typeof c==='object');
-  out.caseTrack.forEach(c=>{ if(!c.id) c.id='ct-'+Date.now()+'-'+Math.random().toString(36).slice(2,7); if(!c.status) c.status='待進場'; });
+  const ctOld={'施工中':'已配管','待收款':'驗收完成','已結案':'驗收完成'}; // V5.1.6 的舊狀態
+  out.caseTrack.forEach(c=>{
+    if(!c.id) c.id='ct-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
+    if(ctOld[c.status]){ if(c.status==='已結案'&&c.pay==null) c.pay=100; c.status=ctOld[c.status]; }
+    if(!c.status) c.status='待進場';
+  });
+  const ctNames=a=>[...new Set(a.filter(x=>typeof x==='string'&&x.trim()))];
+  if(!Array.isArray(out.ctPartners)) out.ctPartners=ctNames(out.caseTrack.map(c=>c.partner)).sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+  if(!Array.isArray(out.ctVendors)) out.ctVendors=ctNames(['勤一','阿慶','恩瑋','阿瑋','狗哥',...out.caseTrack.map(c=>c.vendor)]);
   out.projects.forEach(p=>{
     if(!p.id) p.id='p-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
     if(!Array.isArray(p.logs)) p.logs=[];
@@ -623,8 +646,16 @@ async function guardedAction(confirmMsg, backupReason, backupType, action){
 }
 // ====== 更新歷史 ======
 // 之後每次改版：APP_VERSION 改成新版號，並在 CHANGELOG 最上面加一筆（同步更新 CHANGELOG.md）。
-const APP_VERSION='5.1.6';
+const APP_VERSION='5.1.7';
 const CHANGELOG=[
+  {ver:'5.1.7', date:'2026-11-11', items:[
+    '案件追蹤：案件狀況改成 待進場 → 已配管 → 已配管且配風管 → 裝機完成（未驗收）→ 驗收完成（另有暫停、取消）；每件可標「挖孔」「風管」，表格裡點一下就切換',
+    '收款另外一欄，記 0～100%（不記金額）；「完工未收齊」一鍵列出驗收完成但還沒收到 100% 的案件；驗收完成＋收款 100% 才算結案',
+    '合作夥伴、施工廠商改成下拉選單，選單裡可直接「＋ 新增」，也可在「⚙ 夥伴／廠商名單」增刪（預設廠商：勤一、阿慶、恩瑋、阿瑋、狗哥）',
+    '表格裡可直接改案件狀況、收款、合作夥伴、施工廠商、進件日期（日期用選的）',
+    '匯入 Excel：已匯入、還沒人改過的案件會更新成新檔內容；新檔沒有的舊匯入資料可一起移除（有人改過的不動）',
+    'V5.1.6 的舊狀態自動轉換：施工中→已配管、待收款→驗收完成、已結案→驗收完成＋收款 100%'
+  ]},
   {ver:'5.1.6', date:'2026-11-11', items:[
     '新增「案件追蹤」分頁：單純整理案件（案名、合作夥伴、狀態、進件日期、進場／負責、下一步、進度、設備型號），跟獎金計算無關',
     '所有登入的人共用同一份，每筆顯示最後修改的人和時間；多人同時編輯會自動合併，版本記錄、備份照舊',
@@ -749,12 +780,18 @@ function diffSummary(a,b){
   for(const [id,c] of tb){
     const o=ta.get(id); if(!o||sameVal(o,c)) continue;
     const parts=[];
-    if(o.status!==c.status) parts.push(`狀態 ${o.status||'-'}→${c.status||'-'}`);
-    const f=CT_FIELDS.filter(([k])=>k!=='status'&&(o[k]||'')!==(c[k]||'')).map(([,l])=>l);
+    if(o.status!==c.status) parts.push(`狀況 ${o.status||'-'}→${c.status||'-'}`);
+    if(o.pay!==c.pay) parts.push(`收款 ${ctPayText(o.pay)}→${ctPayText(c.pay)}`);
+    const f=CT_FIELDS.filter(([k])=>k!=='status'&&k!=='pay'&&!sameVal(o[k]??'',c[k]??'')).map(([,l])=>l);
     if(f.length) parts.push('修改'+f.join('、'));
     out.push(`案件追蹤「${c.title}」${parts.join('、')||'修改資料'}`);
   }
   out.push(...many(tDel,'刪除'));
+  for(const [k,l] of [['ctPartners','合作夥伴'],['ctVendors','施工廠商']]){
+    const la=new Set(a[k]||[]), lb=new Set(b[k]||[]);
+    lb.forEach(n=>{ if(!la.has(n)) out.push(`${l}名單新增「${n}」`); });
+    la.forEach(n=>{ if(!lb.has(n)) out.push(`${l}名單移除「${n}」`); });
+  }
   return out;
 }
 // 每次成功存到雲端時呼叫：記下「我」這次改了什麼，累積到下一個版本
@@ -1158,28 +1195,54 @@ function openRosterManager(){
 function pnow(){ return data.projects.find(x=>x.id===current); }
 function opts(a,v){ return a.map(x=>`<option ${x===v?'selected':''}>${esc(x)}</option>`).join(''); }
 function personOpts(v){ return opts(['待確認',...data.roster], v); }
-// ====== 案件追蹤（單純整理案件：誰的案子、做到哪、下一步；跟獎金計算無關）======
+// ====== 案件追蹤（單純整理案件：誰的案子、做到哪、收了多少、下一步；跟獎金計算無關）======
 // 資料放在 data.caseTrack，跟其他分頁同一份雲端資料：共用登入、多人同時編輯自動合併、版本記錄、備份都沿用。
-// 師傅也登入得到，所以這裡不放金額。
-const CT_STATUS=[{v:'待進場',c:'wait'},{v:'施工中',c:'doing'},{v:'待收款',c:'pay'},{v:'已結案',c:'done'},{v:'暫停',c:'hold'},{v:'取消',c:'cancel'}];
-const CT_OPEN=new Set(['待進場','施工中','待收款','暫停']);
-const CT_FIELDS=[['title','案名／地點'],['partner','合作夥伴'],['status','狀態'],['date','進件日期'],['crew','進場／負責'],['next','下一步'],['progress','進度'],['equipment','設備型號'],['note','備註']];
-let ctState={text:'',partner:'',status:'open',sort:'recent'};
+// 師傅也登入得到，所以這裡不放金額，收款只記百分比。合作夥伴、施工廠商的下拉選單在 data.ctPartners、data.ctVendors。
+const CT_STATUS=[{v:'待進場',c:'wait'},{v:'已配管',c:'pipe'},{v:'已配管且配風管',c:'duct'},{v:'裝機完成（未驗收）',c:'inst'},{v:'驗收完成',c:'done'},{v:'暫停',c:'hold'},{v:'取消',c:'cancel'}];
+const CT_OLD_STATUS={'施工中':'已配管','待收款':'驗收完成','已結案':'驗收完成'}; // V5.1.6 的舊狀態
+const CT_FIELDS=[['title','案名／地點'],['partner','合作夥伴'],['vendor','施工廠商'],['status','案件狀況'],['hole','挖孔'],['duct','風管'],['pay','收款'],['date','進件日期'],['crew','進場／負責'],['next','下一步'],['progress','進度'],['equipment','設備型號'],['note','備註']];
+const CT_LIST={partner:{key:'ctPartners',name:'合作夥伴',none:'（無）'},vendor:{key:'ctVendors',name:'施工廠商',none:'（未選）'}};
+let ctState={text:'',partner:'',vendor:'',pay:'',status:'open',sort:'recent'};
+let ctSearchTimer=null;
 function ctClass(s){ return 'st-'+((CT_STATUS.find(x=>x.v===s)||{}).c||'wait'); }
+function ctNormStatus(s){ s=String(s||'').trim(); s=CT_OLD_STATUS[s]||s.replace(/\(/g,'（').replace(/\)/g,'）'); return CT_STATUS.some(x=>x.v===s)?s:'待進場'; }
+function ctClosed(c){ return c.status==='驗收完成' && c.pay===100; }
+function ctOpen(c){ return c.status!=='取消' && !ctClosed(c); }
+function ctNum(v){ if(v==null||String(v).trim()==='') return null; const n=Number(String(v).replace(/[%％\s]/g,'')); return Number.isFinite(n)?Math.max(0,Math.min(100,Math.round(n))):null; }
+function ctPayText(p){ return p==null?'未填':p+'%'; }
+function ctPayClass(p){ return p==null?'pay-none':p>=100?'pay-full':p<=0?'pay-zero':'pay-part'; }
+function ctEmpty(v){ return v==null||v===''||v===false; }
 function whoShort(e){ return String(e||'').replace(/@haiyi\.local$/i,''); }
 function ctWhen(iso){ if(!iso) return ''; const d=new Date(iso); return isNaN(d)?'':`${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
 function ctFind(id){ return data.caseTrack.find(c=>c.id===id); }
 function ctTouch(c){ c.updatedAt=new Date().toISOString(); c.updatedBy=currentEmail(); }
-function ctPartners(){ return [...new Set(data.caseTrack.map(c=>c.partner).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant')); }
+function ctList(kind){ const k=CT_LIST[kind].key; if(!Array.isArray(data[k])) data[k]=[]; return data[k]; }
+function ctAddToList(kind,name){ name=String(name||'').trim(); if(!name||name==='__add') return ''; const l=ctList(kind); if(!l.includes(name)) l.push(name); return name; }
+function ctAskNew(kind){ const n=prompt(`新增${CT_LIST[kind].name}名稱：`); return n&&n.trim()?ctAddToList(kind,n):''; }
+function ctOptions(kind,cur){
+  const l=ctList(kind), all=cur&&!l.includes(cur)?[...l,cur]:l;
+  return `<option value="">${CT_LIST[kind].none}</option>${all.map(n=>`<option value="${esc(n)}"${n===cur?' selected':''}>${esc(n)}</option>`).join('')}<option value="__add">＋ 新增${CT_LIST[kind].name}…</option>`;
+}
 function ctStatusOptions(cur){ return CT_STATUS.map(s=>`<option${s.v===cur?' selected':''}>${s.v}</option>`).join(''); }
+function ctPayOptions(p){
+  const vals=[0,10,20,30,40,50,60,70,80,90,100]; if(p!=null&&!vals.includes(p)){ vals.push(p); vals.sort((a,b)=>a-b); }
+  return `<option value=""${p==null?' selected':''}>未填</option>`+vals.map(v=>`<option value="${v}"${v===p?' selected':''}>${v}%</option>`).join('');
+}
 function ctMatches(c){
   const st=ctState.status;
-  if(st==='open' && !CT_OPEN.has(c.status)) return false;
-  if(st!=='open' && st!=='all' && c.status!==st) return false;
-  if(ctState.partner==='(none)' ? !!c.partner : (ctState.partner && c.partner!==ctState.partner)) return false;
+  if(st==='open'){ if(!ctOpen(c)) return false; }
+  else if(st==='unpaid'){ if(!(c.status==='驗收完成'&&c.pay!==100)) return false; }
+  else if(st!=='all' && c.status!==st) return false;
+  for(const k of ['partner','vendor']){ const f=ctState[k]; if(f==='(none)'?!!c[k]:(f&&c[k]!==f)) return false; }
+  const p=ctState.pay, v=c.pay;
+  if(p==='none'&&v!=null) return false;
+  if(p==='notfull'&&v===100) return false;
+  if(p==='zero'&&v!==0) return false;
+  if(p==='part'&&!(v>0&&v<100)) return false;
+  if(p==='full'&&v!==100) return false;
   const terms=ctState.text.trim().toLowerCase().split(/\s+/).filter(Boolean);
   if(terms.length){
-    const hay=[c.title,c.partner,c.crew,c.next,c.progress,c.equipment,c.note,c.no,c.row?'第'+c.row+'列':''].join(' ').toLowerCase();
+    const hay=[c.title,c.partner,c.vendor,c.status,c.crew,c.next,c.progress,c.equipment,c.note,c.no,c.row?'第'+c.row+'列':'',c.hole?'挖孔':'',c.duct?'風管':''].join(' ').toLowerCase();
     if(!terms.every(t=>hay.includes(t))) return false;
   }
   return true;
@@ -1194,51 +1257,82 @@ function ctSorted(list){
   }[ctState.sort]||(()=>0);
   return [...list].sort(by);
 }
-function ctSetFilter(k,v){ ctState[k]=v; renderCaseTrack(); }
+function ctSetFilter(k,v){
+  ctState[k]=v;
+  if(k==='text'){ clearTimeout(ctSearchTimer); ctSearchTimer=setTimeout(renderCaseTrack,180); return; } // 打字時不要每個字都重畫
+  renderCaseTrack();
+}
+function ctFilterSelect(id,first,items,cur){
+  const el=document.getElementById(id); if(!el) return;
+  el.innerHTML=`<option value="">${first}</option>`+items.map(([v,l])=>`<option value="${esc(v)}"${v===cur?' selected':''}>${esc(l)}</option>`).join('');
+}
 function renderCaseTrack(){
   const body=document.getElementById('ctBody'); if(!body) return;
   const all=data.caseTrack;
-  const n=s=>all.filter(c=>c.status===s).length;
-  const chips=[['open','未結案',all.filter(c=>CT_OPEN.has(c.status)).length],...CT_STATUS.map(s=>[s.v,s.v,n(s.v)]),['all','全部',all.length]];
-  document.getElementById('ctChips').innerHTML=chips.map(([k,label,cnt])=>`<button class="ctChip${ctState.status===k?' on':''}${k!=='open'&&k!=='all'?' '+ctClass(k):''}" onclick="ctSetFilter('status','${k}')">${label} <b>${cnt}</b></button>`).join('');
-  const sel=document.getElementById('ctPartner');
-  const ps=ctPartners(); if(ctState.partner && ctState.partner!=='(none)' && !ps.includes(ctState.partner)) ctState.partner='';
-  sel.innerHTML=`<option value="">全部合作夥伴</option>${ps.map(p=>`<option value="${esc(p)}"${p===ctState.partner?' selected':''}>${esc(p)}（${all.filter(c=>c.partner===p).length}）</option>`).join('')}<option value="(none)"${ctState.partner==='(none)'?' selected':''}>（沒寫合作夥伴）</option>`;
+  const cnt=f=>all.filter(f).length;
+  const chips=[['open','未結案',cnt(ctOpen)],...CT_STATUS.slice(0,5).map(s=>[s.v,s.v,cnt(c=>c.status===s.v)]),['unpaid','完工未收齊',cnt(c=>c.status==='驗收完成'&&c.pay!==100)],...CT_STATUS.slice(5).map(s=>[s.v,s.v,cnt(c=>c.status===s.v)]),['all','全部',all.length]];
+  document.getElementById('ctChips').innerHTML=chips.map(([k,label,n])=>`<button class="ctChip${ctState.status===k?' on':''}${CT_STATUS.some(s=>s.v===k)?' '+ctClass(k):k==='unpaid'?' pay-zero':''}" data-k="${esc(k)}" onclick="ctSetFilter('status',this.dataset.k)">${label} <b>${n}</b></button>`).join('');
+  for(const kind of ['partner','vendor']){
+    const l=ctList(kind); if(ctState[kind]&&ctState[kind]!=='(none)'&&!l.includes(ctState[kind])&&!all.some(c=>c[kind]===ctState[kind])) ctState[kind]='';
+    const used=[...new Set([...l,...all.map(c=>c[kind]).filter(Boolean)])];
+    ctFilterSelect(kind==='partner'?'ctPartner':'ctVendor',`全部${CT_LIST[kind].name}`,[...used.map(n=>[n,`${n}（${cnt(c=>c[kind]===n)}）`]),['(none)',`（沒選${CT_LIST[kind].name}）`]],ctState[kind]);
+  }
+  ctFilterSelect('ctPayF','全部收款',[['notfull','未收齊（含未填）'],['none','未填'],['zero','0%'],['part','收部分（1–99%）'],['full','已收齊 100%']],ctState.pay);
   document.getElementById('ctSort').value=ctState.sort;
   const s=document.getElementById('ctSearch'); if(document.activeElement!==s) s.value=ctState.text;
   const list=ctSorted(all.filter(ctMatches));
   document.getElementById('ctCount').textContent=`顯示 ${list.length} / ${all.length} 筆`;
-  if(!all.length){ body.innerHTML=`<tr><td colspan="8"><div class="vhEmpty">還沒有案件。按「＋ 新增案件」，或「📥 匯入 Excel」選裝潢場整理檔。</div></td></tr>`; return; }
-  if(!list.length){ body.innerHTML=`<tr><td colspan="8"><div class="vhEmpty">沒有符合條件的案件。</div></td></tr>`; return; }
+  if(!all.length){ body.innerHTML=`<tr><td colspan="9"><div class="vhEmpty">還沒有案件。按「＋ 新增案件」，或「📥 匯入 Excel」選裝潢場整理檔。</div></td></tr>`; return; }
+  if(!list.length){ body.innerHTML=`<tr><td colspan="9"><div class="vhEmpty">沒有符合條件的案件。</div></td></tr>`; return; }
+  const sel=(id,k,cls,opts)=>`<select class="${cls}" data-id="${id}" data-k="${k}" onchange="ctSet(this)">${opts}</select>`;
   body.innerHTML=list.map(c=>{
-    const id=esc(c.id), src=c.row?`Excel 第 ${c.row} 列`:'';
-    const sub=[c.no?`項次 ${esc(c.no)}`:'',src].filter(Boolean).join('｜');
+    const id=esc(c.id);
+    const sub=[c.no?`項次 ${esc(c.no)}`:'',c.row?`Excel 第 ${c.row} 列`:''].filter(Boolean).join('｜');
+    const tag=(k,l)=>`<button class="ctTag${c[k]?' on':''}" data-id="${id}" data-k="${k}" onclick="ctToggle(this)" title="${c[k]?'有':'沒有'}${l}，點一下切換">${c[k]?'✓ ':''}${l}</button>`;
     return `<tr>
-      <td><select class="ctSt ${ctClass(c.status)}" data-id="${id}" onchange="ctSetStatus(this.dataset.id,this.value)">${ctStatusOptions(c.status)}</select></td>
+      <td>${sel(id,'status','ctSt '+ctClass(c.status),ctStatusOptions(c.status))}<div class="ctTags">${tag('hole','挖孔')}${tag('duct','風管')}</div></td>
+      <td>${sel(id,'pay','ctPay '+ctPayClass(c.pay),ctPayOptions(c.pay))}</td>
       <td><div class="ctTitle" data-id="${id}" onclick="ctEdit(this.dataset.id)">${esc(c.title)}</div>${sub?`<div class="ctSub">${sub}</div>`:''}</td>
-      <td>${esc(c.partner||'')}</td>
-      <td class="ctNo">${esc(c.date||'')}</td>
-      <td>${esc(c.crew||'')}</td>
-      <td class="ctProg">${c.next?`<div class="ctNext">▶ ${esc(c.next)}</div>`:''}${esc(c.progress||'')}${c.note?`<div class="ctSub">${esc(c.note)}</div>`:''}</td>
-      <td class="ctProg ctEq">${esc(c.equipment||'')}</td>
+      <td>${sel(id,'partner','ctSel',ctOptions('partner',c.partner||''))}</td>
+      <td>${sel(id,'vendor','ctSel',ctOptions('vendor',c.vendor||''))}</td>
+      <td><input type="date" class="ctDate" value="${esc(c.date||'')}" data-id="${id}" data-k="date" onchange="ctSet(this)"></td>
+      <td class="ctCrew">${esc(c.crew||'')}</td>
+      <td class="ctProg">${c.next?`<div class="ctNext">▶ ${esc(c.next)}</div>`:''}${esc(c.progress||'')}${c.equipment?`<div class="ctEq">🔧 ${esc(c.equipment)}</div>`:''}${c.note?`<div class="ctSub">${esc(c.note)}</div>`:''}</td>
       <td class="ctWho">${c.updatedBy?`${esc(whoShort(c.updatedBy))}<br>${esc(ctWhen(c.updatedAt))}`:'Excel 匯入'}</td>
     </tr>`;
   }).join('');
 }
-function ctSetStatus(id,v){
-  const c=ctFind(id); if(!c||c.status===v) return;
-  c.status=v; ctTouch(c); persist(); renderCaseTrack();
+// 表格裡直接改（案件狀況、收款、合作夥伴、施工廠商、進件日期）
+function ctSet(el){
+  const id=el.dataset.id, k=el.dataset.k, c=ctFind(id); if(!c) return;
+  let v=el.value;
+  if((k==='partner'||k==='vendor')&&v==='__add'){ v=ctAskNew(k); if(!v){ el.value=c[k]||''; return; } }
+  if(k==='pay') v=ctNum(v);
+  if(ctEmpty(v)&&ctEmpty(c[k])) return;
+  if(v===c[k]) return;
+  if(ctEmpty(v)) delete c[k]; else c[k]=v;
+  ctTouch(c); persist(); renderCaseTrack();
+}
+function ctToggle(el){
+  const c=ctFind(el.dataset.id), k=el.dataset.k; if(!c) return;
+  if(c[k]) delete c[k]; else c[k]=true;
+  ctTouch(c); persist(); renderCaseTrack();
 }
 function ctEdit(id){
   const c=id?ctFind(id):null;
   if(id&&!c) return alert('找不到這筆案件，可能已被其他人刪除。');
-  const v=k=>esc(c?c[k]||'':'');
-  const orig={}; CT_FIELDS.forEach(([k])=>orig[k]=c?String(c[k]||''):(k==='status'?'待進場':''));
+  const v=k=>esc(c?c[k]??'':'');
+  const norm=x=>ctEmpty(x)?null:x;
+  const orig={}; CT_FIELDS.forEach(([k])=>orig[k]=norm(c?c[k]:(k==='status'?'待進場':null)));
   const meta=c?[c.row?`來源：裝潢場 Excel 第 ${c.row} 列`:'',c.createdBy?`建立：${esc(whoShort(c.createdBy))} ${esc(ctWhen(c.createdAt))}`:'',c.updatedBy?`最後修改：${esc(whoShort(c.updatedBy))} ${esc(ctWhen(c.updatedAt))}`:''].filter(Boolean).join('｜'):'';
   modal(c?'編輯案件':'新增案件',`<div class="ctForm">
     <label>案名／地點</label><input id="ctF_title" value="${v('title')}" placeholder="例：竹北市博愛路181號 王先生">
-    <div class="grid2"><div><label>合作夥伴</label><input id="ctF_partner" list="ctPartnerList" value="${v('partner')}" placeholder="設計師／統包，沒有可空白"></div>
-      <div><label>狀態</label><select id="ctF_status">${ctStatusOptions(c?c.status:'待進場')}</select></div></div>
+    <div class="grid2"><div><label>合作夥伴</label><select id="ctF_partner">${ctOptions('partner',c?c.partner||'':'')}</select></div>
+      <div><label>施工廠商</label><select id="ctF_vendor">${ctOptions('vendor',c?c.vendor||'':'')}</select></div></div>
+    <div class="grid2"><div><label>案件狀況</label><select id="ctF_status">${ctStatusOptions(c?c.status:'待進場')}</select>
+        <div class="ctChecks"><label><input type="checkbox" id="ctF_hole"${c&&c.hole?' checked':''}> 有挖孔</label><label><input type="checkbox" id="ctF_duct"${c&&c.duct?' checked':''}> 有風管</label></div></div>
+      <div><label>收款（0～100%）</label><div class="ctPayRow"><input id="ctF_pay" type="number" min="0" max="100" step="1" inputmode="numeric" value="${c&&c.pay!=null?c.pay:''}" placeholder="未填"><span>%</span></div>
+        <div class="ctQuick">${[0,30,50,70,100].map(n=>`<button type="button" class="vhBtn" data-p="${n}">${n}%</button>`).join('')}<button type="button" class="vhBtn" data-p="">清除</button></div></div></div>
     <div class="grid2"><div><label>進件日期</label><input id="ctF_date" type="date" value="${v('date')}"></div>
       <div><label>進場／負責</label><input id="ctF_crew" list="rosterList" value="${v('crew')}"></div></div>
     <label>下一步／待辦</label><input id="ctF_next" value="${v('next')}" placeholder="例：11/15 前跟設計師確認吊隱位置">
@@ -1246,15 +1340,20 @@ function ctEdit(id){
     <textarea id="ctF_progress" rows="4">${v('progress')}</textarea>
     <label>設備型號</label><textarea id="ctF_equipment" rows="2">${v('equipment')}</textarea>
     <label>備註</label><textarea id="ctF_note" rows="2">${v('note')}</textarea>
-    <datalist id="ctPartnerList">${ctPartners().map(p=>`<option value="${esc(p)}">`).join('')}</datalist>
     ${meta?`<div class="ctMeta">${meta}</div>`:''}
     <div class="vhBar" style="margin-top:14px"><button class="vhBtn primary" id="ctSave">儲存</button><button class="vhBtn" id="ctCancel">取消</button>${c?'<span style="flex:1"></span><button class="vhBtn warn" id="ctDel">刪除</button>':''}</div>
   </div>`,w=>{
     const f=k=>w.querySelector('#ctF_'+k);
+    ['partner','vendor'].forEach(kind=>{
+      const s=f(kind); let prev=s.value;
+      s.onchange=()=>{ if(s.value!=='__add'){ prev=s.value; return; } const n=ctAskNew(kind); s.innerHTML=ctOptions(kind,n||prev); prev=s.value; };
+    });
+    w.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{ f('pay').value=b.dataset.p; });
     w.querySelector('#ctToday').onclick=()=>{ const t=f('progress'), d=new Date(), add=`${d.getMonth()+1}/${d.getDate()} `; t.value=t.value.replace(/\s*$/,'')+(t.value.trim()?'\n':'')+add; t.focus(); t.setSelectionRange(t.value.length,t.value.length); };
     w.querySelector('#ctCancel').onclick=()=>w.remove();
     w.querySelector('#ctSave').onclick=()=>{
-      const val={}; CT_FIELDS.forEach(([k])=>val[k]=f(k).value.trim());
+      const val={};
+      CT_FIELDS.forEach(([k])=>{ const el=f(k); val[k]=norm(k==='hole'||k==='duct'?el.checked:k==='pay'?ctNum(el.value):el.value.trim()); });
       if(!val.title){ alert('請填案名／地點'); f('title').focus(); return; }
       // 只寫入這次有改的欄位，避免蓋掉別人同時改的其他欄位
       let t=id?ctFind(id):null;
@@ -1262,7 +1361,7 @@ function ctEdit(id){
       const isNew=!t;
       if(isNew){ t={id:id||'ct-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),createdAt:new Date().toISOString(),createdBy:currentEmail()}; data.caseTrack.push(t); }
       let changed=isNew;
-      CT_FIELDS.forEach(([k])=>{ if(isNew||val[k]!==orig[k]){ if(val[k]) t[k]=val[k]; else delete t[k]; changed=true; } });  // 空白欄位不存，資料量小、同步快
+      CT_FIELDS.forEach(([k])=>{ if(isNew||val[k]!==orig[k]){ if(val[k]==null) delete t[k]; else t[k]=val[k]; changed=true; } });  // 空白欄位不存，資料量小、同步快
       if(changed){ ctTouch(t); persist(); }
       w.remove(); renderCaseTrack();
     };
@@ -1273,9 +1372,26 @@ function ctEdit(id){
     if(!c) f('title').focus();
   });
 }
-// 匯入：用「來源列」比對（id＝deco-列號），重複匯入不會重複新增；沒有來源列的用案名比對
-const ctAliases={row:['來源列','Excel列'],no:['項次'],title:['案名／地點','案名','案件','工程地點','工程名稱','地址'],partner:['合作夥伴','夥伴'],status:['狀態'],
-  date:['進件日期','日期'],crew:['進場／負責','負責'],next:['下一步','下一步／待辦'],progress:['進度','進度（原文）','工程進度'],equipment:['設備型號','工程設備型號','設備'],note:['備註']};
+// 合作夥伴／施工廠商名單（下拉選單的選項）
+function ctLists(){
+  const draw=w=>{
+    w.querySelector('#ctListBody').innerHTML=['partner','vendor'].map(kind=>`<div class="ctListSec"><h4>${CT_LIST[kind].name}</h4>
+      <div class="ctListBox">${ctList(kind).map((n,i)=>`<span class="ctLItem">${esc(n)} <small>${data.caseTrack.filter(c=>c[kind]===n).length}</small><button title="從選單移除" data-kind="${kind}" data-i="${i}">×</button></span>`).join('')||'<span class="muted">（空的）</span>'}</div>
+      <div class="ctAddRow"><input id="ctN_${kind}" placeholder="新增${CT_LIST[kind].name}"><button class="vhBtn" data-add="${kind}">新增</button></div></div>`).join('');
+    w.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{ ctList(b.dataset.kind).splice(Number(b.dataset.i),1); persist(); draw(w); renderCaseTrack(); });
+    w.querySelectorAll('[data-add]').forEach(b=>{
+      const inp=w.querySelector('#ctN_'+b.dataset.add);
+      const add=()=>{ if(ctAddToList(b.dataset.add,inp.value)){ persist(); draw(w); renderCaseTrack(); w.querySelector('#ctN_'+b.dataset.add).focus(); } };
+      b.onclick=add; inp.onkeydown=e=>{ if(e.key==='Enter') add(); };
+    });
+  };
+  modal('合作夥伴／施工廠商名單',`<div class="toolHint">這裡是下拉選單的選項，所有人共用。從選單移除不會改到已經選好的案件；數字是用到的案件數。</div><div id="ctListBody"></div>`,draw);
+}
+// 匯入：用「來源列」比對（id＝deco-列號），重複匯入不會重複新增；
+// 已經在系統、還沒有人改過的（沒有「最後修改」）會更新成檔案內容；沒有來源列的用案名比對
+const ctAliases={row:['來源列','Excel列'],no:['項次'],title:['案名／地點','案名','案件','工程地點','工程名稱','地址'],partner:['合作夥伴','夥伴'],vendor:['施工廠商','廠商'],
+  status:['案件狀況','狀態'],hole:['挖孔','有挖孔'],duct:['風管','有風管'],pay:['收款%','收款％','收款'],date:['進件日期','日期'],crew:['進場／負責','負責'],
+  next:['下一步','下一步／待辦'],progress:['進度','進度（原文）','工程進度'],equipment:['設備型號','工程設備型號','設備'],note:['備註']};
 async function ctImport(){
   const input=document.createElement('input'); input.type='file'; input.accept='.xlsx,.xls';
   input.onchange=async()=>{
@@ -1291,40 +1407,57 @@ async function ctImportBuffer(buf,fileName){
   const name=wb.SheetNames.includes('案件總表')?'案件總表':wb.SheetNames.find(n=>{ const r=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:''})[0]||[]; return r.some(h=>ctAliases.title.includes(String(h).trim())); });
   if(!name) return alert(wb.SheetNames.includes('裝潢場')?'這是原始的裝潢場檔案。請選整理好的「裝潢場_案件追蹤匯入_20261111.xlsx」。':'找不到「案件總表」或有「案名」欄的工作表。');
   const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{defval:'',raw:true});
+  const yes=v=>/^(有|是|v|✓|✔|1|true|y|yes|o|○)$/i.test(String(v).trim());
   ctImportPreview(rows.map(r=>{
     const g=k=>String(pick(r,ctAliases[k])??'').trim();
-    const row=Number(g('row'))||0, st=g('status');
-    return {row, rec:{id:row?'deco-'+row:'', no:g('no'), title:g('title'), partner:g('partner'), status:CT_STATUS.some(s=>s.v===st)?st:'待進場',
-      date:dateISO(pick(r,ctAliases.date),XLSX), crew:g('crew'), next:g('next'), progress:g('progress'), equipment:g('equipment'), note:g('note')}};
+    const row=Number(g('row'))||0, rec={};
+    ['no','title','partner','vendor','crew','next','progress','equipment','note'].forEach(k=>{ const x=g(k); if(x) rec[k]=x; });
+    rec.status=ctNormStatus(g('status'));
+    const pay=ctNum(g('pay')); if(pay!=null) rec.pay=pay;
+    if(yes(g('hole'))) rec.hole=true;
+    if(yes(g('duct'))) rec.duct=true;
+    const d=dateISO(pick(r,ctAliases.date),XLSX); if(d) rec.date=d;
+    return {row, id:row?'deco-'+row:'', rec};
   }), fileName, name);
 }
 function ctImportPreview(parsed,fileName,sheet){
-  const ids=new Set(data.caseTrack.map(c=>c.id)), titles=new Set(data.caseTrack.map(c=>normalize(c.title)));
+  const byId=new Map(data.caseTrack.map(c=>[c.id,c])), titles=new Set(data.caseTrack.map(c=>normalize(c.title)));
   const valid=parsed.filter(x=>x.rec.title);
-  const fresh=valid.filter(x=>x.rec.id?!ids.has(x.rec.id):!titles.has(normalize(x.rec.title)));
-  const dup=valid.length-fresh.length, bad=parsed.length-valid.length;
+  const fresh=[], upd=[]; let kept=0;
+  valid.forEach(x=>{
+    const cur=x.id?byId.get(x.id):null;
+    if(cur){ if(cur.updatedBy) kept++; else { const next={id:cur.id,...(x.row?{row:x.row}:{}),...x.rec}; if(!sameVal(next,cur)) upd.push(x); } }
+    else if(x.id||!titles.has(normalize(x.rec.title))) fresh.push(x);
+    else kept++;
+  });
+  // 檔案有「來源列」時：以前匯入、這份檔案已經沒有、也沒人改過的 → 可以一起移除（有人改過的保留）
+  const fileIds=new Set(parsed.map(x=>x.id).filter(Boolean));
+  const stale=fileIds.size?data.caseTrack.filter(c=>/^deco-/.test(c.id)&&!fileIds.has(c.id)):[];
+  const gone=stale.filter(c=>!c.updatedBy), staleKept=stale.length-gone.length;
+  const bad=parsed.length-valid.length, same=valid.length-fresh.length-upd.length-kept;
   const cnt=CT_STATUS.map(s=>[s.v,fresh.filter(x=>x.rec.status===s.v).length]).filter(x=>x[1]).map(([s,n])=>`${s} ${n}`).join('、');
-  modal('案件追蹤｜匯入預覽',`<div class="toolStats"><b>${esc(fileName)}</b>（${esc(sheet)}）<br>讀到 ${parsed.length} 列｜可新增 <b>${fresh.length}</b>｜已在系統略過 ${dup}｜沒有案名 ${bad}${cnt?`<br>${esc(cnt)}`:''}</div>
-    <div class="previewList">${fresh.slice(0,12).map(x=>`<div>${esc(x.rec.status)}｜${esc(x.rec.title)}${x.rec.partner?'｜'+esc(x.rec.partner):''}</div>`).join('')}${fresh.length>12?`<div>…其餘 ${fresh.length-12} 筆</div>`:''}</div>
+  const n=fresh.length+upd.length+gone.length;
+  modal('案件追蹤｜匯入預覽',`<div class="toolStats"><b>${esc(fileName)}</b>（${esc(sheet)}）<br>讀到 ${parsed.length} 列｜新增 <b>${fresh.length}</b>｜更新 <b>${upd.length}</b>（匯入後還沒人改過的）｜已有人改過、不動 ${kept}｜內容相同 ${same}｜沒有案名 ${bad}${cnt?`<br>新增的：${esc(cnt)}`:''}</div>
+    ${gone.length?`<label class="ctChecks" style="display:block;margin-top:8px"><input type="checkbox" id="ctRemoveGone" checked> 移除 <b>${gone.length}</b> 筆以前匯入、這份檔案已經沒有的案件（都沒人改過）</label>`:''}${staleKept?`<div class="toolHint">另有 ${staleKept} 筆這份檔案沒有、但有人改過，保留不動。</div>`:''}
+    <div class="previewList">${[...fresh,...upd].slice(0,12).map(x=>`<div>${fresh.includes(x)?'新增':'更新'}｜${esc(x.rec.status)}｜${esc(x.rec.title)}${x.rec.partner?'｜'+esc(x.rec.partner):''}</div>`).join('')}${n>12?`<div>…其餘 ${n-12} 筆</div>`:''}</div>
     <div class="toolHint">匯入前會先自動備份；匯入後大家登入都看得到。</div>
-    <button class="modalPrimary" id="ctConfirmImport"${fresh.length?'':' disabled'}>確認匯入 ${fresh.length} 筆</button>`,()=>{
+    <button class="modalPrimary" id="ctConfirmImport"${n?'':' disabled'}>確認匯入</button>`,()=>{
     const b=document.getElementById('ctConfirmImport');
     b.onclick=async()=>{
       b.disabled=true; b.textContent='匯入中…';
       try{
         await createCloudBackup('案件追蹤匯入前自動備份','before-import');
         // 只存有內容的欄位；匯入的不記建立者／時間（操作紀錄有記誰匯入），之後有人修改才記「最後修改」
-        fresh.forEach(x=>{
-          const c={id:x.rec.id||'ct-'+Date.now()+'-'+Math.random().toString(36).slice(2,7)};
-          if(x.row) c.row=x.row;
-          if(x.rec.no) c.no=x.rec.no;
-          CT_FIELDS.forEach(([k])=>{ if(x.rec[k]) c[k]=x.rec[k]; });
-          data.caseTrack.push(c);
-        });
+        const make=x=>({id:x.id||'ct-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),...(x.row?{row:x.row}:{}),...x.rec});
+        fresh.forEach(x=>data.caseTrack.push(make(x)));
+        upd.forEach(x=>{ const i=data.caseTrack.findIndex(c=>c.id===x.id); if(i>=0&&!data.caseTrack[i].updatedBy) data.caseTrack[i]=make(x); });
+        const rm=document.getElementById('ctRemoveGone')?.checked?new Set(gone.map(c=>c.id)):new Set();
+        if(rm.size) data.caseTrack=data.caseTrack.filter(c=>!(rm.has(c.id)&&!c.updatedBy));
+        [...fresh,...upd].forEach(x=>{ ctAddToList('partner',x.rec.partner); ctAddToList('vendor',x.rec.vendor); });
         persist(); renderCaseTrack();
-        await audit('案件追蹤匯入',`${fileName}：新增 ${fresh.length} 筆，略過 ${dup} 筆`);
+        await audit('案件追蹤匯入',`${fileName}：新增 ${fresh.length} 筆，更新 ${upd.length} 筆，移除 ${rm.size} 筆，不動 ${kept} 筆`);
         document.getElementById('proModal')?.remove();
-        alert('匯入完成，共新增 '+fresh.length+' 筆。');
+        alert(`匯入完成：新增 ${fresh.length} 筆、更新 ${upd.length} 筆${rm.size?`、移除 ${rm.size} 筆`:''}。`);
       }catch(e){ alert('匯入失敗：'+e.message); b.disabled=false; b.textContent='確認匯入'; }
     };
   });
@@ -1332,9 +1465,10 @@ function ctImportPreview(parsed,fileName,sheet){
 async function ctExport(){
   const XLSX=await loadXLSX();
   const list=ctSorted(data.caseTrack.filter(ctMatches));
-  const rows=list.map(c=>({來源列:c.row||'',項次:c.no||'','案名／地點':c.title,合作夥伴:c.partner||'',狀態:c.status,進件日期:c.date||'','進場／負責':c.crew||'',下一步:c.next||'',進度:c.progress||'',設備型號:c.equipment||'',備註:c.note||'',最後修改:whoShort(c.updatedBy),修改時間:c.updatedAt?new Date(c.updatedAt).toLocaleString('zh-TW'):''}));
+  const rows=list.map(c=>({來源列:c.row||'',項次:c.no||'','案名／地點':c.title,合作夥伴:c.partner||'',施工廠商:c.vendor||'',案件狀況:c.status,挖孔:c.hole?'有':'',風管:c.duct?'有':'','收款%':c.pay??'',
+    進件日期:c.date||'','進場／負責':c.crew||'',下一步:c.next||'',進度:c.progress||'',設備型號:c.equipment||'',備註:c.note||'',最後修改:whoShort(c.updatedBy),修改時間:c.updatedAt?new Date(c.updatedAt).toLocaleString('zh-TW'):''}));
   const wb=XLSX.utils.book_new(), ws=XLSX.utils.json_to_sheet(rows);
-  ws['!cols']=[6,6,30,14,8,11,14,24,40,30,24,10,18].map(w=>({wch:w}));
+  ws['!cols']=[6,6,30,14,10,16,5,5,7,11,14,24,40,30,24,10,18].map(w=>({wch:w}));
   XLSX.utils.book_append_sheet(wb,ws,'案件總表');
   XLSX.writeFile(wb,'案件追蹤_'+dayKey()+'.xlsx');
   await audit('案件追蹤匯出',`共 ${rows.length} 筆`);
