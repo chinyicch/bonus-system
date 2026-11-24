@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.10（整合測試版）</title>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工程管理系統 V5.1.11（整合測試版）</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <style>
@@ -26,6 +26,10 @@
 .topRow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .topActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .topInfo{font-size:11px;opacity:.85;white-space:nowrap}
+.topInfo.syncWarn{opacity:1;background:#fff0d6;color:#8a5a00;border-radius:999px;padding:3px 9px;font-weight:700}
+#updateBar{position:sticky;top:env(safe-area-inset-top,0px);z-index:100000;background:#A9862F;color:#fff;padding:10px 16px;font-size:14px;font-weight:700;text-align:center;line-height:1.6}
+#updateBar button{margin-left:8px;border:0;border-radius:7px;background:#fff;color:#1f2a44;font-weight:800;padding:6px 14px;cursor:pointer}
+#updateBar button:disabled{opacity:.6;cursor:wait}
 .topbtn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:9px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer}
 .topbtn:hover{background:rgba(255,255,255,.24)}
 
@@ -191,7 +195,7 @@
 <body>
 
 <div class="login" id="loginBox">
-  <h1>工程管理系統 V5.1.10</h1>
+  <h1>工程管理系統 V5.1.11</h1>
   <div class="sub">海壹有限公司｜公司內部系統（整合測試版）</div>
   <form id="loginForm">
     <label for="email">帳號或電子郵件</label>
@@ -208,7 +212,7 @@
 <div id="appRoot" class="hidden">
 <div class="top"><div class="topRow">
   <div>
-    <b style="font-size:21px">工程管理系統 V5.1.10｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
+    <b style="font-size:21px">工程管理系統 V5.1.11｜整合測試版</b> <button class="verLink" onclick="showChangelog()" title="查看更新歷史">📝 更新歷史</button>
     <div style="font-size:12px;opacity:.82">施工追蹤 → 工作單 → 結案管理 → 半年工程獎金 → 內外機台數｜案件追蹤｜開會紀錄</div>
   </div>
   <div class="topActions">
@@ -542,6 +546,7 @@ async function fetchCloudState(){
     if(!res.ok) throw new Error('HTTP '+res.status);
     const et=res.headers.get('ETag'); if(et) stateEtag=et;
     const payload=await res.json();
+    lastFullFetch=Date.now(); lastSyncAt=Date.now();
     return {ok:true, data: payload?ensureShape(payload):null};
   }catch(err){ console.warn('cloud load failed',err); return {ok:false, reason:String(err)}; }
 }
@@ -550,7 +555,7 @@ async function fetchCloudState(){
 // 這時不能直接用自己的整份資料蓋回去（會把對方剛輸入的東西洗掉），
 // 而是以「上次同步的版本」為基準，把雙方各自的修改合併後再存。
 const BASE_KEY=STORAGE_KEY+'-base';
-let baseState=null, cloudDirty=false, pendingRender=false;
+let baseState=null, cloudDirty=false, pendingRender=false, localPending=false;
 try{ const raw=localStorage.getItem(BASE_KEY); if(raw) baseState=JSON.parse(raw); }catch(e){}
 function setBase(s){ baseState=JSON.parse(JSON.stringify(s)); try{ localStorage.setItem(BASE_KEY, JSON.stringify(baseState)); }catch(e){} }
 const jsonOf=v=>JSON.stringify(v);
@@ -626,6 +631,7 @@ function absorbRemote(remote){
 }
 async function pushCloudState(){
   try{
+    data.rev=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6); // 版本戳記：別人只要查這個小欄位就知道資料有沒有變
     const snapshot=cloneState();
     const headers={'Content-Type':'application/json','X-Firebase-ETag':'true'};
     if(stateEtag) headers['if-match']=stateEtag;
@@ -649,11 +655,16 @@ async function pushCloudState(){
     return {ok:true};
   }catch(err){ console.warn('cloud save failed',err); return {ok:false, reason:String(err)}; }
 }
+function hasUnsyncedChanges(){ return cloudSaving || !!cloudSaveTimer || localPending; }
 function renderSyncStatus(){
   const el=document.getElementById('syncState'); if(!el) return;
+  const t=lastSyncAt?new Date(lastSyncAt).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'';
   if(cloudSaving) el.textContent='☁ 雲端儲存中…';
-  else if(cloudMode) el.textContent='☁ 已連線雲端';
-  else el.textContent='⚠ 本機備援（雲端連線失敗）';
+  else if(cloudMode && !localPending) el.textContent='☁ 已連線雲端';
+  else if(cloudMode) el.textContent='☁ 有修改等待上傳…';
+  else el.textContent=localPending?'⚠ 離線中：修改先存在這台電腦，連線後自動上傳':'⚠ 本機備援（雲端連線失敗）';
+  el.title=(t?`最後與雲端同步：${t}`:'尚未與雲端同步')+(localPending?'\n這台電腦還有修改沒上傳到雲端，請先不要關閉網頁':'');
+  el.classList.toggle('syncWarn', !cloudMode || localPending);
 }
 async function syncCloud(){
   if(cloudSaving){ cloudDirty=true; return; } // 一次只送一個儲存，避免自己跟自己衝突
@@ -669,11 +680,13 @@ async function syncCloud(){
   }
   cloudSaving=false;
   cloudMode=r.ok;
+  if(r.ok){ lastSyncAt=Date.now(); if(!cloudDirty && !cloudSaveTimer) localPending=false; }
   renderSyncStatus();
   if(!r.ok){ clearTimeout(cloudSaveTimer); cloudSaveTimer=setTimeout(()=>{cloudSaveTimer=null;syncCloud();},5000); return; } // 失敗時本機資料保留，5 秒後自動重試
   if(cloudDirty) syncCloud();
 }
 function persist(){
+  localPending=true;
   saveLocalData();
   renderSyncStatus();
   // 操作紀錄改為在成功存到雲端時，記下實際修改內容（見 noteChanges）
@@ -685,8 +698,26 @@ function persist(){
 const IDLE_MS=5*60*1000;
 let lastActivity=Date.now();
 ['pointerdown','keydown','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{ const wasIdle=Date.now()-lastActivity>IDLE_MS; lastActivity=Date.now(); if(wasIdle) heartbeat(); },{capture:true,passive:true}));
+// 省流量：每 10 秒只查最上層的 rev（約 0.2KB），有變才下載整份（約 200KB）。
+// 舊版分頁存檔不會換 rev，所以每 2 分鐘仍會完整下載一次當保險。
+const FULL_FETCH_EVERY=2*60*1000;
+let lastFullFetch=0, lastSyncAt=0;
+async function peekCloudRev(){
+  try{
+    const r=await authedFetch(STATE_PATH+'?shallow=true',{cache:'no-store'});
+    if(!r.ok) return {ok:false};
+    const top=await r.json()||{};
+    return {ok:true, rev:typeof top.rev==='string'?top.rev:''};
+  }catch(e){ return {ok:false}; }
+}
 async function heartbeat(){
   if(cloudSaving || cloudSaveTimer || document.hidden || Date.now()-lastActivity>IDLE_MS) return;
+  if(baseState && baseState.rev && Date.now()-lastFullFetch<FULL_FETCH_EVERY){
+    const peek=await peekCloudRev();
+    cloudMode=peek.ok;
+    if(peek.ok){ lastSyncAt=Date.now(); if(peek.rev===baseState.rev){ renderSyncStatus(); return; } }
+    else { renderSyncStatus(); return; }
+  }
   const fresh=await fetchCloudState();
   cloudMode=fresh.ok;
   if(fresh.ok && fresh.data && !cloudSaving && !cloudSaveTimer && !sameVal(fresh.data,baseState)){
@@ -694,8 +725,9 @@ async function heartbeat(){
   }
   renderSyncStatus();
 }
-document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ lastActivity=Date.now(); heartbeat(); } });
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ lastActivity=Date.now(); heartbeat(); if(typeof checkAppVersion==='function' && appStarted) checkAppVersion(); } });
 window.addEventListener('offline',()=>{cloudMode=false;renderSyncStatus();});
+window.addEventListener('beforeunload',e=>{ if(appStarted && hasUnsyncedChanges()){ e.preventDefault(); e.returnValue=''; } });
 window.addEventListener('online',heartbeat);
 
 // ====== 備份／還原（比照正式版 safety.js：刪除前自動備份、每日備份、typed-confirm 二次確認）======
@@ -718,7 +750,7 @@ async function createCloudBackup(reason,type='manual'){
 async function createDailyBackup(){
   try{
     const key=dayKey();
-    const chk=await authedFetch(`${BACKUPS_PATH}/daily/${key}.json`);
+    const chk=await authedFetch(`${BACKUPS_PATH}/daily/${key}.json?shallow=true`);
     if(chk.ok){
       const existing=await chk.json();
       if(!existing){
@@ -745,8 +777,15 @@ async function guardedAction(confirmMsg, backupReason, backupType, action){
 }
 // ====== 更新歷史 ======
 // 之後每次改版：APP_VERSION 改成新版號，並在 CHANGELOG 最上面加一筆（同步更新 CHANGELOG.md）。
-const APP_VERSION='5.1.10';
+const APP_VERSION='5.1.11';
 const CHANGELOG=[
+  {ver:'5.1.11', date:'2026-11-24', items:[
+    '省雲端流量：每 10 秒只檢查一個很小的「版本戳記」（約 0.2KB），資料有變才下載整份（約 200KB）；原本每 10 秒都整份下載',
+    '新版本提醒：網站更新後，還開著的舊畫面會在上方提示「立即更新」；畫面閒置又沒有未上傳的修改時會自動重新整理，避免舊畫面存錯資料',
+    '還有修改沒上傳到雲端就關網頁，瀏覽器會先跳出確認',
+    '右上角同步狀態更清楚：顯示「有修改等待上傳」「離線中，修改先存在這台電腦」，滑鼠移上去可看最後同步時間',
+    '每日自動備份檢查不再整份下載備份資料'
+  ]},
   {ver:'5.1.10', date:'2026-11-11', items:[
     '新增第七個分頁「開會紀錄」：每次開會記日期、類型、主題、出席人員、會議內容、重點、決議、待辦（負責人、期限）',
     '「追蹤事項」自動整理所有會議的待辦：未完成、逾期（標紅）、已完成，可依負責人篩選，打勾就完成',
@@ -840,6 +879,38 @@ function showChangelog(){
   modal('更新歷史', `<div class="vhHint">目前版本：V${APP_VERSION}</div>`+CHANGELOG.map((v,i)=>`<div class="clVer"><div class="clHead"><span class="clNum">V${esc(v.ver)}</span><span class="clDate">${esc(v.date)}</span>${i===0?'<span class="clNew">目前版本</span>':''}</div><ul>${v.items.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`).join(''));
 }
 // 更新後第一次進入時，自動顯示這一版的新功能（每台裝置只顯示一次）
+// ====== 新版本提醒（避免舊分頁用舊程式存資料）======
+// 網站根目錄的 version.json 記錄最新版號（每次改版要一起改）。開著的舊分頁每 10 分鐘問一次：
+// 有新版 → 上方出現提醒；如果畫面已閒置、也沒有還沒上傳的修改，就直接自動重新整理。
+function cmpVer(a,b){ const x=String(a).split('.').map(Number), y=String(b).split('.').map(Number); for(let i=0;i<Math.max(x.length,y.length);i++){ const d=(x[i]||0)-(y[i]||0); if(d) return d; } return 0; }
+let newerVersion='';
+async function checkAppVersion(){
+  try{
+    const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return;
+    const v=String((await r.json()).version||'');
+    if(!v || cmpVer(v,APP_VERSION)<=0) return;
+    newerVersion=v;
+    const idle=Date.now()-lastActivity>IDLE_MS;
+    if((idle||document.hidden) && !hasUnsyncedChanges() && !isUserEditing()){ location.reload(); return; }
+    showUpdateBar();
+  }catch(e){}
+}
+function showUpdateBar(){
+  let bar=document.getElementById('updateBar');
+  if(!bar){ bar=document.createElement('div'); bar.id='updateBar'; document.body.prepend(bar); }
+  bar.innerHTML=`🔔 系統已更新到 V${esc(newerVersion)}（這個畫面還是 V${esc(APP_VERSION)}）。為避免舊畫面存錯資料，請更新。 <button id="updateNow" type="button">立即更新</button>`;
+  bar.querySelector('#updateNow').onclick=reloadWhenSaved;
+}
+async function reloadWhenSaved(){
+  const btn=document.getElementById('updateNow'); if(btn){ btn.disabled=true; btn.textContent='先存檔…'; }
+  if(cloudSaveTimer && !cloudSaving){ clearTimeout(cloudSaveTimer); cloudSaveTimer=null; syncCloud(); }
+  for(let i=0;i<40 && hasUnsyncedChanges();i++) await new Promise(r=>setTimeout(r,250));
+  if(hasUnsyncedChanges() && !confirm('還有修改沒上傳到雲端（可能是網路斷線）。\n仍要更新嗎？修改會保留在這台電腦，連上網路後會自動上傳。')){
+    if(btn){ btn.disabled=false; btn.textContent='立即更新'; } return;
+  }
+  location.reload();
+}
 function showWhatsNewOnce(){
   try{
     const seen=localStorage.getItem('bonus-seen-version');
@@ -2637,6 +2708,8 @@ async function initApp(){
   createDailyBackup();
   setInterval(heartbeat,10000);
   showWhatsNewOnce();
+  checkAppVersion();
+  setInterval(checkAppVersion,10*60*1000);
 }
 
 // ====== 登入 ======
